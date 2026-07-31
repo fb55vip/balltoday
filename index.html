@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>BallToday | ผลบอลสด โปรแกรมบอล ตารางคะแนน วิเคราะห์บอลวันนี้</title>
+  <meta name="description" content="BallToday เว็บฟุตบอลภาษาไทยแบบพรีเมียม รวมผลบอลสด โปรแกรมบอล ตารางคะแนน ดาวซัลโว เหตุการณ์ใบเหลืองใบแดง ราคาบอล ค้นหาทีม และบทวิเคราะห์ก่อนแข่ง">
+  <meta name="keywords" content="ผลบอลสด,โปรแกรมบอลวันนี้,ตารางคะแนน,ดาวซัลโว,ใบเหลือง,ใบแดง,ราคาบอล,วิเคราะห์บอล,ข่าวฟุตบอล,ไฮไลท์ฟุตบอล">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="theme-color" content="#05070b">
+  <link rel="canonical" href="https://fb55vip.com/">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:title" content="BallToday เว็บฟุตบอลพรีเมียม อัปเดตอัตโนมัติ">
+  <meta property="og:description" content="ผลบอลสด โปรแกรมบอล ตารางคะแนน ดาวซัลโว เหตุการณ์ในเกม ราคาบอล และบทวิเคราะห์ก่อนแข่ง">
+  <meta property="og:url" content="https://fb55vip.com/">
+  <meta property="og:site_name" content="BallToday">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"BallToday","url":"https://fb55vip.com/","inLanguage":"th-TH","potentialAction":{"@type":"SearchAction","target":"https://fb55vip.com/?q={search_term_string}","query-input":"required name=search_term_string"}}</script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell nav-wrap">
+      <a class="brand" href="#home" aria-label="BallToday หน้าแรก"><span class="ball">⚽</span><span>Ball<strong>Today</strong></span></a>
+      <button class="menu-btn" id="menuBtn" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+      <nav class="nav" id="mainNav" aria-label="เมนูหลัก">
+        <a href="#live">บอลสด</a><a href="#fixtures">โปรแกรม</a><a href="#standings">ตารางคะแนน</a><a href="#scorers">ดาวซัลโว</a><a href="#analysis">วิเคราะห์</a><a href="#odds">ราคาบอล</a>
+      </nav>
+      <button class="icon-btn" id="installBtn" hidden>ติดตั้งแอป</button>
+    </div>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-glow"></div>
+      <div class="shell hero-grid">
+        <div class="hero-copy">
+          <span class="pill live-pill">● BALLTODAY PREMIUM</span>
+          <h1>ฟุตบอลครบทุกจังหวะ<br><em>เร็ว ชัด ใช้งานง่าย</em></h1>
+          <p>ผลบอลสด โปรแกรมบอล ตารางคะแนน ดาวซัลโว เหตุการณ์ใบเหลืองใบแดง ราคาบอล และบทวิเคราะห์จากข้อมูลสถิติ</p>
+          <div class="hero-actions"><a class="btn primary" href="#live">ดูผลบอลสด</a><a class="btn ghost" href="#fixtures">โปรแกรมวันนี้</a></div>
+          <div class="system-row"><span class="status-dot"></span><span id="systemStatus">กำลังเชื่อมต่อข้อมูลฟุตบอล…</span><span id="updatedAt"></span></div>
+        </div>
+        <div class="scoreboard glass">
+          <div class="scoreboard-head"><span>คู่เด่นสด</span><span class="pill red">LIVE</span></div>
+          <div id="heroLive" class="hero-live"><div class="skeleton tall"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="search-strip">
+      <div class="shell search-card glass">
+        <div><b>ค้นหาทีมและลีก</b><small>ค้นหาจาก API-Football</small></div>
+        <form id="searchForm" class="search-form"><input id="searchInput" minlength="3" placeholder="เช่น Liverpool, Premier League" autocomplete="off"><button class="btn primary" type="submit">ค้นหา</button></form>
+      </div>
+    </section>
+
+    <section class="section" id="live">
+      <div class="shell">
+        <div class="section-head"><div><span class="eyebrow">LIVE CENTER</span><h2>⚽ ผลบอลสด</h2></div><div class="toolbar"><button class="chip active" data-live-filter="all">ทั้งหมด</button><button class="chip" data-live-filter="important">คู่สำคัญ</button></div></div>
+        <div id="liveGrid" class="card-grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+      </div>
+    </section>
+
+    <section class="section alt" id="fixtures">
+      <div class="shell">
+        <div class="section-head"><div><span class="eyebrow">MATCH SCHEDULE</span><h2>📅 โปรแกรมบอล</h2></div><div class="date-nav"><button class="chip" data-day="-1">เมื่อวาน</button><button class="chip active" data-day="0">วันนี้</button><button class="chip" data-day="1">พรุ่งนี้</button></div></div>
+        <div id="fixturesList" class="stack"><div class="skeleton"></div><div class="skeleton"></div></div>
+      </div>
+    </section>
+
+    <section class="section" id="standings">
+      <div class="shell two-col">
+        <div>
+          <div class="section-head"><div><span class="eyebrow">LEAGUE TABLE</span><h2>📊 ตารางคะแนน</h2></div><select id="leagueSelect" class="select"><option value="39">พรีเมียร์ลีก</option><option value="140">ลาลีกา</option><option value="78">บุนเดสลีกา</option><option value="135">เซเรีย อา</option><option value="61">ลีกเอิง</option><option value="2">ยูฟ่า แชมเปียนส์ลีก</option></select></div>
+          <div class="table-card glass"><div class="table-scroll"><table><thead><tr><th>#</th><th>ทีม</th><th>แข่ง</th><th>ได้/เสีย</th><th>แต้ม</th></tr></thead><tbody id="standingsBody"><tr><td colspan="5"><div class="skeleton"></div></td></tr></tbody></table></div></div>
+        </div>
+        <aside id="scorers" class="side-card glass"><div class="section-head compact"><div><span class="eyebrow">TOP SCORERS</span><h2>🔥 ดาวซัลโว</h2></div></div><div id="scorersList" class="rank-list"><div class="skeleton"></div></div></aside>
+      </div>
+    </section>
+
+    <section class="section alt" id="analysis">
+      <div class="shell">
+        <div class="section-head"><div><span class="eyebrow">DATA INSIGHT</span><h2>🤖 วิเคราะห์ก่อนแข่ง</h2></div><span class="note">วิเคราะห์จากข้อมูล API ไม่รับประกันผล</span></div>
+        <div id="analysisGrid" class="card-grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+      </div>
+    </section>
+
+    <section class="section" id="odds">
+      <div class="shell two-col">
+        <div>
+          <div class="section-head"><div><span class="eyebrow">MATCH EVENTS</span><h2>🟨 ใบเหลือง / 🟥 ใบแดง</h2></div></div>
+          <div id="eventsList" class="stack glass padded"><div class="empty">เลือกการแข่งขันสดเพื่อดูเหตุการณ์</div></div>
+        </div>
+        <aside class="side-card glass"><div class="section-head compact"><div><span class="eyebrow">ODDS</span><h2>📈 ราคาบอลและค่าน้ำ</h2></div></div><div id="oddsList"><div class="empty">ราคาบอลขึ้นอยู่กับสิทธิ์ของแพ็กเกจ API และผู้ให้บริการ</div></div></aside>
+      </div>
+    </section>
+
+    <section class="section alt" id="searchResultsSection" hidden>
+      <div class="shell"><div class="section-head"><div><span class="eyebrow">SEARCH</span><h2>🔍 ผลการค้นหา</h2></div><button class="chip" id="closeSearch">ปิด</button></div><div id="searchResults" class="search-results"></div></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="shell footer-grid"><div><div class="brand"><span class="ball">⚽</span><span>Ball<strong>Today</strong></span></div><p>เว็บฟุตบอลภาษาไทยแบบพรีเมียม เชื่อมข้อมูลผ่าน Cloudflare Worker</p></div><div><b>เมนู</b><a href="#live">ผลบอลสด</a><a href="#fixtures">โปรแกรมบอล</a><a href="#standings">ตารางคะแนน</a></div><div><b>หมายเหตุ</b><p>ข้อมูลอาจล่าช้าหรือคลาดเคลื่อน โปรดตรวจสอบแหล่งข้อมูลทางการ</p></div></div>
+  </footer>
+
+  <nav class="bottom-nav"><a href="#home">🏠<span>หน้าแรก</span></a><a href="#live">⚽<span>บอลสด</span></a><a href="#fixtures">📅<span>โปรแกรม</span></a><a href="#standings">📊<span>ตาราง</span></a><a href="#analysis">🤖<span>วิเคราะห์</span></a></nav>
+
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/app.js" defer></script>
+</body>
+</html>
