@@ -1,9 +1,0 @@
-window.BALLTODAY_CONFIG={
-  apiBaseUrl:"https://balltoday-api.noppdsoma.workers.dev",
-  mode:"pro",
-  refresh:{free:900000,pro:60000},
-  requestTimeout:15000,
-  season:2025,
-  defaultLeague:39,
-  importantLeagues:[39,140,78,135,61,2,3,848]
-};
