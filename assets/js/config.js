@@ -1,6 +1,6 @@
 window.BALLTODAY_CONFIG={
   apiBaseUrl:"https://balltoday-api.noppdsoma.workers.dev",
-  mode:"free",
+  mode:"pro",
   refresh:{free:900000,pro:60000},
   requestTimeout:15000,
   season:2025,
