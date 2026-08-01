@@ -208,7 +208,7 @@ async function getJSON(
           Accept: "application/json"
         },
         signal: controller.signal,
-        cache: "no-store"
+        cache: "default"
       }
     );
 
@@ -2741,39 +2741,45 @@ function bindLiveFilters() {
 }
 
 function bindRefreshButton() {
-  const button =
-    $("#refreshButton");
+  const button = $("#refreshButton");
 
   if (!button) {
     return;
   }
 
-  button.onclick =
-    async () => {
-      button.disabled =
-        true;
+  button.onclick = async () => {
+    button.disabled = true;
+    button.textContent = "⟳";
 
-      button.textContent =
-        "⟳";
+    try {
+      const scoreIframe = $("#scoreIframe");
 
-      try {
-        await loadLive();
+      if (scoreIframe) {
+        const currentUrl = new URL(
+          scoreIframe.src,
+          window.location.href
+        );
 
-        await sleep(700);
+        currentUrl.searchParams.set(
+          "_refresh",
+          String(Date.now())
+        );
 
-        await loadFixtures();
-
-        await sleep(700);
-
-        await loadStandings();
-      } finally {
-        button.disabled =
-          false;
-
-        button.textContent =
-          "↻";
+        scoreIframe.src = currentUrl.toString();
       }
-    };
+
+      await loadFixtures();
+
+      await sleep(1200);
+
+      await loadStandings();
+
+      setSystemStatus("ระบบออนไลน์");
+    } finally {
+      button.disabled = false;
+      button.textContent = "↻";
+    }
+  };
 }
 
 function bindModals() {
@@ -2841,29 +2847,17 @@ async function checkHealth() {
 }
 
 async function initialLoad() {
-  await loadLive();
-
-  await sleep(900);
-
   await loadFixtures();
 
-  await sleep(900);
+  await sleep(1500);
 
   await loadStandings();
+
+  setSystemStatus("ระบบออนไลน์");
 }
 
 function startAutomaticRefresh() {
   clearAllTimers();
-
-  state.timers.push(
-    setInterval(
-      () =>
-        loadLive({
-          silent: true
-        }),
-      CFG.refresh.live
-    )
-  );
 
   state.timers.push(
     setInterval(
@@ -2890,7 +2884,6 @@ async function initialize() {
   bindNavigation();
   bindDateTabs();
   bindLeagueSelect();
-  bindLiveFilters();
   bindRefreshButton();
   bindModals();
   bindInstallPrompt();
