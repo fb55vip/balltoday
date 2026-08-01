@@ -1,875 +1,115 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
-
-  <title>
-    BallToday | ผลบอลสด โปรแกรมบอล ตารางคะแนน และบทวิเคราะห์ฟุตบอล
-  </title>
-
-  <meta
-    name="description"
-    content="BallToday ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว พร้อมผลบอลสด โปรแกรมบอล ตารางคะแนน สถิติการแข่งขัน บทวิเคราะห์ และข่าวฟุตบอล"
-  >
-
-  <meta
-    name="keywords"
-    content="ผลบอลสด, โปรแกรมบอล, ตารางบอล, ตารางคะแนน, วิเคราะห์บอลวันนี้, ข่าวฟุตบอล, BallToday"
-  >
-
-  <meta name="author" content="บอส สิทธิกร">
-
-  <meta name="robots" content="index, follow">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>BallToday | ผลบอลสด โปรแกรมบอล ตารางคะแนน และบทวิเคราะห์</title>
+  <meta name="description" content="ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว พร้อมผลบอลสด โปรแกรมบอล ตารางคะแนน สถิติ และบทวิเคราะห์จากข้อมูลจริง">
   <meta name="theme-color" content="#05070b">
-
-  <link
-    rel="canonical"
-    href="https://fb55vip.com/"
-  >
-
-  <meta property="og:type" content="website">
-
-  <meta
-    property="og:title"
-    content="BallToday | ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว"
-  >
-
-  <meta
-    property="og:description"
-    content="ผลบอลสด โปรแกรมบอล ตารางคะแนน สถิติการแข่งขัน บทวิเคราะห์ และข่าวฟุตบอล"
-  >
-
-  <meta
-    property="og:url"
-    content="https://fb55vip.com/"
-  >
-
-  <meta
-    property="og:image"
-    content="https://fb55vip.com/assets/images/stadium-bg.jpg"
-  >
-
-  <meta name="twitter:card" content="summary_large_image">
-
-  <link
-    rel="icon"
-    href="/assets/icons/icon.svg"
-    type="image/svg+xml"
-  >
-
-  <link
-    rel="manifest"
-    href="/manifest.webmanifest"
-  >
-
-  <link
-    rel="preconnect"
-    href="https://media.api-sports.io"
-  >
-
-  <link
-    rel="stylesheet"
-    href="/assets/css/app.css?v=20260801"
-  >
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "BallToday",
-    "url": "https://fb55vip.com/",
-    "description": "ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว",
-    "inLanguage": "th-TH"
-  }
-  </script>
+  <link rel="canonical" href="https://fb55vip.com/">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/css/app.css?v=20260801">
 </head>
-
 <body>
-
-  <div id="appLoader" class="app-loader">
-    <div class="loader-logo">⚽</div>
-    <div class="loader-title">
-      Ball<span>Today</span>
-    </div>
-    <div class="loader-line"></div>
-  </div>
-
   <header class="site-header">
     <div class="container header-inner">
-
-      <a
-        class="brand"
-        href="/"
-        aria-label="BallToday"
-      >
-        <span class="brand-ball">
-          ⚽
-        </span>
-
-        <span class="brand-copy">
-          <span class="brand-name">
-            Ball<strong>Today</strong>
-          </span>
-
-          <span class="brand-tagline">
-            ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว
-          </span>
-        </span>
+      <a class="brand" href="#home" aria-label="BallToday หน้าแรก">
+        <span class="brand-ball">⚽</span>
+        <span><span class="brand-name">Ball<strong>Today</strong></span><span class="brand-sub">ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว</span></span>
       </a>
-
-      <nav
-        id="mainNav"
-        class="main-nav"
-        aria-label="เมนูหลัก"
-      >
-        <a
-          class="nav-link active"
-          href="#home"
-        >
-          หน้าแรก
-        </a>
-
-        <a
-          class="nav-link"
-          href="#live"
-        >
-          ผลบอลสด
-          <span class="live-label">
-            LIVE
-          </span>
-        </a>
-
-        <a
-          class="nav-link"
-          href="#fixtures"
-        >
-          โปรแกรมบอล
-        </a>
-
-        <a
-          class="nav-link"
-          href="#standings"
-        >
-          ตารางคะแนน
-        </a>
-
-        <a
-          class="nav-link"
-          href="#analysis"
-        >
-          วิเคราะห์บอลวันนี้
-        </a>
-
-        <a
-          class="nav-link"
-          href="#news"
-        >
-          ข่าวฟุตบอล
-        </a>
-
-        <a
-          class="nav-link"
-          href="/pages/highlights/"
-        >
-          ไฮไลท์
-        </a>
+      <nav id="mainNav" class="main-nav">
+        <a class="active" href="#home">หน้าแรก</a>
+        <a href="#live">ผลบอลสด <span class="live-badge">LIVE</span></a>
+        <a href="#fixtures">โปรแกรมบอล</a>
+        <a href="#standings">ตารางคะแนน</a>
+        <a href="#analysis">วิเคราะห์บอล</a>
+        <a href="#news">ข่าวฟุตบอล</a>
       </nav>
-
       <div class="header-actions">
-
-        <button
-          id="searchToggle"
-          class="icon-button"
-          type="button"
-          aria-label="ค้นหา"
-        >
-          🔍
-        </button>
-
-        <button
-          id="themeToggle"
-          class="icon-button"
-          type="button"
-          aria-label="เปลี่ยนธีม"
-        >
-          🌙
-        </button>
-
-        <button
-          id="installBtn"
-          class="header-button"
-          type="button"
-          hidden
-        >
-          ติดตั้งแอป
-        </button>
-
-        <button
-          id="menuBtn"
-          class="menu-button"
-          type="button"
-          aria-expanded="false"
-          aria-controls="mainNav"
-        >
-          ☰
-        </button>
+        <button id="installBtn" class="icon-btn" type="button" hidden title="ติดตั้งแอป">⬇</button>
+        <button id="menuBtn" class="menu-btn" type="button" aria-label="เปิดเมนู">☰</button>
       </div>
-
     </div>
   </header>
 
-  <aside
-    id="searchPanel"
-    class="search-panel"
-    hidden
-  >
-    <div class="container search-panel-inner">
-
-      <form
-        id="searchForm"
-        class="search-form"
-      >
-        <label
-          class="sr-only"
-          for="searchInput"
-        >
-          ค้นหาทีมหรือลีก
-        </label>
-
-        <input
-          id="searchInput"
-          type="search"
-          autocomplete="off"
-          placeholder="ค้นหาทีม ลีก หรือการแข่งขัน"
-        >
-
-        <button
-          type="submit"
-          class="search-submit"
-        >
-          ค้นหา
-        </button>
-      </form>
-
-      <button
-        id="searchClose"
-        class="search-close"
-        type="button"
-        aria-label="ปิดการค้นหา"
-      >
-        ×
-      </button>
-
-    </div>
-  </aside>
-
   <main>
-
-    <section
-      id="home"
-      class="hero-section"
-    >
-      <div class="hero-overlay"></div>
-
+    <section id="home" class="hero">
       <div class="container hero-grid">
-
-        <div class="hero-content">
-
-          <div class="hero-badge">
-            <span class="pulse-dot"></span>
-            BALLTODAY PREMIUM
+        <div class="hero-copy">
+          <p class="eyebrow">BALLTODAY PREMIUM</p>
+          <h1>BALL<span>TODAY</span></h1>
+          <h2>ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว</h2>
+          <p>ผลบอลสด โปรแกรมบอล ตารางคะแนน สถิติการแข่งขัน รายชื่อผู้เล่น และบทวิเคราะห์จาก API-Football</p>
+          <div class="hero-actions-row">
+            <a href="#analysis" class="btn btn-primary">ดูบทวิเคราะห์ →</a>
+            <a href="#fixtures" class="btn btn-outline">โปรแกรมบอลวันนี้ 📅</a>
           </div>
-
-          <h1 class="hero-title">
-            BALL<span>TODAY</span>
-          </h1>
-
-          <p class="hero-headline">
-            ฟุตบอลอัปเดตอัตโนมัติ
-            <br>
-            ครบจบในที่เดียว
-          </p>
-
-          <p class="hero-description">
-            ผลบอลสด โปรแกรมบอล ตารางคะแนน
-            สถิติการแข่งขัน บทวิเคราะห์ และข่าวฟุตบอล
-            อัปเดตจากข้อมูลจริง
-          </p>
-
-          <div class="hero-buttons">
-
-            <a
-              class="primary-button"
-              href="#analysis"
-            >
-              ดูบทวิเคราะห์
-              <span>→</span>
-            </a>
-
-            <a
-              class="secondary-button"
-              href="#fixtures"
-            >
-              โปรแกรมบอลวันนี้
-              <span>📅</span>
-            </a>
-
-          </div>
-
-          <div class="system-status">
-            <span class="status-dot"></span>
-
-            <span id="systemStatus">
-              กำลังเชื่อมต่อ API...
-            </span>
-
-            <span id="updatedAt"></span>
-          </div>
-
+          <div class="system-line"><span class="status-dot"></span><span id="systemStatus">กำลังเชื่อมต่อ API...</span><span id="updatedAt"></span></div>
         </div>
-
-        <section
-          id="live"
-          class="hero-live-panel"
-        >
-          <div class="panel-header">
-
-            <div>
-              <span class="section-kicker">
-                LIVE CENTER
-              </span>
-
-              <h2>
-                ผลบอลสด
-              </h2>
-            </div>
-
-            <a
-              href="#allLive"
-              class="panel-link"
-            >
-              ดูทั้งหมด →
-            </a>
-
-          </div>
-
-          <div
-            id="heroLiveList"
-            class="hero-live-list"
-          >
-            <div class="loading-card">
-              <span class="loading-spinner"></span>
-              กำลังโหลดผลบอลสด...
-            </div>
-          </div>
+        <section id="live" class="hero-live panel">
+          <div class="panel-head"><div><small>LIVE CENTER</small><h3>ผลบอลสด</h3></div><button class="link-btn" data-scroll="#liveCenter">ดูทั้งหมด ›</button></div>
+          <div id="heroLiveList" class="live-list"><div class="loading">กำลังโหลดผลบอลสด...</div></div>
         </section>
-
       </div>
     </section>
 
     <section class="dashboard-section">
       <div class="container dashboard-grid">
-
-        <section
-          id="fixtures"
-          class="dashboard-card fixtures-card"
-        >
-          <div class="card-header">
-
-            <div>
-              <span class="section-kicker">
-                MATCH SCHEDULE
-              </span>
-
-              <h2>
-                โปรแกรมบอลวันนี้
-              </h2>
-            </div>
-
-            <a
-              href="/pages/fixtures/"
-              class="panel-link"
-            >
-              ดูทั้งหมด →
-            </a>
-
-          </div>
-
-          <div class="date-tabs">
-
-            <button
-              class="date-tab"
-              type="button"
-              data-date-offset="-1"
-            >
-              เมื่อวาน
-            </button>
-
-            <button
-              class="date-tab active"
-              type="button"
-              data-date-offset="0"
-            >
-              วันนี้
-            </button>
-
-            <button
-              class="date-tab"
-              type="button"
-              data-date-offset="1"
-            >
-              พรุ่งนี้
-            </button>
-
-          </div>
-
-          <div
-            id="fixtureList"
-            class="fixture-list"
-          >
-            <div class="loading-card">
-              <span class="loading-spinner"></span>
-              กำลังโหลดโปรแกรมบอล...
-            </div>
-          </div>
+        <section id="fixtures" class="panel">
+          <div class="panel-head"><div><small>MATCH SCHEDULE</small><h3>โปรแกรมบอลวันนี้</h3></div><span class="muted">อัปเดตอัตโนมัติ</span></div>
+          <div class="tabs"><button class="tab" data-day="-1">เมื่อวาน</button><button class="tab active" data-day="0">วันนี้</button><button class="tab" data-day="1">พรุ่งนี้</button></div>
+          <div id="fixturesList" class="fixture-list"><div class="loading">กำลังโหลดโปรแกรม...</div></div>
         </section>
 
-        <section
-          id="standings"
-          class="dashboard-card standings-card"
-        >
-          <div class="card-header">
-
-            <div>
-              <span class="section-kicker">
-                LEAGUE TABLE
-              </span>
-
-              <h2>
-                ตารางคะแนน
-              </h2>
-            </div>
-
-            <select
-              id="leagueSelect"
-              class="league-select"
-              aria-label="เลือกลีก"
-            >
-              <option value="39">
-                พรีเมียร์ลีก
-              </option>
-
-              <option value="140">
-                ลาลีกา
-              </option>
-
-              <option value="135">
-                เซเรีย อา
-              </option>
-
-              <option value="78">
-                บุนเดสลีกา
-              </option>
-
-              <option value="61">
-                ลีกเอิง
-              </option>
-
-              <option value="2">
-                ยูฟ่า แชมเปียนส์ลีก
-              </option>
-
-              <option value="3">
-                ยูฟ่า ยูโรปาลีก
-              </option>
-            </select>
-
-          </div>
-
-          <div class="table-wrapper">
-
-            <table class="standings-table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>ทีม</th>
-                  <th>แข่ง</th>
-                  <th>ได้เสีย</th>
-                  <th>แต้ม</th>
-                </tr>
-              </thead>
-
-              <tbody id="standingsBody">
-                <tr>
-                  <td colspan="5">
-                    <div class="loading-card">
-                      กำลังโหลดตารางคะแนน...
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-          </div>
+        <section id="standings" class="panel">
+          <div class="panel-head"><div><small>LEAGUE TABLE</small><h3>ตารางคะแนน</h3></div><select id="leagueSelect" class="select"><option value="39">พรีเมียร์ลีก</option><option value="140">ลาลีกา</option><option value="78">บุนเดสลีกา</option><option value="135">เซเรียอา</option><option value="61">ลีกเอิง</option><option value="2">ยูฟ่า แชมเปียนส์ลีก</option></select></div>
+          <div class="table-wrap"><table><thead><tr><th>#</th><th>ทีม</th><th>แข่ง</th><th>ผลต่าง</th><th>แต้ม</th></tr></thead><tbody id="standingsBody"><tr><td colspan="5">กำลังโหลด...</td></tr></tbody></table></div>
         </section>
 
-        <section
-          id="analysis"
-          class="dashboard-card analysis-card"
-        >
-          <div class="card-header">
-
-            <div>
-              <span class="section-kicker">
-                MATCH ANALYSIS
-              </span>
-
-              <h2>
-                บทวิเคราะห์ฟุตบอล
-              </h2>
-            </div>
-
-            <a
-              href="/pages/analysis/"
-              class="panel-link"
-            >
-              ดูทั้งหมด →
-            </a>
-
-          </div>
-
-          <div
-            id="analysisList"
-            class="article-list"
-          >
-            <div class="loading-card">
-              <span class="loading-spinner"></span>
-              กำลังโหลดรายการวิเคราะห์...
-            </div>
-          </div>
+        <section id="analysis" class="panel">
+          <div class="panel-head"><div><small>ANALYSIS</small><h3>บทวิเคราะห์ฟุตบอล</h3></div><span class="muted">กดเพื่อดูข้อมูลจริง</span></div>
+          <div id="analysisList" class="article-list"><div class="loading">กำลังโหลดคู่สำหรับวิเคราะห์...</div></div>
         </section>
 
-        <section
-          id="news"
-          class="dashboard-card news-card"
-        >
-          <div class="card-header">
-
-            <div>
-              <span class="section-kicker">
-                FOOTBALL NEWS
-              </span>
-
-              <h2>
-                ข่าวฟุตบอลล่าสุด
-              </h2>
-            </div>
-
-            <a
-              href="/pages/news/"
-              class="panel-link"
-            >
-              ดูทั้งหมด →
-            </a>
-
-          </div>
-
-          <div
-            id="newsList"
-            class="article-list"
-          >
-          </div>
+        <section id="news" class="panel">
+          <div class="panel-head"><div><small>FOOTBALL UPDATE</small><h3>ข่าวและพรีวิวล่าสุด</h3></div><span class="muted">จากโปรแกรมจริง</span></div>
+          <div id="newsList" class="article-list"><div class="loading">กำลังโหลด...</div></div>
         </section>
-
       </div>
-    </section>
 
-    <section
-      id="allLive"
-      class="live-center-section"
-    >
       <div class="container">
+        <section id="liveCenter" class="panel wide-panel">
+          <div class="panel-head"><div><small>REAL-TIME SCORE</small><h3>สกอร์สดทั้งหมด</h3></div><span class="muted">อัปเดตทุก 30 วินาที</span></div>
+          <div id="fullLiveList" class="live-list full"><div class="loading">กำลังโหลด...</div></div>
+        </section>
 
-        <div class="section-heading">
-
-          <div>
-            <span class="section-kicker">
-              REAL-TIME SCORE
-            </span>
-
-            <h2>
-              ศูนย์ผลบอลสด
-            </h2>
-          </div>
-
-          <div class="live-filter-buttons">
-
-            <button
-              class="filter-button active"
-              type="button"
-              data-live-filter="all"
-            >
-              ทั้งหมด
-            </button>
-
-            <button
-              class="filter-button"
-              type="button"
-              data-live-filter="important"
-            >
-              คู่สำคัญ
-            </button>
-
-          </div>
-
-        </div>
-
-        <div
-          id="fullLiveList"
-          class="full-live-grid"
-        >
-          <div class="loading-card">
-            <span class="loading-spinner"></span>
-            กำลังโหลดการแข่งขันสด...
-          </div>
-        </div>
-
+        <section class="promo-banner">
+          <div><small>BALLTODAY</small><h2>ครบทุกความเคลื่อนไหว ไม่พลาดทุกแมตช์สำคัญ</h2></div>
+          <a href="#analysis" class="btn btn-primary">ติดตามเลย</a>
+        </section>
       </div>
     </section>
-
-    <section class="feature-section">
-      <div class="container feature-grid">
-
-        <article class="feature-card">
-          <span class="feature-icon">
-            ⚡
-          </span>
-
-          <h3>
-            อัปเดตอัตโนมัติ
-          </h3>
-
-          <p>
-            ผลบอลสดและข้อมูลการแข่งขัน
-            รีเฟรชอัตโนมัติโดยไม่ต้องกดใหม่
-          </p>
-        </article>
-
-        <article class="feature-card">
-          <span class="feature-icon">
-            📊
-          </span>
-
-          <h3>
-            สถิติการแข่งขัน
-          </h3>
-
-          <p>
-            ครองบอล การยิง เตะมุม
-            รายชื่อผู้เล่น และเหตุการณ์สำคัญ
-          </p>
-        </article>
-
-        <article class="feature-card">
-          <span class="feature-icon">
-            🤖
-          </span>
-
-          <h3>
-            บทวิเคราะห์ข้อมูล
-          </h3>
-
-          <p>
-            วิเคราะห์ก่อนแข่งจากสถิติ
-            ฟอร์มล่าสุด และความน่าจะเป็น
-          </p>
-        </article>
-
-        <article class="feature-card">
-          <span class="feature-icon">
-            📱
-          </span>
-
-          <h3>
-            รองรับทุกอุปกรณ์
-          </h3>
-
-          <p>
-            ใช้งานได้ครบทั้งมือถือ
-            แท็บเล็ต และคอมพิวเตอร์
-          </p>
-        </article>
-
-      </div>
-    </section>
-
-    <section class="promo-section">
-      <div class="container">
-
-        <div class="promo-banner">
-
-          <div class="promo-glow"></div>
-
-          <div class="promo-copy">
-
-            <span class="promo-label">
-              BALLTODAY PREMIUM
-            </span>
-
-            <h2>
-              ครบทุกความเคลื่อนไหว
-              <br>
-              ไม่พลาดทุกแมตช์สำคัญ
-            </h2>
-
-          </div>
-
-          <a
-            class="primary-button"
-            href="#analysis"
-          >
-            ดูบทวิเคราะห์
-          </a>
-
-          <span class="promo-ball">
-            ⚽
-          </span>
-
-        </div>
-
-      </div>
-    </section>
-
   </main>
 
   <footer class="site-footer">
     <div class="container footer-grid">
-
-      <div class="footer-brand">
-
-        <a
-          class="brand"
-          href="/"
-        >
-          <span class="brand-ball">
-            ⚽
-          </span>
-
-          <span class="brand-copy">
-            <span class="brand-name">
-              Ball<strong>Today</strong>
-            </span>
-
-            <span class="brand-tagline">
-              ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว
-            </span>
-          </span>
-        </a>
-
-      </div>
-
-      <nav class="footer-links">
-        <a href="/pages/about/">
-          เกี่ยวกับเรา
-        </a>
-
-        <a href="/pages/contact/">
-          ติดต่อเรา
-        </a>
-
-        <a href="/pages/privacy/">
-          นโยบายความเป็นส่วนตัว
-        </a>
-
-        <a href="/pages/terms/">
-          ข้อกำหนดการใช้งาน
-        </a>
-      </nav>
-
-      <div class="footer-owner">
-        <strong>
-          บอส สิทธิกร
-        </strong>
-      </div>
-
-      <div class="footer-copyright">
-        © 2026 BallToday. All Rights Reserved.
-      </div>
-
+      <div class="brand footer-brand"><span class="brand-ball">⚽</span><span><span class="brand-name">Ball<strong>Today</strong></span><span class="brand-sub">ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว</span></span></div>
+      <div class="footer-links"><a href="#home">เกี่ยวกับเรา</a><a href="#fixtures">โปรแกรมบอล</a><a href="#analysis">บทวิเคราะห์</a><a href="#news">ข่าวฟุตบอล</a></div>
+      <div class="footer-credit"><strong>บอส สิทธิกร</strong><span>© 2026 BallToday</span></div>
     </div>
   </footer>
 
-  <div
-    id="analysisModal"
-    class="modal"
-    aria-hidden="true"
-  >
-    <div
-      class="modal-backdrop"
-      data-close-modal
-    ></div>
-
-    <section
-      class="modal-dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="analysisModalTitle"
-    >
-      <header class="modal-header">
-
-        <div>
-          <span class="section-kicker">
-            MATCH PREDICTION
-          </span>
-
-          <h2 id="analysisModalTitle">
-            บทวิเคราะห์ก่อนแข่ง
-          </h2>
-        </div>
-
-        <button
-          class="modal-close"
-          type="button"
-          data-close-modal
-          aria-label="ปิด"
-        >
-          ×
-        </button>
-
-      </header>
-
-      <div
-        id="analysisModalContent"
-        class="modal-content"
-      >
-        <div class="loading-card">
-          กำลังโหลดบทวิเคราะห์...
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <div
-    id="toast"
-    class="toast"
-    role="status"
-    aria-live="polite"
-  ></div>
-
-  <noscript>
-    <div class="noscript-message">
-      กรุณาเปิด JavaScript เพื่อใช้งาน BallToday
+  <div id="matchModal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header"><div><small id="modalLeague">MATCH CENTER</small><h2 id="modalTitle">รายละเอียดการแข่งขัน</h2></div><button id="closeModal" class="modal-close" type="button">×</button></div>
+      <div id="matchSummary" class="match-summary"></div>
+      <div class="modal-tabs"><button class="modal-tab active" data-tab="overview">ภาพรวม</button><button class="modal-tab" data-tab="events">เหตุการณ์</button><button class="modal-tab" data-tab="statistics">สถิติ</button><button class="modal-tab" data-tab="lineups">รายชื่อผู้เล่น</button><button class="modal-tab" data-tab="players">สถิติผู้เล่น</button><button class="modal-tab" data-tab="analysis">บทวิเคราะห์</button></div>
+      <div id="modalBody" class="modal-body"><div class="loading">กำลังโหลดข้อมูล...</div></div>
     </div>
-  </noscript>
+  </div>
 
   <script src="/assets/js/config.js?v=20260801"></script>
   <script src="/assets/js/app.js?v=20260801" defer></script>
-
 </body>
 </html>
