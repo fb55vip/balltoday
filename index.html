@@ -54,6 +54,34 @@
     "inLanguage": "th-TH"
   }
   </script>
+
+  <style>
+    .hero-score-preview{min-height:340px}
+    .hero-score-content{min-height:270px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:26px;text-align:center}
+    .hero-score-icon{width:66px;height:66px;display:grid;place-items:center;border:1px solid rgba(239,27,45,.35);border-radius:50%;background:rgba(239,27,45,.1);box-shadow:0 0 35px rgba(239,27,45,.16);font-size:35px}
+    .hero-score-content h3{margin:5px 0 0;font-size:20px}
+    .hero-score-content p{max-width:370px;margin:0 0 8px;color:var(--muted,#9ca8b7);font-size:12px}
+    .widget-live-status{display:inline-flex;align-items:center;gap:8px;color:#fff;font-size:12px;font-weight:900;white-space:nowrap}
+    .widget-live-status i{width:9px;height:9px;display:block;border-radius:50%;background:#21d58b;box-shadow:0 0 13px rgba(33,213,139,.9);animation:scoreLivePulse 1.6s infinite}
+    .embedded-score-section{padding:34px 0 18px;scroll-margin-top:85px}
+    .embedded-score-heading{margin-bottom:15px}
+    .embedded-score-description{margin:6px 0 0;color:var(--muted,#9ca8b7);font-size:13px}
+    .score-widget-shell{overflow:hidden;border-radius:20px;background:transparent;box-shadow:0 25px 70px rgba(0,0,0,.45)}
+    .score-widget-toolbar{min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:11px 17px;color:#fff;background:linear-gradient(135deg,#101824,#070b12)}
+    .score-widget-title{display:flex;align-items:center;gap:11px}
+    .score-widget-ball{width:40px;height:40px;display:grid;place-items:center;border-radius:50%;background:rgba(239,27,45,.13);font-size:24px}
+    .score-widget-title strong{display:block;font-size:15px}
+    .score-widget-title small{display:block;margin-top:2px;color:#8f9cad;font-size:10px}
+    .score-reload-button{min-height:37px;padding:0 14px;border:1px solid rgba(239,27,45,.5);border-radius:9px;color:#fff;background:rgba(239,27,45,.12);font-size:11px;font-weight:900;cursor:pointer}
+    .score-reload-button:hover{background:#ef1b2d}
+    .score-iframe-crop{--score-crop-top:0px;--score-visible-height:720px;position:relative;width:100%;height:var(--score-visible-height);overflow:hidden;background:#fff}
+    .score-iframe{position:absolute;top:calc(var(--score-crop-top) * -1);left:0;display:block;width:100%;height:3000px;border:0;background:#fff}
+    @keyframes scoreLivePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.78)}}
+    @media(max-width:900px){.score-iframe-crop{--score-visible-height:760px}.score-iframe{width:1000px;transform:scale(.72);transform-origin:top left}}
+    @media(max-width:600px){.embedded-score-section{padding-top:25px}.embedded-score-heading{align-items:flex-start;flex-direction:column}.score-widget-shell{border-radius:14px}.score-widget-toolbar{min-height:60px;padding:9px 11px}.score-widget-title strong{font-size:13px}.score-reload-button{padding-inline:10px}.score-iframe-crop{--score-visible-height:700px}.score-iframe{width:1000px;transform:scale(.52);transform-origin:top left}}
+    @media(max-width:400px){.score-iframe-crop{--score-visible-height:650px}.score-iframe{transform:scale(.44)}}
+  </style>
+
 </head>
 
 <body>
@@ -177,7 +205,7 @@
         </div>
 
         <section
-          class="hero-live-panel glass-panel"
+          class="hero-live-panel glass-panel hero-score-preview"
           aria-labelledby="heroLiveTitle"
         >
           <div class="panel-header">
@@ -185,17 +213,16 @@
               <span class="section-kicker">LIVE SCORE</span>
               <h2 id="heroLiveTitle">ผลบอลสด</h2>
             </div>
-
-            <a href="#live" class="panel-link">
-              ดูทั้งหมด
-            </a>
+            <span class="widget-live-status"><i></i>LIVE</span>
           </div>
 
-          <div id="heroLiveList" class="hero-live-list">
-            <div class="loading-state">
-              <span class="loading-spinner"></span>
-              <p>กำลังโหลดผลบอลสด...</p>
-            </div>
+          <div class="hero-score-content">
+            <div class="hero-score-icon" aria-hidden="true">⚽</div>
+            <h3>ติดตามผลการแข่งขันแบบสด</h3>
+            <p>สกอร์ เวลาแข่งขัน และสถานะการแข่งขันอัปเดตโดยอัตโนมัติ</p>
+            <a href="#live" class="button button-primary">
+              เปิดผลบอลสด <span aria-hidden="true">↓</span>
+            </a>
           </div>
         </section>
       </div>
@@ -398,37 +425,52 @@
       </div>
     </section>
 
-    <section id="live" class="live-center-section">
+    <section id="live" class="embedded-score-section">
       <div class="container">
-        <div class="section-heading">
+        <div class="section-heading embedded-score-heading">
           <div>
             <span class="section-kicker">REAL-TIME SCORE</span>
-            <h2>ศูนย์ผลบอลสด</h2>
+            <h2>ผลบอลสด</h2>
+            <p class="embedded-score-description">
+              สกอร์และสถานะการแข่งขันอัปเดตอัตโนมัติ
+            </p>
           </div>
-
-          <div class="live-tools">
-            <button
-              class="filter-button active"
-              type="button"
-              data-live-filter="all"
-            >
-              ทุกลีก
-            </button>
-
-            <button
-              class="filter-button"
-              type="button"
-              data-live-filter="important"
-            >
-              ลีกสำคัญ
-            </button>
-          </div>
+          <div class="widget-live-status"><i></i>LIVE</div>
         </div>
 
-        <div id="liveGrid" class="live-match-grid">
-          <div class="loading-state large">
-            <span class="loading-spinner"></span>
-            <p>กำลังโหลดข้อมูลบอลสด...</p>
+        <div class="score-widget-shell">
+          <div class="score-widget-toolbar">
+            <div class="score-widget-title">
+              <span class="score-widget-ball" aria-hidden="true">⚽</span>
+              <div>
+                <strong>BallToday Live Score</strong>
+                <small>ผลการแข่งขันฟุตบอลแบบเรียลไทม์</small>
+              </div>
+            </div>
+
+            <button
+              id="reloadScoreFrame"
+              class="score-reload-button"
+              type="button"
+              aria-label="รีเฟรชผลบอลสด"
+            >
+              ↻ รีเฟรช
+            </button>
+          </div>
+
+          <div class="score-iframe-crop">
+            <iframe
+              id="scoreIframe"
+              class="score-iframe"
+              src="https://www.888scoreonline.net/free/th.htm"
+              title="ผลบอลสด BallToday"
+              width="100%"
+              height="3000"
+              frameborder="0"
+              scrolling="no"
+              loading="eager"
+              referrerpolicy="strict-origin-when-cross-origin"
+            ></iframe>
           </div>
         </div>
       </div>
@@ -611,5 +653,25 @@
 
   <script src="/assets/js/config.js?v=1.0.0"></script>
   <script src="/assets/js/app.js?v=1.0.0" defer></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded",function(){
+      const button=document.getElementById("reloadScoreFrame");
+      const iframe=document.getElementById("scoreIframe");
+      if(!button||!iframe)return;
+      button.addEventListener("click",function(){
+        button.disabled=true;
+        button.textContent="↻ กำลังโหลด...";
+        const currentUrl=new URL(iframe.src,window.location.href);
+        currentUrl.searchParams.set("_refresh",String(Date.now()));
+        iframe.src=currentUrl.toString();
+        window.setTimeout(function(){
+          button.disabled=false;
+          button.textContent="↻ รีเฟรช";
+        },2500);
+      });
+    });
+  </script>
+
 </body>
 </html>
