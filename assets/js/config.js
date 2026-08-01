@@ -1,217 +1,202 @@
-<!-- เพิ่มโค้นี้ในส่วน HTML ของ Blogger Template -->
+"use strict";
 
-<!-- เริ่มต้น CSS -->
-<style>
-  /* Reset และ Base Styles */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+window.BALLTODAY_CONFIG = Object.freeze({
+  /*
+   * Cloudflare Worker URL
+   * ห้ามใส่ API Key ในไฟล์นี้
+   */
+  apiBaseUrl: "https://balltoday-api.noppdsoma.workers.dev",
 
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f5f5f5;
-  }
+  /*
+   * โหมดระบบ
+   */
+  mode: "production",
 
-  /* Header */
-  .site-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 1rem 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
+  /*
+   * เขตเวลา
+   */
+  timezone: "Asia/Bangkok",
+  locale: "th-TH",
 
-  .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  /*
+   * ฤดูกาลเริ่มต้น
+   * พรีเมียร์ลีกฤดูกาล 2025/26 ใช้ค่า 2025
+   */
+  season: 2025,
 
-  .site-title {
-    font-size: 1.8rem;
-    font-weight: bold;
-  }
+  /*
+   * ลีกเริ่มต้น
+   * 39 = Premier League
+   */
+  defaultLeague: 39,
 
-  .site-title a {
-    color: white;
-    text-decoration: none;
-  }
+  /*
+   * ลีกสำคัญสำหรับตัวกรอง
+   */
+  importantLeagues: Object.freeze([
+    39,   // Premier League
+    140,  // La Liga
+    135,  // Serie A
+    78,   // Bundesliga
+    61,   // Ligue 1
+    2,    // UEFA Champions League
+    3,    // UEFA Europa League
+    848   // UEFA Conference League
+  ]),
 
-  /* Navigation */
-  .main-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 2rem;
-  }
-
-  .main-nav a {
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
-    transition: opacity 0.3s;
-  }
-
-  .main-nav a:hover {
-    opacity: 0.8;
-  }
-
-  /* Main Content */
-  .content-wrapper {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 2rem;
-  }
-
-  /* Blog Posts */
-  .blog-posts {
-    background: white;
-    border-radius: 8px;
-    padding: 2rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  }
-
-  .post {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid #eee;
-  }
-
-  .post:last-child {
-    border-bottom: none;
-  }
-
-  .post-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .post-title a {
-    color: #333;
-    text-decoration: none;
-  }
-
-  .post-title a:hover {
-    color: #667eea;
-  }
-
-  .post-meta {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  .post-excerpt {
-    color: #555;
-  }
-
-  /* Sidebar */
-  .sidebar {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  }
-
-  .widget {
-    margin-bottom: 2rem;
-  }
-
-  .widget-title {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    color: #333;
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 0.5rem;
-  }
-
-  /* Footer */
-  .site-footer {
-    background: #333;
-    color: white;
-    text-align: center;
-    padding: 2rem 0;
-    margin-top: 2rem;
-  }
-
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .content-wrapper {
-      grid-template-columns: 1fr;
+  /*
+   * รายการลีกในตัวเลือกตารางคะแนน
+   */
+  leagues: Object.freeze([
+    {
+      id: 39,
+      name: "พรีเมียร์ลีก",
+      country: "อังกฤษ"
+    },
+    {
+      id: 140,
+      name: "ลาลีกา",
+      country: "สเปน"
+    },
+    {
+      id: 135,
+      name: "เซเรียอา",
+      country: "อิตาลี"
+    },
+    {
+      id: 78,
+      name: "บุนเดสลีกา",
+      country: "เยอรมนี"
+    },
+    {
+      id: 61,
+      name: "ลีกเอิง",
+      country: "ฝรั่งเศส"
+    },
+    {
+      id: 2,
+      name: "ยูฟ่า แชมเปียนส์ลีก",
+      country: "ยุโรป"
+    },
+    {
+      id: 3,
+      name: "ยูฟ่า ยูโรปาลีก",
+      country: "ยุโรป"
+    },
+    {
+      id: 848,
+      name: "ยูฟ่า คอนเฟอเรนซ์ลีก",
+      country: "ยุโรป"
     }
+  ]),
 
-    .header-container {
-      flex-direction: column;
-      gap: 1rem;
-    }
+  /*
+   * ระยะเวลารอ API ก่อนยกเลิกคำขอ
+   */
+  requestTimeout: 20000,
 
-    .main-nav ul {
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-  }
-</style>
-<!-- จบ CSS -->
+  /*
+   * ระยะเวลาอัปเดตหน้าเว็บ
+   * หน่วยเป็นมิลลิวินาที
+   */
+  refresh: Object.freeze({
+    live: 30000,          // ผลบอลสดทุก 30 วินาที
+    fixtures: 180000,     // โปรแกรมบอลทุก 3 นาที
+    standings: 900000,    // ตารางคะแนนทุก 15 นาที
+    matchCenter: 30000,   // รายละเอียดคู่แข่งขันทุก 30 วินาที
+    predictions: 1800000  // บทวิเคราะห์ Cache 30 นาที
+  }),
 
-<!-- เริ่มต้น HTML Structure -->
-<header class="site-header">
-  <div class="header-container">
-    <h1 class="site-title">
-      <a href="/">ชื่อบล็อกของคุณ</a>
-    </h1>
-    <nav class="main-nav">
-      <ul>
-        <li><a href="/">หน้าแรก</a></li>
-        <li><a href="/p/about.html">เกี่ยวกับ</a></li>
-        <li><a href="/p/contact.html">ติดต่อ</a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
+  /*
+   * จำนวนข้อมูลสูงสุดที่แสดง
+   */
+  limits: Object.freeze({
+    heroLive: 4,
+    liveMatches: 24,
+    fixtures: 40,
+    standings: 20,
+    analysis: 6,
+    events: 50,
+    players: 30
+  }),
 
-<div class="content-wrapper">
-  <main class="blog-posts">
-    <!-- โพสต์บล็อกจะถูกแทรกที่นี่โดย Blogger -->
-    <article class="post">
-      <h2 class="post-title">
-        <a href="#">หัวข้อโพสต์</a>
-      </h2>
-      <div class="post-meta">
-        <span>โพสต์เมื่อ: วันที่</span> | 
-        <span>โดย: ผู้เขียน</span>
-      </div>
-      <div class="post-excerpt">
-        <p>เนื้อหาย่อของโพสต์จะปรากฏที่นี่...</p>
-      </div>
-    </article>
-  </main>
+  /*
+   * Endpoint ของ Cloudflare Worker
+   */
+  endpoints: Object.freeze({
+    health: "/api/health",
+    live: "/api/live",
+    fixtures: "/api/fixtures",
+    standings: "/api/standings",
+    match: "/api/match",
+    events: "/api/events",
+    statistics: "/api/statistics",
+    lineups: "/api/lineups",
+    players: "/api/players",
+    predictions: "/api/predictions",
+    topScorers: "/api/top-scorers",
+    teams: "/api/teams",
+    leagues: "/api/leagues",
+    odds: "/api/odds"
+  }),
 
-  <aside class="sidebar">
-    <div class="widget">
-      <h3 class="widget-title">เกี่ยวกับ</h3>
-      <p>ข้อมูลเกี่ยวกับบล็อกของคุณ</p>
-    </div>
-    
-    <div class="widget">
-      <h3 class="widget-title">โพสต์ล่าสุด</h3>
-      <ul>
-        <li><a href="#">โพสต์ที่ 1</a></li>
-        <li><a href="#">โพสต์ที่ 2</a></li>
-        <li><a href="#">โพสต์ที่ 3</a></li>
-      </ul>
-    </div>
-  </aside>
-</div>
+  /*
+   * การแสดงเหตุการณ์ใน Match Center
+   * ซ่อนใบเหลืองและใบแดงตามที่กำหนด
+   */
+  matchEvents: Object.freeze({
+    showGoals: true,
+    showVar: true,
+    showSubstitutions: true,
+    showCards: false
+  }),
 
-<footer class="site-footer">
-  <p>© 2024 ชื่อบล็อกของคุณ. สงวนลิขสิทธิ์.</p>
-</footer>
-<!-- จบ HTML Structure -->
+  /*
+   * สถิติที่ต้องการแสดง
+   */
+  statistics: Object.freeze([
+    "Ball Possession",
+    "Total Shots",
+    "Shots on Goal",
+    "Shots off Goal",
+    "Blocked Shots",
+    "Corner Kicks",
+    "Offsides",
+    "Fouls",
+    "Goalkeeper Saves",
+    "Total passes",
+    "Passes accurate"
+  ]),
+
+  /*
+   * PWA
+   */
+  pwa: Object.freeze({
+    enabled: true,
+    serviceWorkerPath: "/service-worker.js"
+  }),
+
+  /*
+   * Cache ชื่อสำหรับ Local Storage
+   */
+  storage: Object.freeze({
+    prefix: "balltoday_",
+    selectedLeague: "balltoday_selected_league",
+    lastUpdate: "balltoday_last_update"
+  }),
+
+  /*
+   * ข้อมูลเว็บไซต์
+   */
+  site: Object.freeze({
+    name: "BallToday",
+    domain: "https://fb55vip.com",
+    tagline: "ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว",
+    footerName: "บอส สิทธิกร"
+  }),
+
+  /*
+   * เปิด Console log เฉพาะตอนพัฒนา
+   */
+  debug: false
+});
