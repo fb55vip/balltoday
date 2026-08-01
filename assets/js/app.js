@@ -1,29 +1,2915 @@
 "use strict";
-const CFG=window.BALLTODAY_CONFIG,$=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],esc=(v="")=>String(v).replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
-let liveMatches=[],todayFixtures=[],currentLeague=CFG.defaultLeague,currentDateOffset=0,currentFixtureId=null,currentTab="overview",detailCache={},deferredPrompt=null,liveBusy=false,fixturesBusy=false;
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-async function getJSON(path){const c=new AbortController(),t=setTimeout(()=>c.abort(),CFG.requestTimeout);try{const r=await fetch(CFG.apiBaseUrl+path,{headers:{Accept:"application/json"},signal:c.signal});const d=await r.json().catch(()=>({}));if(!r.ok||d?.success===false){const e=new Error(d?.message||`HTTP ${r.status}`);e.status=r.status;e.retryAfter=Number(d?.retryAfter||r.headers.get("retry-after")||0);e.detail=d?.detail;throw e}return d}finally{clearTimeout(t)}}
-function status(text,ok=true){if($("#systemStatus"))$("#systemStatus").textContent=text;if($("#updatedAt"))$("#updatedAt").textContent=`• ${new Date().toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"})}`;if($(".status-dot"))$(".status-dot").style.background=ok?"var(--green)":"var(--red)"}
-function err(target,e,msg){if(!target)return;target.innerHTML=e?.status===429?`<div class="error">API มีคำขอมากเกินไป<br>กรุณารอประมาณ ${e.retryAfter||60} วินาที</div>`:`<div class="error">${esc(msg)}${e?.detail?`<br><small>${esc(e.detail)}</small>`:""}</div>`}
-function dateISO(offset=0){const d=new Date();d.setDate(d.getDate()+offset);return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
-function liveRow(x){const f=x.fixture||{},l=x.league||{},t=x.teams||{},g=x.goals||{},el=f.status?.elapsed;return `<article class="live-row" data-fixture="${esc(f.id||"")}"><div class="league-line"><span class="status-live">LIVE</span><span>${esc(l.name||"ฟุตบอล")}</span></div><div class="live-team"><span>${esc(t.home?.name||"-")}</span><img src="${esc(t.home?.logo||"")}" alt=""></div><div class="live-score">${g.home??0} - ${g.away??0}</div><div class="live-team away"><span>${esc(t.away?.name||"-")}</span><img src="${esc(t.away?.logo||"")}" alt=""></div><div class="live-time">${el!=null?`${el}'`:esc(f.status?.short||"LIVE")}</div></article>`}
-function bindFixtureButtons(){$$('[data-fixture]').forEach(x=>x.onclick=()=>openMatch(x.dataset.fixture))}
-async function loadLive(){if(liveBusy)return;liveBusy=true;try{const d=await getJSON('/api/live');liveMatches=d.response||[];$("#heroLiveList").innerHTML=liveMatches.length?liveMatches.slice(0,4).map(liveRow).join(""):`<div class="empty">ขณะนี้ยังไม่มีการแข่งขันสด</div>`;$("#fullLiveList").innerHTML=liveMatches.length?liveMatches.slice(0,30).map(liveRow).join(""):`<div class="empty">ขณะนี้ยังไม่มีการแข่งขันสด</div>`;bindFixtureButtons();status(`ออนไลน์ • ${liveMatches.length} คู่กำลังแข่งขัน`)}catch(e){err($("#heroLiveList"),e,"โหลดผลบอลสดไม่สำเร็จ");err($("#fullLiveList"),e,"โหลดผลบอลสดไม่สำเร็จ");status("เชื่อมต่อ API ไม่สำเร็จ",false)}finally{liveBusy=false}}
-function fixtureRow(x){const f=x.fixture||{},t=x.teams||{},l=x.league||{},tm=new Date(f.date).toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit",timeZone:"Asia/Bangkok"});return `<article class="fixture-row" data-fixture="${esc(f.id||"")}"><span class="fixture-time">${tm}</span><div class="fixture-team"><img src="${esc(t.home?.logo||"")}" alt=""><span>${esc(t.home?.name||"-")}</span></div><span class="fixture-vs">VS</span><div class="fixture-team away"><img src="${esc(t.away?.logo||"")}" alt=""><span>${esc(t.away?.name||"-")}</span></div><span class="fixture-league">${esc(l.name||"")}</span></article>`}
-function articleItem(x,type="analysis"){const f=x.fixture||{},t=x.teams||{},l=x.league||{};return `<article class="article-item" data-fixture="${esc(f.id||"")}"><img class="article-thumb" src="${esc(l.logo||t.home?.logo||"")}" alt=""><div><h4>${type==="news"?"พรีวิวล่าสุด: ":"วิเคราะห์ก่อนเกม: "}${esc(t.home?.name||"-")} พบ ${esc(t.away?.name||"-")}</h4><p>${esc(l.name||"ฟุตบอล")} • ${new Date(f.date).toLocaleString("th-TH",{dateStyle:"short",timeStyle:"short",timeZone:"Asia/Bangkok"})}</p></div></article>`}
-async function loadFixtures(){if(fixturesBusy)return;fixturesBusy=true;try{const d=await getJSON(`/api/fixtures?date=${dateISO(currentDateOffset)}`);const a=d.response||[];if(currentDateOffset===0)todayFixtures=a;$("#fixturesList").innerHTML=a.length?a.slice(0,30).map(fixtureRow).join(""):`<div class="empty">ไม่พบโปรแกรมการแข่งขัน</div>`;if(currentDateOffset===0){const upcoming=a.filter(x=>x.fixture?.status?.short==="NS").slice(0,4);$("#analysisList").innerHTML=upcoming.length?upcoming.map(x=>articleItem(x,"analysis")).join(""):`<div class="empty">ยังไม่มีคู่สำหรับวิเคราะห์</div>`;$("#newsList").innerHTML=a.length?a.slice(0,4).map(x=>articleItem(x,"news")).join(""):`<div class="empty">ยังไม่มีข่าวจากโปรแกรมวันนี้</div>`}bindFixtureButtons()}catch(e){err($("#fixturesList"),e,"โหลดโปรแกรมบอลไม่สำเร็จ");err($("#analysisList"),e,"โหลดรายการวิเคราะห์ไม่สำเร็จ");err($("#newsList"),e,"โหลดข่าวและพรีวิวไม่สำเร็จ")}finally{fixturesBusy=false}}
-async function loadStandings(){try{const d=await getJSON(`/api/standings?league=${currentLeague}&season=${CFG.season}`),a=d.response?.[0]?.league?.standings?.[0]||[];$("#standingsBody").innerHTML=a.length?a.slice(0,20).map(x=>`<tr><td>${x.rank}</td><td><span class="team-cell"><img src="${esc(x.team?.logo||"")}" alt="">${esc(x.team?.name||"")}</span></td><td>${x.all?.played??0}</td><td>${x.goalsDiff??0}</td><td><b>${x.points??0}</b></td></tr>`).join(""):`<tr><td colspan="5">ไม่มีข้อมูลฤดูกาลนี้</td></tr>`}catch(e){$("#standingsBody").innerHTML=`<tr><td colspan="5" class="error">โหลดตารางคะแนนไม่สำเร็จ</td></tr>`}}
-function setSummary(x){const f=x.fixture||{},t=x.teams||{},g=x.goals||{},l=x.league||{};$("#modalLeague").textContent=l.name||"MATCH CENTER";$("#modalTitle").textContent=`${t.home?.name||"-"} พบ ${t.away?.name||"-"}`;$("#matchSummary").innerHTML=`<div class="summary-score"><div class="summary-team"><img src="${esc(t.home?.logo||"")}" alt=""><b>${esc(t.home?.name||"-")}</b></div><div><div class="summary-status">${esc(f.status?.long||"")}${f.status?.elapsed!=null?` • ${f.status.elapsed}'`:""}</div><div class="summary-scoreline">${g.home??"-"} - ${g.away??"-"}</div><small>${new Date(f.date).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"})}</small></div><div class="summary-team"><img src="${esc(t.away?.logo||"")}" alt=""><b>${esc(t.away?.name||"-")}</b></div></div>`}
-async function openMatch(id){if(!id)return;currentFixtureId=id;currentTab="overview";$("#matchModal").classList.add("open");$("#matchModal").setAttribute("aria-hidden","false");$$('.modal-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab==='overview'));$("#modalBody").innerHTML=`<div class="loading">กำลังโหลดข้อมูล...</div>`;try{const d=await getJSON(`/api/match?id=${encodeURIComponent(id)}`),m=d.response?.[0];if(!m)throw new Error("ไม่พบการแข่งขัน");detailCache[id]={match:m};setSummary(m);renderTab()}catch(e){err($("#modalBody"),e,"โหลดรายละเอียดการแข่งขันไม่สำเร็จ")}}
-async function renderTab(){const id=currentFixtureId,c=detailCache[id]||{},m=c.match;if(!m)return;$("#modalBody").innerHTML=`<div class="loading">กำลังโหลด...</div>`;try{if(currentTab==="overview")return renderOverview(m);if(currentTab==="events"){if(!c.events)c.events=(await getJSON(`/api/events?fixture=${id}`)).response||[];return renderEvents(c.events)}if(currentTab==="statistics"){if(!c.statistics)c.statistics=(await getJSON(`/api/statistics?fixture=${id}`)).response||[];return renderStats(c.statistics)}if(currentTab==="lineups"){if(!c.lineups)c.lineups=(await getJSON(`/api/lineups?fixture=${id}`)).response||[];return renderLineups(c.lineups)}if(currentTab==="players"){if(!c.players)c.players=(await getJSON(`/api/players?fixture=${id}`)).response||[];return renderPlayers(c.players)}if(currentTab==="analysis"){if(!c.prediction)c.prediction=(await getJSON(`/api/predictions?fixture=${id}`)).response?.[0]||null;return renderPrediction(c.prediction)}}catch(e){err($("#modalBody"),e,"โหลดข้อมูลส่วนนี้ไม่สำเร็จ")}}
-function renderOverview(m){const f=m.fixture||{},l=m.league||{},v=f.venue||{};$("#modalBody").innerHTML=`<div class="overview-grid"><div class="info-card"><h3>ข้อมูลการแข่งขัน</h3><div class="info-row"><span>ลีก</span><b>${esc(l.name||"-")}</b></div><div class="info-row"><span>รอบ</span><b>${esc(l.round||"-")}</b></div><div class="info-row"><span>สนาม</span><b>${esc(v.name||"-")}</b></div><div class="info-row"><span>เมือง</span><b>${esc(v.city||"-")}</b></div><div class="info-row"><span>ผู้ตัดสิน</span><b>${esc(f.referee||"-")}</b></div></div><div class="info-card"><h3>สถานะ</h3><div class="info-row"><span>สถานะ</span><b>${esc(f.status?.long||"-")}</b></div><div class="info-row"><span>นาที</span><b>${f.status?.elapsed??"-"}</b></div><div class="info-row"><span>เวลาไทย</span><b>${new Date(f.date).toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"})}</b></div><div class="info-row"><span>Fixture ID</span><b>${esc(f.id||"")}</b></div></div></div>`}
-function renderEvents(a){const filtered=a.filter(x=>x.type!=="Card");$("#modalBody").innerHTML=filtered.length?filtered.map(x=>{let icon="•";if(x.type==="Goal")icon="⚽";else if(x.type==="subst")icon="🔄";else if(x.type==="Var")icon="📺";return `<div class="event-row"><b>${x.time?.elapsed??"-"}'</b><div><span class="event-icon">${icon}</span> <strong>${esc(x.player?.name||x.team?.name||"")}</strong><div class="muted">${esc(x.assist?.name?`แอสซิสต์: ${x.assist.name}`:x.team?.name||"")}</div></div><span>${esc(x.detail||x.type||"")}</span></div>`}).join(""):`<div class="empty">ยังไม่มีเหตุการณ์ หรือคู่นี้ไม่มี Coverage</div>`}
-function val(v){if(v==null)return 0;const n=parseFloat(String(v).replace('%',''));return Number.isFinite(n)?n:0}
-function renderStats(a){if(a.length<2){$("#modalBody").innerHTML=`<div class="empty">ไม่มีสถิติสำหรับคู่นี้</div>`;return}const hs=a[0].statistics||[],as=a[1].statistics||[],keys=["Ball Possession","Total Shots","Shots on Goal","Corner Kicks","Fouls","Offsides","Goalkeeper Saves","Total passes","Passes accurate"];$("#modalBody").innerHTML=keys.map(k=>{const h=hs.find(x=>x.type===k)?.value,a2=as.find(x=>x.type===k)?.value,hv=val(h),av=val(a2),sum=hv+av||1;return `<div class="stat-row"><span>${esc(h??"-")}</span><div><div class="muted" style="text-align:center;margin-bottom:5px">${esc(k)}</div><div class="stat-bar"><div class="stat-home" style="width:${hv/sum*100}%"></div><div class="stat-away" style="width:${av/sum*100}%"></div></div></div><span>${esc(a2??"-")}</span></div>`}).join("")}
-function lineupTeam(x){const start=x.startXI||[],subs=x.substitutes||[];return `<section class="lineup-team"><h3><img src="${esc(x.team?.logo||"")}" alt="">${esc(x.team?.name||"")} <small>${esc(x.formation||"")}</small></h3><h4>ตัวจริง</h4>${start.map(p=>`<div class="player-row"><span>${p.player?.number??"-"}</span><span>${esc(p.player?.name||"")}</span><span>${esc(p.player?.pos||"")}</span></div>`).join("")}<h4>ตัวสำรอง</h4>${subs.map(p=>`<div class="player-row"><span>${p.player?.number??"-"}</span><span>${esc(p.player?.name||"")}</span><span>${esc(p.player?.pos||"")}</span></div>`).join("")}</section>`}
-function renderLineups(a){$("#modalBody").innerHTML=a.length?`<div class="lineup-grid">${a.map(lineupTeam).join("")}</div>`:`<div class="empty">ยังไม่มีรายชื่อผู้เล่น</div>`}
-function playersTeam(x){const a=(x.players||[]).slice().sort((p,q)=>val(q.statistics?.[0]?.games?.rating)-val(p.statistics?.[0]?.games?.rating));return `<section class="players-team"><h3><img src="${esc(x.team?.logo||"")}" alt="">${esc(x.team?.name||"")}</h3>${a.slice(0,18).map(p=>{const s=p.statistics?.[0]||{},rating=s.games?.rating;return `<div class="player-row"><img src="${esc(p.player?.photo||"")}" alt=""><span>${esc(p.player?.name||"")}<small class="muted"> ${esc(s.games?.position||"")}</small></span><span class="rating">${rating?Number(rating).toFixed(1):"-"}</span></div>`}).join("")}</section>`}
-function renderPlayers(a){$("#modalBody").innerHTML=a.length?`<div class="players-grid">${a.map(playersTeam).join("")}</div>`:`<div class="empty">ยังไม่มีสถิติผู้เล่น</div>`}
-function renderPrediction(x){if(!x){$("#modalBody").innerHTML=`<div class="empty">ยังไม่มีบทวิเคราะห์สำหรับคู่นี้</div>`;return}const p=x.predictions||{},pct=p.percent||{};$("#modalBody").innerHTML=`<div class="prediction-grid"><div class="prediction-box">เจ้าบ้าน<strong>${esc(pct.home||"-")}</strong></div><div class="prediction-box">เสมอ<strong>${esc(pct.draw||"-")}</strong></div><div class="prediction-box">ทีมเยือน<strong>${esc(pct.away||"-")}</strong></div></div><div class="advice"><h3>แนวทางวิเคราะห์</h3><p>${esc(p.advice||"วิเคราะห์จากข้อมูลสถิติของ API-Football")}</p><p>ทีมที่มีแนวโน้ม: <strong>${esc(p.winner?.name||"ยังไม่ระบุ")}</strong></p><p>Under/Over: <strong>${esc(p.under_over||"-")}</strong></p></div>`}
-function bind(){$("#menuBtn").onclick=()=>$("#mainNav").classList.toggle("open");$$('[data-scroll]').forEach(x=>x.onclick=()=>$(x.dataset.scroll)?.scrollIntoView({behavior:'smooth'}));$$('[data-day]').forEach(b=>b.onclick=()=>{$$('[data-day]').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentDateOffset=Number(b.dataset.day);loadFixtures()});$("#leagueSelect").onchange=e=>{currentLeague=Number(e.target.value);loadStandings()};$("#closeModal").onclick=()=>$("#matchModal").classList.remove("open");$("#matchModal").onclick=e=>{if(e.target===$("#matchModal"))$("#matchModal").classList.remove("open")};$$('.modal-tab').forEach(b=>b.onclick=()=>{$$('.modal-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentTab=b.dataset.tab;renderTab()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$("#installBtn").hidden=false});$("#installBtn").onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("#installBtn").hidden=true}}
-async function init(){bind();if('serviceWorker'in navigator)navigator.serviceWorker.register('/service-worker.js').catch(()=>{});await loadLive();await sleep(900);await loadFixtures();await sleep(900);await loadStandings();setInterval(loadLive,CFG.liveRefreshMs);setInterval(loadFixtures,CFG.fixturesRefreshMs);setInterval(loadStandings,CFG.standingsRefreshMs)}document.addEventListener('DOMContentLoaded',init);
+
+const CFG = window.BALLTODAY_CONFIG;
+
+if (!CFG) {
+  throw new Error("BALLTODAY_CONFIG is not loaded");
+}
+
+const $ = (selector, root = document) =>
+  root.querySelector(selector);
+
+const $$ = (selector, root = document) =>
+  [...root.querySelectorAll(selector)];
+
+const state = {
+  liveMatches: [],
+  currentDateOffset: 0,
+  currentLeague: CFG.defaultLeague,
+  installPrompt: null,
+  liveFilter: "all",
+  matchFixtureId: null,
+  matchRefreshTimer: null,
+  timers: [],
+  loading: {
+    live: false,
+    fixtures: false,
+    standings: false,
+    match: false
+  }
+};
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function escapeHtml(value = "") {
+  return String(value).replace(
+    /[&<>"']/g,
+    character =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[character]
+  );
+}
+
+function sleep(milliseconds) {
+  return new Promise(resolve =>
+    setTimeout(resolve, milliseconds)
+  );
+}
+
+function formatNumber(value, fallback = "0") {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return fallback;
+  }
+
+  return String(value);
+}
+
+function getBangkokDate(offset = 0) {
+  const date = new Date();
+
+  date.setDate(
+    date.getDate() + offset
+  );
+
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: CFG.timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }
+  ).format(date);
+}
+
+function formatBangkokTime(value) {
+  if (!value) {
+    return "--:--";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "--:--";
+  }
+
+  return date.toLocaleTimeString(
+    CFG.locale,
+    {
+      timeZone: CFG.timezone,
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
+}
+
+function formatBangkokDateTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleString(
+    CFG.locale,
+    {
+      timeZone: CFG.timezone,
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
+}
+
+function clamp(value, min = 0, max = 100) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return min;
+  }
+
+  return Math.min(
+    max,
+    Math.max(min, number)
+  );
+}
+
+function parseStatNumber(value) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return 0;
+  }
+
+  const cleanValue = String(value)
+    .replace("%", "")
+    .replace(",", "")
+    .trim();
+
+  const number = Number(cleanValue);
+
+  return Number.isFinite(number)
+    ? number
+    : 0;
+}
+
+function buildUrl(path, params = {}) {
+  const url = new URL(
+    `${CFG.apiBaseUrl}${path}`
+  );
+
+  for (
+    const [key, value]
+    of Object.entries(params)
+  ) {
+    if (
+      value !== undefined &&
+      value !== null &&
+      value !== ""
+    ) {
+      url.searchParams.set(
+        key,
+        String(value)
+      );
+    }
+  }
+
+  return url.toString();
+}
+
+async function getJSON(
+  path,
+  params = {},
+  options = {}
+) {
+  const controller =
+    new AbortController();
+
+  const timeout = setTimeout(
+    () => controller.abort(),
+    options.timeout ||
+      CFG.requestTimeout
+  );
+
+  try {
+    const response = await fetch(
+      buildUrl(path, params),
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        },
+        signal: controller.signal,
+        cache: "no-store"
+      }
+    );
+
+    const data = await response
+      .json()
+      .catch(() => null);
+
+    if (!response.ok) {
+      const error = new Error(
+        data?.message ||
+          `HTTP ${response.status}`
+      );
+
+      error.status =
+        response.status;
+
+      error.detail =
+        data?.detail || "";
+
+      error.retryAfter =
+        Number(
+          data?.retryAfter ||
+            response.headers.get(
+              "retry-after"
+            ) ||
+            0
+        );
+
+      throw error;
+    }
+
+    if (
+      data &&
+      data.success === false
+    ) {
+      const error = new Error(
+        data.message ||
+          "API request failed"
+      );
+
+      error.status =
+        response.status;
+
+      error.detail =
+        data.detail || "";
+
+      error.retryAfter =
+        Number(
+          data.retryAfter || 0
+        );
+
+      throw error;
+    }
+
+    return data || {};
+  } catch (error) {
+    if (
+      error.name ===
+      "AbortError"
+    ) {
+      const timeoutError =
+        new Error(
+          "API request timeout"
+        );
+
+      timeoutError.status = 408;
+
+      throw timeoutError;
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function createErrorMarkup(
+  error,
+  fallback
+) {
+  if (
+    error?.status === 429 ||
+    error?.retryAfter
+  ) {
+    return `
+      <div class="error-state">
+        <p>
+          API มีคำขอมากเกินไป
+        </p>
+
+        <small>
+          กรุณารอประมาณ
+          ${escapeHtml(
+            error.retryAfter || 60
+          )}
+          วินาที
+        </small>
+      </div>
+    `;
+  }
+
+  if (error?.status === 408) {
+    return `
+      <div class="error-state">
+        <p>การเชื่อมต่อใช้เวลานานเกินไป</p>
+        <small>กรุณาลองใหม่อีกครั้ง</small>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="error-state">
+      <p>${escapeHtml(fallback)}</p>
+    </div>
+  `;
+}
+
+function log(...values) {
+  if (CFG.debug) {
+    console.log(
+      "[BallToday]",
+      ...values
+    );
+  }
+}
+
+function clearAllTimers() {
+  state.timers.forEach(timer =>
+    clearInterval(timer)
+  );
+
+  state.timers = [];
+
+  if (
+    state.matchRefreshTimer
+  ) {
+    clearInterval(
+      state.matchRefreshTimer
+    );
+
+    state.matchRefreshTimer =
+      null;
+  }
+}
+
+/* =========================================================
+   SYSTEM STATUS
+========================================================= */
+
+function setSystemStatus(
+  message,
+  success = true
+) {
+  const statusText =
+    $("#systemStatus");
+
+  const updateText =
+    $("#updatedAt");
+
+  const statusDot =
+    $("#statusDot");
+
+  if (statusText) {
+    statusText.textContent =
+      message;
+  }
+
+  if (updateText) {
+    updateText.textContent =
+      `• ${new Date()
+        .toLocaleTimeString(
+          CFG.locale,
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone:
+              CFG.timezone
+          }
+        )}`;
+  }
+
+  if (statusDot) {
+    statusDot.classList.toggle(
+      "error",
+      !success
+    );
+  }
+
+  try {
+    localStorage.setItem(
+      CFG.storage.lastUpdate,
+      new Date().toISOString()
+    );
+  } catch {
+    /* Local storage unavailable */
+  }
+}
+
+/* =========================================================
+   TEAM AND MATCH COMPONENTS
+========================================================= */
+
+function teamLogo(
+  logo,
+  teamName = ""
+) {
+  if (!logo) {
+    return `
+      <span
+        class="team-logo-placeholder"
+        aria-hidden="true"
+      >
+        ⚽
+      </span>
+    `;
+  }
+
+  return `
+    <img
+      src="${escapeHtml(logo)}"
+      alt="${escapeHtml(teamName)}"
+      loading="lazy"
+      decoding="async"
+      onerror="
+        this.style.display='none';
+      "
+    >
+  `;
+}
+
+function getMatchStatus(
+  fixture
+) {
+  const status =
+    fixture?.status || {};
+
+  const shortStatus =
+    status.short || "";
+
+  const elapsed =
+    status.elapsed;
+
+  if (
+    elapsed !== null &&
+    elapsed !== undefined &&
+    [
+      "1H",
+      "2H",
+      "ET",
+      "P",
+      "LIVE"
+    ].includes(shortStatus)
+  ) {
+    return `${elapsed}'`;
+  }
+
+  const labels = {
+    NS: "ยังไม่เริ่ม",
+    HT: "พักครึ่ง",
+    FT: "จบการแข่งขัน",
+    AET: "จบต่อเวลา",
+    PEN: "จบยิงจุดโทษ",
+    PST: "เลื่อนการแข่งขัน",
+    CANC: "ยกเลิก",
+    ABD: "ยุติการแข่งขัน",
+    INT: "หยุดชั่วคราว"
+  };
+
+  return (
+    labels[shortStatus] ||
+    status.long ||
+    shortStatus ||
+    "-"
+  );
+}
+
+function isLiveFixture(fixture) {
+  return [
+    "1H",
+    "2H",
+    "HT",
+    "ET",
+    "P",
+    "LIVE",
+    "INT"
+  ].includes(
+    fixture?.status?.short
+  );
+}
+
+function renderHeroMatch(match) {
+  const fixture =
+    match.fixture || {};
+
+  const teams =
+    match.teams || {};
+
+  const goals =
+    match.goals || {};
+
+  const league =
+    match.league || {};
+
+  return `
+    <article class="hero-match-row">
+      <div class="match-league-line">
+        <span class="live-pill">
+          ${
+            isLiveFixture(fixture)
+              ? "LIVE"
+              : escapeHtml(
+                  fixture.status
+                    ?.short || "MATCH"
+                )
+          }
+        </span>
+
+        <span>
+          ${escapeHtml(
+            league.name ||
+              "ฟุตบอล"
+          )}
+        </span>
+      </div>
+
+      <div class="match-main-row">
+        <div class="match-team">
+          ${teamLogo(
+            teams.home?.logo,
+            teams.home?.name
+          )}
+
+          <span>
+            ${escapeHtml(
+              teams.home?.name ||
+                "-"
+            )}
+          </span>
+        </div>
+
+        <div class="match-score">
+          ${formatNumber(
+            goals.home,
+            "-"
+          )}
+          -
+          ${formatNumber(
+            goals.away,
+            "-"
+          )}
+        </div>
+
+        <div class="match-team away">
+          ${teamLogo(
+            teams.away?.logo,
+            teams.away?.name
+          )}
+
+          <span>
+            ${escapeHtml(
+              teams.away?.name ||
+                "-"
+            )}
+          </span>
+        </div>
+
+        <div class="match-minute">
+          ${escapeHtml(
+            getMatchStatus(
+              fixture
+            )
+          )}
+        </div>
+      </div>
+
+      <div class="match-card-footer">
+        <span>
+          ${escapeHtml(
+            fixture.venue
+              ?.name || ""
+          )}
+        </span>
+
+        <button
+          class="match-detail-button"
+          type="button"
+          data-match-id="${escapeHtml(
+            fixture.id || ""
+          )}"
+        >
+          Match Center →
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderLiveMatchCard(
+  match
+) {
+  const fixture =
+    match.fixture || {};
+
+  const teams =
+    match.teams || {};
+
+  const goals =
+    match.goals || {};
+
+  const league =
+    match.league || {};
+
+  return `
+    <article class="live-match-card">
+      <div class="match-league-line">
+        <span class="live-pill">
+          ${
+            isLiveFixture(fixture)
+              ? "LIVE"
+              : escapeHtml(
+                  fixture.status
+                    ?.short || "MATCH"
+                )
+          }
+        </span>
+
+        <span>
+          ${escapeHtml(
+            league.name ||
+              "ฟุตบอล"
+          )}
+        </span>
+      </div>
+
+      <div class="match-main-row">
+        <div class="match-team">
+          ${teamLogo(
+            teams.home?.logo,
+            teams.home?.name
+          )}
+
+          <span>
+            ${escapeHtml(
+              teams.home?.name ||
+                "-"
+            )}
+          </span>
+        </div>
+
+        <div class="match-score">
+          ${formatNumber(
+            goals.home,
+            "-"
+          )}
+          -
+          ${formatNumber(
+            goals.away,
+            "-"
+          )}
+        </div>
+
+        <div class="match-team away">
+          ${teamLogo(
+            teams.away?.logo,
+            teams.away?.name
+          )}
+
+          <span>
+            ${escapeHtml(
+              teams.away?.name ||
+                "-"
+            )}
+          </span>
+        </div>
+
+        <div class="match-minute">
+          ${escapeHtml(
+            getMatchStatus(
+              fixture
+            )
+          )}
+        </div>
+      </div>
+
+      <div class="match-card-footer">
+        <span>
+          ${escapeHtml(
+            fixture.venue
+              ?.name ||
+              formatBangkokTime(
+                fixture.date
+              )
+          )}
+        </span>
+
+        <button
+          class="match-detail-button"
+          type="button"
+          data-match-id="${escapeHtml(
+            fixture.id || ""
+          )}"
+        >
+          ดูรายละเอียด
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function bindMatchButtons() {
+  $$("[data-match-id]")
+    .forEach(button => {
+      button.onclick = () =>
+        openMatchCenter(
+          button.dataset.matchId
+        );
+    });
+}
+
+/* =========================================================
+   LIVE SCORE
+========================================================= */
+
+async function loadLive({
+  silent = false
+} = {}) {
+  if (state.loading.live) {
+    return;
+  }
+
+  state.loading.live =
+    true;
+
+  const heroBox =
+    $("#heroLiveList");
+
+  const liveGrid =
+    $("#liveGrid");
+
+  try {
+    const data = await getJSON(
+      CFG.endpoints.live
+    );
+
+    state.liveMatches =
+      data.response || [];
+
+    renderLive();
+
+    setSystemStatus(
+      `ออนไลน์ • ${state.liveMatches.length} คู่กำลังแข่งขัน`
+    );
+  } catch (error) {
+    log(
+      "Live error:",
+      error
+    );
+
+    if (!silent) {
+      if (heroBox) {
+        heroBox.innerHTML =
+          createErrorMarkup(
+            error,
+            "โหลดผลบอลสดไม่สำเร็จ"
+          );
+      }
+
+      if (liveGrid) {
+        liveGrid.innerHTML =
+          createErrorMarkup(
+            error,
+            "โหลดผลบอลสดไม่สำเร็จ"
+          );
+      }
+    }
+
+    setSystemStatus(
+      "เชื่อมต่อข้อมูลบอลสดไม่สำเร็จ",
+      false
+    );
+  } finally {
+    state.loading.live =
+      false;
+  }
+}
+
+function renderLive() {
+  const heroBox =
+    $("#heroLiveList");
+
+  const liveGrid =
+    $("#liveGrid");
+
+  const filteredMatches =
+    state.liveFilter ===
+    "important"
+      ? state.liveMatches.filter(
+          match =>
+            CFG.importantLeagues
+              .includes(
+                match.league?.id
+              )
+        )
+      : state.liveMatches;
+
+  const heroMatches =
+    filteredMatches.slice(
+      0,
+      CFG.limits.heroLive
+    );
+
+  const mainMatches =
+    filteredMatches.slice(
+      0,
+      CFG.limits.liveMatches
+    );
+
+  if (heroBox) {
+    heroBox.innerHTML =
+      heroMatches.length
+        ? heroMatches
+            .map(renderHeroMatch)
+            .join("")
+        : `
+          <div class="empty-state">
+            <p>
+              ขณะนี้ยังไม่มีการแข่งขันสด
+            </p>
+          </div>
+        `;
+  }
+
+  if (liveGrid) {
+    liveGrid.innerHTML =
+      mainMatches.length
+        ? mainMatches
+            .map(
+              renderLiveMatchCard
+            )
+            .join("")
+        : `
+          <div
+            class="empty-state"
+            style="grid-column:1/-1"
+          >
+            <p>
+              ขณะนี้ยังไม่มีการแข่งขันสด
+            </p>
+          </div>
+        `;
+  }
+
+  bindMatchButtons();
+}
+
+/* =========================================================
+   FIXTURES
+========================================================= */
+
+function renderFixtureItem(
+  match
+) {
+  const fixture =
+    match.fixture || {};
+
+  const teams =
+    match.teams || {};
+
+  const league =
+    match.league || {};
+
+  const goals =
+    match.goals || {};
+
+  const started =
+    fixture.status?.short !==
+    "NS";
+
+  return `
+    <article
+      class="fixture-item"
+      data-match-id="${escapeHtml(
+        fixture.id || ""
+      )}"
+      tabindex="0"
+      role="button"
+    >
+      <span class="fixture-time">
+        ${
+          started
+            ? `${formatNumber(
+                goals.home,
+                "-"
+              )}-${formatNumber(
+                goals.away,
+                "-"
+              )}`
+            : formatBangkokTime(
+                fixture.date
+              )
+        }
+      </span>
+
+      <div class="fixture-team">
+        ${teamLogo(
+          teams.home?.logo,
+          teams.home?.name
+        )}
+
+        <span>
+          ${escapeHtml(
+            teams.home?.name ||
+              "-"
+          )}
+        </span>
+      </div>
+
+      <span class="fixture-vs">
+        ${
+          started
+            ? escapeHtml(
+                fixture.status
+                  ?.short || "-"
+              )
+            : "VS"
+        }
+      </span>
+
+      <div class="fixture-team away">
+        ${teamLogo(
+          teams.away?.logo,
+          teams.away?.name
+        )}
+
+        <span>
+          ${escapeHtml(
+            teams.away?.name ||
+              "-"
+          )}
+        </span>
+      </div>
+
+      <span class="fixture-league">
+        ${escapeHtml(
+          league.name || ""
+        )}
+      </span>
+    </article>
+  `;
+}
+
+async function loadFixtures({
+  silent = false
+} = {}) {
+  if (
+    state.loading.fixtures
+  ) {
+    return;
+  }
+
+  state.loading.fixtures =
+    true;
+
+  const container =
+    $("#fixturesList");
+
+  try {
+    const date =
+      getBangkokDate(
+        state.currentDateOffset
+      );
+
+    const data = await getJSON(
+      CFG.endpoints.fixtures,
+      {
+        date
+      }
+    );
+
+    const fixtures =
+      data.response || [];
+
+    if (container) {
+      container.innerHTML =
+        fixtures.length
+          ? fixtures
+              .slice(
+                0,
+                CFG.limits
+                  .fixtures
+              )
+              .map(
+                renderFixtureItem
+              )
+              .join("")
+          : `
+            <div class="empty-state">
+              <p>
+                ไม่พบโปรแกรมการแข่งขัน
+              </p>
+            </div>
+          `;
+    }
+
+    bindFixtureItems();
+
+    if (
+      state.currentDateOffset === 0
+    ) {
+      renderAnalysisList(
+        fixtures
+      );
+    }
+  } catch (error) {
+    log(
+      "Fixtures error:",
+      error
+    );
+
+    if (
+      container &&
+      !silent
+    ) {
+      container.innerHTML =
+        createErrorMarkup(
+          error,
+          "โหลดโปรแกรมบอลไม่สำเร็จ"
+        );
+    }
+  } finally {
+    state.loading.fixtures =
+      false;
+  }
+}
+
+function bindFixtureItems() {
+  $$(".fixture-item")
+    .forEach(item => {
+      const fixtureId =
+        item.dataset.matchId;
+
+      item.onclick = () =>
+        openMatchCenter(
+          fixtureId
+        );
+
+      item.onkeydown =
+        event => {
+          if (
+            event.key ===
+              "Enter" ||
+            event.key === " "
+          ) {
+            event.preventDefault();
+
+            openMatchCenter(
+              fixtureId
+            );
+          }
+        };
+    });
+}
+
+/* =========================================================
+   STANDINGS
+========================================================= */
+
+async function loadStandings({
+  silent = false
+} = {}) {
+  if (
+    state.loading.standings
+  ) {
+    return;
+  }
+
+  state.loading.standings =
+    true;
+
+  const body =
+    $("#standingsBody");
+
+  try {
+    const data = await getJSON(
+      CFG.endpoints.standings,
+      {
+        league:
+          state.currentLeague,
+        season: CFG.season
+      }
+    );
+
+    const standings =
+      data.response?.[0]
+        ?.league
+        ?.standings?.[0] ||
+      [];
+
+    if (!body) {
+      return;
+    }
+
+    body.innerHTML =
+      standings.length
+        ? standings
+            .slice(
+              0,
+              CFG.limits
+                .standings
+            )
+            .map(row => `
+              <tr>
+                <td>
+                  ${escapeHtml(
+                    row.rank || "-"
+                  )}
+                </td>
+
+                <td>
+                  <span class="standings-team">
+                    ${teamLogo(
+                      row.team?.logo,
+                      row.team?.name
+                    )}
+
+                    <span>
+                      ${escapeHtml(
+                        row.team
+                          ?.name ||
+                          ""
+                      )}
+                    </span>
+                  </span>
+                </td>
+
+                <td>
+                  ${formatNumber(
+                    row.all?.played
+                  )}
+                </td>
+
+                <td>
+                  ${formatNumber(
+                    row.goalsDiff
+                  )}
+                </td>
+
+                <td>
+                  <strong>
+                    ${formatNumber(
+                      row.points
+                    )}
+                  </strong>
+                </td>
+              </tr>
+            `)
+            .join("")
+        : `
+          <tr>
+            <td colspan="5">
+              ไม่มีข้อมูลตารางคะแนน
+            </td>
+          </tr>
+        `;
+  } catch (error) {
+    log(
+      "Standings error:",
+      error
+    );
+
+    if (
+      body &&
+      !silent
+    ) {
+      body.innerHTML = `
+        <tr>
+          <td colspan="5">
+            ${createErrorMarkup(
+              error,
+              "โหลดตารางคะแนนไม่สำเร็จ"
+            )}
+          </td>
+        </tr>
+      `;
+    }
+  } finally {
+    state.loading.standings =
+      false;
+  }
+}
+
+/* =========================================================
+   ANALYSIS AND PREDICTIONS
+========================================================= */
+
+function renderAnalysisList(
+  fixtures
+) {
+  const container =
+    $("#analysisList");
+
+  if (!container) {
+    return;
+  }
+
+  const upcoming =
+    fixtures
+      .filter(match =>
+        [
+          "NS",
+          "TBD"
+        ].includes(
+          match.fixture
+            ?.status?.short
+        )
+      )
+      .slice(
+        0,
+        CFG.limits.analysis
+      );
+
+  if (!upcoming.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <p>
+          ยังไม่มีคู่สำหรับวิเคราะห์
+        </p>
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML =
+    upcoming
+      .map(match => {
+        const fixture =
+          match.fixture || {};
+
+        const teams =
+          match.teams || {};
+
+        const league =
+          match.league || {};
+
+        return `
+          <article class="analysis-item">
+            <div class="analysis-thumb">
+              ${
+                league.logo
+                  ? `
+                    <img
+                      src="${escapeHtml(
+                        league.logo
+                      )}"
+                      alt="${escapeHtml(
+                        league.name ||
+                          ""
+                      )}"
+                      loading="lazy"
+                    >
+                  `
+                  : teamLogo(
+                      teams.home
+                        ?.logo,
+                      teams.home
+                        ?.name
+                    )
+              }
+            </div>
+
+            <div class="analysis-content">
+              <h3>
+                ${escapeHtml(
+                  teams.home
+                    ?.name || "-"
+                )}
+                พบ
+                ${escapeHtml(
+                  teams.away
+                    ?.name || "-"
+                )}
+              </h3>
+
+              <p>
+                ${escapeHtml(
+                  league.name ||
+                    "ฟุตบอล"
+                )}
+                •
+                ${escapeHtml(
+                  formatBangkokTime(
+                    fixture.date
+                  )
+                )}
+              </p>
+
+              <button
+                class="analysis-button"
+                type="button"
+                data-prediction-id="${escapeHtml(
+                  fixture.id || ""
+                )}"
+              >
+                ดูบทวิเคราะห์ →
+              </button>
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+
+  $$(
+    "[data-prediction-id]"
+  ).forEach(button => {
+    button.onclick = () =>
+      openPrediction(
+        button.dataset
+          .predictionId
+      );
+  });
+}
+
+async function openPrediction(
+  fixtureId
+) {
+  if (!fixtureId) {
+    return;
+  }
+
+  const modal =
+    $("#analysisModal");
+
+  const content =
+    $("#analysisModalContent");
+
+  if (
+    !modal ||
+    !content
+  ) {
+    return;
+  }
+
+  openModal(modal);
+
+  content.innerHTML = `
+    <div class="loading-state">
+      <span class="loading-spinner"></span>
+      <p>
+        กำลังโหลดบทวิเคราะห์...
+      </p>
+    </div>
+  `;
+
+  try {
+    const data = await getJSON(
+      CFG.endpoints.predictions,
+      {
+        fixture: fixtureId
+      }
+    );
+
+    const item =
+      data.response?.[0];
+
+    if (!item) {
+      content.innerHTML = `
+        <div class="empty-state">
+          <p>
+            ยังไม่มีบทวิเคราะห์สำหรับคู่นี้
+          </p>
+        </div>
+      `;
+
+      return;
+    }
+
+    const teams =
+      item.teams || {};
+
+    const prediction =
+      item.predictions || {};
+
+    const percent =
+      prediction.percent ||
+      {};
+
+    content.innerHTML = `
+      <div class="prediction-match">
+        <div class="prediction-team">
+          ${teamLogo(
+            teams.home?.logo,
+            teams.home?.name
+          )}
+
+          <strong>
+            ${escapeHtml(
+              teams.home?.name ||
+                "-"
+            )}
+          </strong>
+        </div>
+
+        <div class="prediction-vs">
+          VS
+        </div>
+
+        <div class="prediction-team">
+          ${teamLogo(
+            teams.away?.logo,
+            teams.away?.name
+          )}
+
+          <strong>
+            ${escapeHtml(
+              teams.away?.name ||
+                "-"
+            )}
+          </strong>
+        </div>
+      </div>
+
+      <div class="prediction-percent-grid">
+        <div class="prediction-percent-card">
+          <span>เจ้าบ้าน</span>
+          <strong>
+            ${escapeHtml(
+              percent.home ||
+                "-"
+            )}
+          </strong>
+        </div>
+
+        <div class="prediction-percent-card">
+          <span>เสมอ</span>
+          <strong>
+            ${escapeHtml(
+              percent.draw ||
+                "-"
+            )}
+          </strong>
+        </div>
+
+        <div class="prediction-percent-card">
+          <span>ทีมเยือน</span>
+          <strong>
+            ${escapeHtml(
+              percent.away ||
+                "-"
+            )}
+          </strong>
+        </div>
+      </div>
+
+      <div class="prediction-advice">
+        <strong>
+          แนวทางวิเคราะห์
+        </strong>
+
+        <p>
+          ${escapeHtml(
+            prediction.advice ||
+              "วิเคราะห์จากสถิติและผลงานล่าสุดของทั้งสองทีม"
+          )}
+        </p>
+
+        <p>
+          ทีมที่มีแนวโน้ม:
+          <strong>
+            ${escapeHtml(
+              prediction
+                .winner?.name ||
+                "ยังไม่ระบุ"
+            )}
+          </strong>
+        </p>
+
+        ${
+          prediction
+            .under_over
+            ? `
+              <p>
+                สูง/ต่ำ:
+                <strong>
+                  ${escapeHtml(
+                    prediction
+                      .under_over
+                  )}
+                </strong>
+              </p>
+            `
+            : ""
+        }
+      </div>
+    `;
+  } catch (error) {
+    content.innerHTML =
+      createErrorMarkup(
+        error,
+        "โหลดบทวิเคราะห์ไม่สำเร็จ"
+      );
+  }
+}
+
+/* =========================================================
+   MATCH CENTER
+========================================================= */
+
+async function openMatchCenter(
+  fixtureId
+) {
+  if (!fixtureId) {
+    return;
+  }
+
+  state.matchFixtureId =
+    fixtureId;
+
+  const modal =
+    $("#matchModal");
+
+  if (!modal) {
+    return;
+  }
+
+  openModal(modal);
+
+  await loadMatchCenter(
+    fixtureId
+  );
+
+  if (
+    state.matchRefreshTimer
+  ) {
+    clearInterval(
+      state.matchRefreshTimer
+    );
+  }
+
+  state.matchRefreshTimer =
+    setInterval(
+      () =>
+        loadMatchCenter(
+          fixtureId,
+          {
+            silent: true
+          }
+        ),
+      CFG.refresh.matchCenter
+    );
+}
+
+async function loadMatchCenter(
+  fixtureId,
+  {
+    silent = false
+  } = {}
+) {
+  if (
+    state.loading.match
+  ) {
+    return;
+  }
+
+  state.loading.match =
+    true;
+
+  const content =
+    $("#matchModalContent");
+
+  if (
+    content &&
+    !silent
+  ) {
+    content.innerHTML = `
+      <div class="loading-state">
+        <span class="loading-spinner"></span>
+        <p>
+          กำลังโหลด Match Center...
+        </p>
+      </div>
+    `;
+  }
+
+  try {
+    const matchData =
+      await getJSON(
+        CFG.endpoints.match,
+        {
+          id: fixtureId
+        }
+      );
+
+    const match =
+      matchData.response?.[0];
+
+    if (!match) {
+      throw new Error(
+        "Match not found"
+      );
+    }
+
+    const [
+      eventsResult,
+      statisticsResult,
+      lineupsResult,
+      playersResult
+    ] = await Promise.allSettled([
+      getJSON(
+        CFG.endpoints.events,
+        {
+          fixture:
+            fixtureId
+        }
+      ),
+      getJSON(
+        CFG.endpoints.statistics,
+        {
+          fixture:
+            fixtureId
+        }
+      ),
+      getJSON(
+        CFG.endpoints.lineups,
+        {
+          fixture:
+            fixtureId
+        }
+      ),
+      getJSON(
+        CFG.endpoints.players,
+        {
+          fixture:
+            fixtureId
+        }
+      )
+    ]);
+
+    const events =
+      eventsResult.status ===
+      "fulfilled"
+        ? eventsResult.value
+            .response || []
+        : [];
+
+    const statistics =
+      statisticsResult.status ===
+      "fulfilled"
+        ? statisticsResult.value
+            .response || []
+        : [];
+
+    const lineups =
+      lineupsResult.status ===
+      "fulfilled"
+        ? lineupsResult.value
+            .response || []
+        : [];
+
+    const players =
+      playersResult.status ===
+      "fulfilled"
+        ? playersResult.value
+            .response || []
+        : [];
+
+    if (content) {
+      content.innerHTML =
+        renderMatchCenter({
+          match,
+          events,
+          statistics,
+          lineups,
+          players
+        });
+    }
+  } catch (error) {
+    log(
+      "Match center error:",
+      error
+    );
+
+    if (
+      content &&
+      !silent
+    ) {
+      content.innerHTML =
+        createErrorMarkup(
+          error,
+          "โหลดข้อมูลการแข่งขันไม่สำเร็จ"
+        );
+    }
+  } finally {
+    state.loading.match =
+      false;
+  }
+}
+
+function renderMatchCenter({
+  match,
+  events,
+  statistics,
+  lineups,
+  players
+}) {
+  const fixture =
+    match.fixture || {};
+
+  const league =
+    match.league || {};
+
+  const teams =
+    match.teams || {};
+
+  const goals =
+    match.goals || {};
+
+  return `
+    <section class="match-center-head">
+      <div class="match-center-team">
+        ${teamLogo(
+          teams.home?.logo,
+          teams.home?.name
+        )}
+
+        <strong>
+          ${escapeHtml(
+            teams.home?.name ||
+              "-"
+          )}
+        </strong>
+      </div>
+
+      <div>
+        <div class="match-center-score">
+          ${formatNumber(
+            goals.home,
+            "-"
+          )}
+          -
+          ${formatNumber(
+            goals.away,
+            "-"
+          )}
+        </div>
+
+        <div class="match-center-status">
+          ${escapeHtml(
+            getMatchStatus(
+              fixture
+            )
+          )}
+        </div>
+      </div>
+
+      <div class="match-center-team">
+        ${teamLogo(
+          teams.away?.logo,
+          teams.away?.name
+        )}
+
+        <strong>
+          ${escapeHtml(
+            teams.away?.name ||
+              "-"
+          )}
+        </strong>
+      </div>
+    </section>
+
+    <div class="error-box">
+      ${escapeHtml(
+        league.name ||
+          "ฟุตบอล"
+      )}
+      •
+      ${escapeHtml(
+        formatBangkokDateTime(
+          fixture.date
+        )
+      )}
+      ${
+        fixture.venue?.name
+          ? ` • ${escapeHtml(
+              fixture.venue.name
+            )}`
+          : ""
+      }
+    </div>
+
+    <div
+      class="match-center-grid"
+      style="margin-top:14px"
+    >
+      <section class="match-center-panel">
+        <h3>
+          เหตุการณ์สำคัญ
+        </h3>
+
+        <div class="match-center-panel-body">
+          ${renderEvents(events)}
+        </div>
+      </section>
+
+      <section class="match-center-panel">
+        <h3>
+          สถิติการแข่งขัน
+        </h3>
+
+        <div class="match-center-panel-body">
+          ${renderStatistics(
+            statistics,
+            teams
+          )}
+        </div>
+      </section>
+    </div>
+
+    <section
+      class="match-center-panel"
+      style="margin-top:14px"
+    >
+      <h3>
+        รายชื่อผู้เล่น
+      </h3>
+
+      <div class="match-center-panel-body">
+        ${renderLineups(
+          lineups,
+          players
+        )}
+      </div>
+    </section>
+  `;
+}
+
+/* =========================================================
+   MATCH EVENTS
+========================================================= */
+
+function shouldShowEvent(
+  event
+) {
+  const type =
+    event.type || "";
+
+  if (
+    type === "Card" &&
+    !CFG.matchEvents
+      .showCards
+  ) {
+    return false;
+  }
+
+  if (
+    type === "Goal" &&
+    !CFG.matchEvents
+      .showGoals
+  ) {
+    return false;
+  }
+
+  if (
+    type ===
+      "subst" &&
+    !CFG.matchEvents
+      .showSubstitutions
+  ) {
+    return false;
+  }
+
+  if (
+    type === "Var" &&
+    !CFG.matchEvents
+      .showVar
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function getEventIcon(event) {
+  const type =
+    event.type || "";
+
+  const detail =
+    String(
+      event.detail || ""
+    ).toLowerCase();
+
+  if (type === "Goal") {
+    if (
+      detail.includes(
+        "missed penalty"
+      )
+    ) {
+      return "❌";
+    }
+
+    if (
+      detail.includes(
+        "penalty"
+      )
+    ) {
+      return "⚽";
+    }
+
+    if (
+      detail.includes(
+        "own goal"
+      )
+    ) {
+      return "⚽";
+    }
+
+    return "⚽";
+  }
+
+  if (
+    type === "subst"
+  ) {
+    return "🔄";
+  }
+
+  if (
+    type === "Var"
+  ) {
+    return "📺";
+  }
+
+  if (
+    type === "Card"
+  ) {
+    return detail.includes(
+      "red"
+    )
+      ? "🟥"
+      : "🟨";
+  }
+
+  return "•";
+}
+
+function renderEvents(events) {
+  const filtered =
+    events
+      .filter(
+        shouldShowEvent
+      )
+      .slice(
+        0,
+        CFG.limits.events
+      );
+
+  if (!filtered.length) {
+    return `
+      <div class="empty-state">
+        <p>
+          ยังไม่มีเหตุการณ์สำคัญ
+        </p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="event-list">
+      ${filtered
+        .map(event => {
+          const elapsed =
+            event.time
+              ?.elapsed ?? "-";
+
+          const extra =
+            event.time?.extra
+              ? `+${event.time.extra}`
+              : "";
+
+          return `
+            <div class="event-item">
+              <span class="event-time">
+                ${escapeHtml(
+                  elapsed
+                )}${escapeHtml(
+                  extra
+                )}'
+              </span>
+
+              <span class="event-description">
+                <strong>
+                  ${escapeHtml(
+                    event.player
+                      ?.name ||
+                      event.team
+                        ?.name ||
+                      "เหตุการณ์"
+                  )}
+                </strong>
+
+                <small>
+                  ${escapeHtml(
+                    event.detail ||
+                      event.type ||
+                      ""
+                  )}
+
+                  ${
+                    event.assist
+                      ?.name
+                      ? ` • ${escapeHtml(
+                          event.assist
+                            .name
+                        )}`
+                      : ""
+                  }
+                </small>
+              </span>
+
+              <span class="event-icon">
+                ${getEventIcon(
+                  event
+                )}
+              </span>
+            </div>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+function findTeamStatistics(
+  statistics,
+  teamId
+) {
+  return (
+    statistics.find(
+      item =>
+        item.team?.id ===
+        teamId
+    )?.statistics || []
+  );
+}
+
+function findStatisticValue(
+  statistics,
+  type
+) {
+  return (
+    statistics.find(
+      item =>
+        item.type === type
+    )?.value ?? null
+  );
+}
+
+function renderStatistics(
+  statistics,
+  teams
+) {
+  if (
+    !Array.isArray(
+      statistics
+    ) ||
+    statistics.length < 2
+  ) {
+    return `
+      <div class="empty-state">
+        <p>
+          คู่นี้ยังไม่มีข้อมูลสถิติ
+        </p>
+      </div>
+    `;
+  }
+
+  const homeStats =
+    findTeamStatistics(
+      statistics,
+      teams.home?.id
+    );
+
+  const awayStats =
+    findTeamStatistics(
+      statistics,
+      teams.away?.id
+    );
+
+  const availableTypes =
+    CFG.statistics.filter(
+      type =>
+        findStatisticValue(
+          homeStats,
+          type
+        ) !== null ||
+        findStatisticValue(
+          awayStats,
+          type
+        ) !== null
+    );
+
+  if (
+    !availableTypes.length
+  ) {
+    return `
+      <div class="empty-state">
+        <p>
+          คู่นี้ยังไม่มีข้อมูลสถิติ
+        </p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="stats-list">
+      ${availableTypes
+        .map(type => {
+          const homeValue =
+            findStatisticValue(
+              homeStats,
+              type
+            );
+
+          const awayValue =
+            findStatisticValue(
+              awayStats,
+              type
+            );
+
+          const homeNumber =
+            parseStatNumber(
+              homeValue
+            );
+
+          const awayNumber =
+            parseStatNumber(
+              awayValue
+            );
+
+          const total =
+            homeNumber +
+            awayNumber;
+
+          const homePercent =
+            total > 0
+              ? clamp(
+                  homeNumber /
+                    total *
+                    100
+                )
+              : 50;
+
+          const awayPercent =
+            100 -
+            homePercent;
+
+          return `
+            <div class="stat-row">
+              <span class="stat-value">
+                ${escapeHtml(
+                  homeValue ??
+                    "-"
+                )}
+              </span>
+
+              <div class="stat-center">
+                <span class="stat-title">
+                  ${escapeHtml(
+                    translateStatType(
+                      type
+                    )
+                  )}
+                </span>
+
+                <div class="stat-bar">
+                  <span
+                    class="stat-bar-home"
+                    style="width:${homePercent}%"
+                  ></span>
+
+                  <span
+                    class="stat-bar-away"
+                    style="width:${awayPercent}%"
+                  ></span>
+                </div>
+              </div>
+
+              <span class="stat-value">
+                ${escapeHtml(
+                  awayValue ??
+                    "-"
+                )}
+              </span>
+            </div>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function translateStatType(type) {
+  const translations = {
+    "Ball Possession":
+      "ครองบอล",
+    "Total Shots":
+      "ยิงทั้งหมด",
+    "Shots on Goal":
+      "ยิงเข้ากรอบ",
+    "Shots off Goal":
+      "ยิงไม่เข้ากรอบ",
+    "Blocked Shots":
+      "ยิงติดบล็อก",
+    "Corner Kicks":
+      "เตะมุม",
+    Offsides:
+      "ล้ำหน้า",
+    Fouls:
+      "ฟาวล์",
+    "Goalkeeper Saves":
+      "ผู้รักษาประตูเซฟ",
+    "Total passes":
+      "ส่งบอลทั้งหมด",
+    "Passes accurate":
+      "ส่งบอลสำเร็จ"
+  };
+
+  return (
+    translations[type] ||
+    type
+  );
+}
+
+/* =========================================================
+   LINEUPS AND PLAYERS
+========================================================= */
+
+function findPlayerRating(
+  playerData,
+  playerId
+) {
+  for (
+    const team
+    of playerData
+  ) {
+    const playerItem =
+      team.players?.find(
+        item =>
+          item.player?.id ===
+          playerId
+      );
+
+    const rating =
+      playerItem
+        ?.statistics?.[0]
+        ?.games?.rating;
+
+    if (rating) {
+      return Number(
+        rating
+      ).toFixed(1);
+    }
+  }
+
+  return "";
+}
+
+function renderLineupPlayers(
+  players,
+  playerStats
+) {
+  if (
+    !Array.isArray(
+      players
+    ) ||
+    !players.length
+  ) {
+    return `
+      <div class="empty-state">
+        <p>
+          ไม่มีรายชื่อผู้เล่น
+        </p>
+      </div>
+    `;
+  }
+
+  return players
+    .slice(
+      0,
+      CFG.limits.players
+    )
+    .map(item => {
+      const player =
+        item.player || item;
+
+      const rating =
+        findPlayerRating(
+          playerStats,
+          player.id
+        );
+
+      return `
+        <div class="player-row">
+          <span class="player-number">
+            ${escapeHtml(
+              player.number ??
+                "-"
+            )}
+          </span>
+
+          <span>
+            ${escapeHtml(
+              player.name ||
+                "-"
+            )}
+          </span>
+
+          ${
+            rating
+              ? `
+                <span class="player-rating">
+                  ${rating}
+                </span>
+              `
+              : ""
+          }
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderLineups(
+  lineups,
+  playerStats
+) {
+  if (
+    !Array.isArray(
+      lineups
+    ) ||
+    !lineups.length
+  ) {
+    return `
+      <div class="empty-state">
+        <p>
+          คู่นี้ยังไม่มีรายชื่อผู้เล่น
+        </p>
+      </div>
+    `;
+  }
+
+  const home =
+    lineups[0] || {};
+
+  const away =
+    lineups[1] || {};
+
+  const homePlayers = [
+    ...(home.startXI || []),
+    ...(home.substitutes || [])
+  ];
+
+  const awayPlayers = [
+    ...(away.startXI || []),
+    ...(away.substitutes || [])
+  ];
+
+  return `
+    <div class="lineup-grid">
+      <div class="lineup-column">
+        <h4>
+          ${escapeHtml(
+            home.team?.name ||
+              "เจ้าบ้าน"
+          )}
+          ${
+            home.formation
+              ? `(${escapeHtml(
+                  home.formation
+                )})`
+              : ""
+          }
+        </h4>
+
+        ${renderLineupPlayers(
+          homePlayers,
+          playerStats
+        )}
+      </div>
+
+      <div class="lineup-column">
+        <h4>
+          ${escapeHtml(
+            away.team?.name ||
+              "ทีมเยือน"
+          )}
+          ${
+            away.formation
+              ? `(${escapeHtml(
+                  away.formation
+                )})`
+              : ""
+          }
+        </h4>
+
+        ${renderLineupPlayers(
+          awayPlayers,
+          playerStats
+        )}
+      </div>
+    </div>
+  `;
+}
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function openModal(modal) {
+  if (!modal) {
+    return;
+  }
+
+  modal.hidden = false;
+
+  document.body.classList.add(
+    "modal-open"
+  );
+}
+
+function closeModal(modal) {
+  if (!modal) {
+    return;
+  }
+
+  modal.hidden = true;
+
+  if (
+    !$$(".modal")
+      .some(item =>
+        !item.hidden
+      )
+  ) {
+    document.body.classList.remove(
+      "modal-open"
+    );
+  }
+
+  if (
+    modal.id ===
+    "matchModal"
+  ) {
+    state.matchFixtureId =
+      null;
+
+    if (
+      state.matchRefreshTimer
+    ) {
+      clearInterval(
+        state.matchRefreshTimer
+      );
+
+      state.matchRefreshTimer =
+        null;
+    }
+  }
+}
+
+/* =========================================================
+   PWA
+========================================================= */
+
+async function registerServiceWorker() {
+  if (
+    !CFG.pwa.enabled ||
+    !(
+      "serviceWorker"
+      in navigator
+    )
+  ) {
+    return;
+  }
+
+  try {
+    await navigator
+      .serviceWorker
+      .register(
+        CFG.pwa
+          .serviceWorkerPath
+      );
+  } catch (error) {
+    log(
+      "Service worker error:",
+      error
+    );
+  }
+}
+
+function bindInstallPrompt() {
+  window.addEventListener(
+    "beforeinstallprompt",
+    event => {
+      event.preventDefault();
+
+      state.installPrompt =
+        event;
+
+      const button =
+        $("#installButton");
+
+      if (button) {
+        button.hidden =
+          false;
+      }
+    }
+  );
+
+  const installButton =
+    $("#installButton");
+
+  if (installButton) {
+    installButton.onclick =
+      async () => {
+        if (
+          !state.installPrompt
+        ) {
+          return;
+        }
+
+        state.installPrompt
+          .prompt();
+
+        await state
+          .installPrompt
+          .userChoice;
+
+        state.installPrompt =
+          null;
+
+        installButton.hidden =
+          true;
+      };
+  }
+}
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+function bindNavigation() {
+  const menuButton =
+    $("#menuButton");
+
+  const navigation =
+    $("#mainNavigation");
+
+  if (
+    menuButton &&
+    navigation
+  ) {
+    menuButton.onclick =
+      () => {
+        const opened =
+          navigation
+            .classList
+            .toggle(
+              "open"
+            );
+
+        menuButton.setAttribute(
+          "aria-expanded",
+          String(opened)
+        );
+      };
+
+    $$(
+      "a",
+      navigation
+    ).forEach(link => {
+      link.onclick = () => {
+        navigation
+          .classList
+          .remove("open");
+
+        menuButton.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      };
+    });
+  }
+}
+
+function bindDateTabs() {
+  $$("[data-day]")
+    .forEach(button => {
+      button.onclick =
+        async () => {
+          $$("[data-day]")
+            .forEach(item =>
+              item.classList
+                .remove(
+                  "active"
+                )
+            );
+
+          button.classList.add(
+            "active"
+          );
+
+          state.currentDateOffset =
+            Number(
+              button.dataset.day
+            );
+
+          const container =
+            $("#fixturesList");
+
+          if (container) {
+            container.innerHTML = `
+              <div class="loading-state">
+                <span class="loading-spinner"></span>
+                <p>
+                  กำลังโหลดโปรแกรมบอล...
+                </p>
+              </div>
+            `;
+          }
+
+          await loadFixtures();
+        };
+    });
+}
+
+function bindLeagueSelect() {
+  const select =
+    $("#leagueSelect");
+
+  if (!select) {
+    return;
+  }
+
+  try {
+    const stored =
+      localStorage.getItem(
+        CFG.storage
+          .selectedLeague
+      );
+
+    if (
+      stored &&
+      /^\d+$/.test(stored)
+    ) {
+      state.currentLeague =
+        Number(stored);
+
+      select.value =
+        stored;
+    }
+  } catch {
+    /* Ignore */
+  }
+
+  select.onchange =
+    async event => {
+      state.currentLeague =
+        Number(
+          event.target.value
+        );
+
+      try {
+        localStorage.setItem(
+          CFG.storage
+            .selectedLeague,
+          String(
+            state.currentLeague
+          )
+        );
+      } catch {
+        /* Ignore */
+      }
+
+      const body =
+        $("#standingsBody");
+
+      if (body) {
+        body.innerHTML = `
+          <tr>
+            <td colspan="5">
+              <div class="loading-state compact">
+                กำลังโหลดตารางคะแนน...
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      await loadStandings();
+    };
+}
+
+function bindLiveFilters() {
+  $$("[data-live-filter]")
+    .forEach(button => {
+      button.onclick = () => {
+        $$(
+          "[data-live-filter]"
+        ).forEach(item =>
+          item.classList
+            .remove(
+              "active"
+            )
+        );
+
+        button.classList.add(
+          "active"
+        );
+
+        state.liveFilter =
+          button.dataset
+            .liveFilter ||
+          "all";
+
+        renderLive();
+      };
+    });
+}
+
+function bindRefreshButton() {
+  const button =
+    $("#refreshButton");
+
+  if (!button) {
+    return;
+  }
+
+  button.onclick =
+    async () => {
+      button.disabled =
+        true;
+
+      button.textContent =
+        "⟳";
+
+      try {
+        await loadLive();
+
+        await sleep(700);
+
+        await loadFixtures();
+
+        await sleep(700);
+
+        await loadStandings();
+      } finally {
+        button.disabled =
+          false;
+
+        button.textContent =
+          "↻";
+      }
+    };
+}
+
+function bindModals() {
+  $$(
+    "[data-close-modal]"
+  ).forEach(button => {
+    button.onclick = () =>
+      closeModal(
+        $("#analysisModal")
+      );
+  });
+
+  $$(
+    "[data-close-match]"
+  ).forEach(button => {
+    button.onclick = () =>
+      closeModal(
+        $("#matchModal")
+      );
+  });
+
+  document.addEventListener(
+    "keydown",
+    event => {
+      if (
+        event.key !== "Escape"
+      ) {
+        return;
+      }
+
+      closeModal(
+        $("#analysisModal")
+      );
+
+      closeModal(
+        $("#matchModal")
+      );
+    }
+  );
+}
+
+/* =========================================================
+   INITIAL LOAD AND TIMERS
+========================================================= */
+
+async function checkHealth() {
+  try {
+    await getJSON(
+      CFG.endpoints.health
+    );
+
+    setSystemStatus(
+      "ระบบออนไลน์"
+    );
+
+    return true;
+  } catch (error) {
+    setSystemStatus(
+      "ระบบ API ไม่พร้อมใช้งาน",
+      false
+    );
+
+    return false;
+  }
+}
+
+async function initialLoad() {
+  await loadLive();
+
+  await sleep(900);
+
+  await loadFixtures();
+
+  await sleep(900);
+
+  await loadStandings();
+}
+
+function startAutomaticRefresh() {
+  clearAllTimers();
+
+  state.timers.push(
+    setInterval(
+      () =>
+        loadLive({
+          silent: true
+        }),
+      CFG.refresh.live
+    )
+  );
+
+  state.timers.push(
+    setInterval(
+      () =>
+        loadFixtures({
+          silent: true
+        }),
+      CFG.refresh.fixtures
+    )
+  );
+
+  state.timers.push(
+    setInterval(
+      () =>
+        loadStandings({
+          silent: true
+        }),
+      CFG.refresh.standings
+    )
+  );
+}
+
+async function initialize() {
+  bindNavigation();
+  bindDateTabs();
+  bindLeagueSelect();
+  bindLiveFilters();
+  bindRefreshButton();
+  bindModals();
+  bindInstallPrompt();
+
+  registerServiceWorker();
+
+  await checkHealth();
+
+  await initialLoad();
+
+  startAutomaticRefresh();
+}
+
+document.addEventListener(
+  "DOMContentLoaded",
+  initialize
+);
+
+window.addEventListener(
+  "beforeunload",
+  clearAllTimers
+);
