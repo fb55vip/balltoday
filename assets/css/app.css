@@ -2052,7 +2052,7 @@ table {
 .score-iframe-stage {
   position: relative;
   width: 100%;
-  height: calc((var(--source-height) - var(--hide-top)) * var(--iframe-scale));
+  height: 2890px;
   overflow: hidden;
 }
 
