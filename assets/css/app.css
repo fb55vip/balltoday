@@ -2228,3 +2228,186 @@ table {
     height: 660px;
   }
 }
+/* ================================
+   BallToday Premium Frame
+================================ */
+
+.live-score-wrapper{
+
+    background:#0b1018;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:22px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,.45),
+        inset 0 1px rgba(255,255,255,.05);
+
+    margin:30px 0;
+
+}
+
+.live-score-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:18px 24px;
+
+    background:linear-gradient(180deg,#111827,#0a0f16);
+
+    border-bottom:1px solid rgba(255,255,255,.06);
+
+}
+
+.live-title{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:16px;
+
+}
+
+.live-icon{
+
+    width:56px;
+
+    height:56px;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:#ef233c;
+
+    color:#fff;
+
+    font-size:26px;
+
+    box-shadow:0 0 25px rgba(239,35,60,.35);
+
+}
+
+.live-title h2{
+
+    margin:0;
+
+    color:#fff;
+
+    font-size:22px;
+
+}
+
+.live-title span{
+
+    color:#9ca3af;
+
+    font-size:13px;
+
+}
+
+.refresh-btn{
+
+    background:#ef233c;
+
+    color:#fff;
+
+    border:0;
+
+    border-radius:12px;
+
+    padding:12px 20px;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+}
+
+.refresh-btn:hover{
+
+    background:#d90429;
+
+}
+
+.score-iframe-crop{
+
+    --hideTop:115px;
+
+    height:760px;
+
+    overflow:auto;
+
+    background:#fff;
+
+    -webkit-overflow-scrolling:touch;
+
+}
+
+.score-iframe-stage{
+
+    position:relative;
+
+    min-width:1000px;
+
+    height:calc(3000px - var(--hideTop));
+
+    overflow:hidden;
+
+}
+
+#scoreIframe{
+
+    position:absolute;
+
+    top:calc(var(--hideTop) * -1);
+
+    left:0;
+
+    width:100%;
+
+    min-width:1000px;
+
+    height:3000px;
+
+    border:0;
+
+}
+
+@media(max-width:768px){
+
+.live-score-header{
+
+flex-direction:column;
+
+gap:15px;
+
+align-items:flex-start;
+
+}
+
+.live-title h2{
+
+font-size:18px;
+
+}
+
+.score-iframe-crop{
+
+height:680px;
+
+}
+
+}
