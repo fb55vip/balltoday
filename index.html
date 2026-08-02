@@ -42,7 +42,7 @@
   <link rel="canonical" href="https://fb55vip.com/">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/css/app.css?v=2.0.0">
+  <link rel="stylesheet" href="/assets/css/app.css?v=3.0.0">
 
   <script type="application/ld+json">
   {
@@ -232,8 +232,8 @@
             </button>
           </div>
 
-          <div class="score-iframe-crop">
-            <div class="score-iframe-stage">
+          <div class="score-iframe-crop" id="scoreCrop">
+            <div class="score-iframe-stage" id="scoreStage">
               <iframe
                 id="scoreIframe"
                 class="score-iframe"
@@ -242,7 +242,7 @@
                 width="1200"
                 height="3000"
                 frameborder="0"
-                scrolling="yes"
+                scrolling="no"
                 loading="eager"
                 referrerpolicy="strict-origin-when-cross-origin"
               ></iframe>
@@ -628,21 +628,61 @@
   <script src="/assets/js/app.js?v=1.0.0" defer></script>
 
   <script>
-    document.addEventListener("DOMContentLoaded",function(){
-      const button=document.getElementById("reloadScoreFrame");
-      const iframe=document.getElementById("scoreIframe");
-      if(!button||!iframe)return;
-      button.addEventListener("click",function(){
-        button.disabled=true;
-        button.textContent="↻ กำลังโหลด...";
-        const currentUrl=new URL(iframe.src,window.location.href);
-        currentUrl.searchParams.set("_refresh",String(Date.now()));
-        iframe.src=currentUrl.toString();
-        window.setTimeout(function(){
-          button.disabled=false;
-          button.textContent="↻ รีเฟรช";
-        },2500);
-      });
+    document.addEventListener("DOMContentLoaded", function () {
+      const button = document.getElementById("reloadScoreFrame");
+      const crop = document.getElementById("scoreCrop");
+      const stage = document.getElementById("scoreStage");
+      const iframe = document.getElementById("scoreIframe");
+
+      if (!crop || !stage || !iframe) return;
+
+      const SOURCE_WIDTH = 1200;
+      const SOURCE_HEIGHT = 3000;
+      const HIDE_TOP = 110;
+
+      function resizeLiveScore() {
+        const availableWidth = crop.clientWidth;
+        if (!availableWidth) return;
+
+        const scale = Math.min(1, availableWidth / SOURCE_WIDTH);
+        const visibleSourceHeight = SOURCE_HEIGHT - HIDE_TOP;
+
+        iframe.style.width = SOURCE_WIDTH + "px";
+        iframe.style.minWidth = SOURCE_WIDTH + "px";
+        iframe.style.maxWidth = "none";
+        iframe.style.height = SOURCE_HEIGHT + "px";
+        iframe.style.top = "-" + (HIDE_TOP * scale) + "px";
+        iframe.style.transform = "scale(" + scale + ")";
+        iframe.style.transformOrigin = "top left";
+
+        stage.style.width = availableWidth + "px";
+        stage.style.height = (visibleSourceHeight * scale) + "px";
+      }
+
+      resizeLiveScore();
+      window.addEventListener("resize", resizeLiveScore, { passive: true });
+
+      if ("ResizeObserver" in window) {
+        const observer = new ResizeObserver(resizeLiveScore);
+        observer.observe(crop);
+      }
+
+      if (button) {
+        button.addEventListener("click", function () {
+          button.disabled = true;
+          button.textContent = "↻ กำลังโหลด...";
+
+          const currentUrl = new URL(iframe.src, window.location.href);
+          currentUrl.searchParams.set("_refresh", String(Date.now()));
+          iframe.src = currentUrl.toString();
+
+          window.setTimeout(function () {
+            resizeLiveScore();
+            button.disabled = false;
+            button.textContent = "↻ รีเฟรช";
+          }, 2500);
+        });
+      }
     });
   </script>
 
