@@ -2001,7 +2001,7 @@ table {
 
 .score-iframe {
   position: absolute;
-  top: -60px;
+  top: -72px;
   left: 0;
   display: block;
   width: 1200px;
@@ -2033,4 +2033,31 @@ table {
 
 @media (max-width: 460px) {
   .score-iframe-crop { height: 640px; }
+}
+/* ปิดข้อความ By 888scoreonline.net โดยไม่บังเมนู */
+
+.score-widget-shell {
+  position: relative;
+}
+
+/* แผ่นสีขาวปิดข้อความมุมขวาของ iframe */
+.score-widget-shell::after {
+  content: "";
+  position: absolute;
+  z-index: 20;
+  top: 66px;
+  right: 0;
+  width: 190px;
+  height: 22px;
+  background: #ffffff;
+  pointer-events: none;
+}
+
+/* มือถือ */
+@media (max-width: 760px) {
+  .score-widget-shell::after {
+    top: 60px;
+    width: 145px;
+    height: 19px;
+  }
 }
