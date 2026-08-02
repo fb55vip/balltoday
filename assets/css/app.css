@@ -2001,7 +2001,7 @@ table {
 
 .score-iframe {
   position: absolute;
-  top: 0;
+  top: -72px;
   left: 0;
   display: block;
   width: 1200px;
