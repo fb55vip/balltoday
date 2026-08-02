@@ -1876,7 +1876,8 @@ table {
 }
 
 /* =========================================================
-   BALLTODAY EMBEDDED LIVE SCORE - FINAL
+   BALLTODAY LIVE SCORE - CLEAN FINAL
+   Mobile: auto-fit full table, vertical scrolling only
 ========================================================= */
 
 .hero-score-preview {
@@ -1918,6 +1919,12 @@ table {
   font-size: 12px;
 }
 
+.hero-score-content .button {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 180px;
+}
+
 .widget-live-status {
   display: inline-flex;
   align-items: center;
@@ -1939,8 +1946,12 @@ table {
 }
 
 .embedded-score-section {
-  padding: 34px 0 18px;
-  scroll-margin-top: 85px;
+  position: relative;
+  z-index: 5;
+  display: block;
+  padding: 28px 0;
+  background: #05070b;
+  scroll-margin-top: 84px;
 }
 
 .embedded-score-heading {
@@ -1954,9 +1965,11 @@ table {
 }
 
 .score-widget-shell {
+  width: 100%;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
-  background: transparent;
+  background: #0b1018;
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
 }
 
@@ -2000,7 +2013,7 @@ table {
 }
 
 .score-reload-button {
-  min-height: 37px;
+  min-height: 38px;
   padding: 0 14px;
   border: 1px solid rgba(239, 27, 45, 0.5);
   border-radius: 9px;
@@ -2020,165 +2033,57 @@ table {
 }
 
 .score-iframe-crop {
-  --score-crop-top: 0px;
-  --score-visible-height: 720px;
+  --source-width: 1200px;
+  --source-height: 3000px;
+  --hide-top: 110px;
+  --iframe-scale: min(1, calc((100vw - 34px) / 1200));
 
   position: relative;
   width: 100%;
-  height: var(--score-visible-height);
-  overflow: hidden;
+  height: 760px;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #fff;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+.score-iframe-stage {
+  position: relative;
+  width: 100%;
+  height: calc((var(--source-height) - var(--hide-top)) * var(--iframe-scale));
+  overflow: hidden;
 }
 
 .score-iframe {
   position: absolute;
-  top: calc(var(--score-crop-top) * -1);
+  top: calc(var(--hide-top) * -1);
   left: 0;
   display: block;
-  width: 100%;
-  height: 3000px;
+  width: var(--source-width);
+  min-width: var(--source-width);
+  height: var(--source-height);
   border: 0;
   background: #fff;
+  transform: scale(var(--iframe-scale));
+  transform-origin: top left;
 }
 
 @keyframes scoreLivePulse {
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
     transform: scale(1);
   }
-
   50% {
     opacity: 0.45;
     transform: scale(0.78);
   }
 }
 
-@media (max-width: 900px) {
+@media (min-width: 1234px) {
   .score-iframe-crop {
-    --score-visible-height: 760px;
-  }
-
-  .score-iframe {
-    width: 1000px;
-    transform: scale(0.72);
-    transform-origin: top left;
-  }
-}
-
-@media (max-width: 600px) {
-  .embedded-score-section {
-    padding-top: 25px;
-  }
-
-  .embedded-score-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .score-widget-shell {
-    border-radius: 14px;
-  }
-
-  .score-widget-toolbar {
-    min-height: 60px;
-    padding: 9px 11px;
-  }
-
-  .score-widget-title strong {
-    font-size: 13px;
-  }
-
-  .score-reload-button {
-    padding-inline: 10px;
-  }
-
-  .score-iframe-crop {
-    --score-visible-height: 700px;
-  }
-
-  .score-iframe {
-    width: 1000px;
-    transform: scale(0.52);
-    transform-origin: top left;
-  }
-}
-
-@media (max-width: 400px) {
-  .score-iframe-crop {
-    --score-visible-height: 650px;
-  }
-
-  .score-iframe {
-    transform: scale(0.44);
-  }
-}
-
-/* =========================================================
-   BALLTODAY LIVE SCORE LAYOUT FIX - FINAL
-========================================================= */
-
-.hero-score-content .button {
-  flex: 0 0 auto;
-  width: auto;
-  min-width: 180px;
-  min-height: 48px;
-  padding: 0 24px;
-  border-radius: 999px;
-}
-
-.embedded-score-section {
-  position: relative;
-  z-index: 5;
-  display: block;
-  padding: 28px 0;
-  background: #05070b;
-  scroll-margin-top: 84px;
-}
-
-.score-widget-shell {
-  width: 100%;
-  overflow: hidden;
-  border-radius: 20px;
-}
-
-.score-iframe-crop {
-  position: relative;
-  width: 100%;
-  height: 760px;
-  overflow-x: auto;
-  overflow-y: auto;
-  background: #ffffff;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-x pan-y;
-  scrollbar-width: thin;
-}
-
-.score-iframe {
-  position: relative;
-  top: 0;
-  left: 0;
-  display: block;
-  width: 100%;
-  min-width: 1000px;
-  height: 3000px;
-  border: 0;
-  background: #ffffff;
-  transform: none !important;
-  transform-origin: initial !important;
-}
-
-@media (max-width: 900px) {
-  .score-iframe-crop {
-    height: 740px;
-  }
-
-  .score-iframe {
-    width: 1000px;
-    min-width: 1000px;
-    height: 3000px;
-    transform: none !important;
+    --iframe-scale: 1;
   }
 }
 
@@ -2193,221 +2098,43 @@ table {
   }
 
   .hero-score-content .button {
-    flex: 0 0 auto;
-    width: auto;
     min-width: 190px;
-    min-height: 50px;
   }
 
   .embedded-score-section {
     padding: 22px 0 28px;
   }
 
+  .score-widget-shell {
+    border-radius: 14px;
+  }
+
   .score-widget-toolbar {
-    position: sticky;
-    z-index: 2;
-    top: 0;
+    min-height: 60px;
+    padding: 10px 12px;
+  }
+
+  .score-widget-title strong {
+    font-size: 13px;
+  }
+
+  .score-widget-title small {
+    font-size: 9px;
+  }
+
+  .score-reload-button {
+    flex: 0 0 auto;
+    padding-inline: 11px;
   }
 
   .score-iframe-crop {
-    height: 700px;
-    overflow-x: auto;
-    overflow-y: auto;
-  }
-
-  .score-iframe {
-    width: 1000px;
-    min-width: 1000px;
-    height: 3000px;
-    transform: none !important;
+    --iframe-scale: calc((100vw - 22px) / 1200);
+    height: 680px;
   }
 }
 
 @media (max-width: 460px) {
   .score-iframe-crop {
-    height: 660px;
+    height: 640px;
   }
-}
-/* ================================
-   BallToday Premium Frame
-================================ */
-
-.live-score-wrapper{
-
-    background:#0b1018;
-
-    border:1px solid rgba(255,255,255,.08);
-
-    border-radius:22px;
-
-    overflow:hidden;
-
-    box-shadow:
-        0 25px 60px rgba(0,0,0,.45),
-        inset 0 1px rgba(255,255,255,.05);
-
-    margin:30px 0;
-
-}
-
-.live-score-header{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    padding:18px 24px;
-
-    background:linear-gradient(180deg,#111827,#0a0f16);
-
-    border-bottom:1px solid rgba(255,255,255,.06);
-
-}
-
-.live-title{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:16px;
-
-}
-
-.live-icon{
-
-    width:56px;
-
-    height:56px;
-
-    border-radius:50%;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    background:#ef233c;
-
-    color:#fff;
-
-    font-size:26px;
-
-    box-shadow:0 0 25px rgba(239,35,60,.35);
-
-}
-
-.live-title h2{
-
-    margin:0;
-
-    color:#fff;
-
-    font-size:22px;
-
-}
-
-.live-title span{
-
-    color:#9ca3af;
-
-    font-size:13px;
-
-}
-
-.refresh-btn{
-
-    background:#ef233c;
-
-    color:#fff;
-
-    border:0;
-
-    border-radius:12px;
-
-    padding:12px 20px;
-
-    cursor:pointer;
-
-    font-weight:700;
-
-}
-
-.refresh-btn:hover{
-
-    background:#d90429;
-
-}
-
-.score-iframe-crop{
-
-    --hideTop:110px;
-
-    height:760px;
-
-    overflow:auto;
-
-    background:#fff;
-
-    -webkit-overflow-scrolling:touch;
-
-}
-
-.score-iframe-stage{
-
-    position:relative;
-
-    min-width:1000px;
-
-    height:calc(3000px - var(--hideTop));
-
-    overflow:hidden;
-
-}
-
-#scoreIframe{
-
-    position:absolute;
-
-    top:calc(var(--hideTop) * -1);
-
-    left:0;
-
-    width:100%;
-
-    min-width:1000px;
-
-    height:3000px;
-
-    border:0;
-
-}
-
-@media(max-width:768px){
-
-.live-score-header{
-
-flex-direction:column;
-
-gap:15px;
-
-align-items:flex-start;
-
-}
-
-.live-title h2{
-
-font-size:18px;
-
-}
-
-.score-iframe-crop{
-
-height:680px;
-
-}
-
 }
