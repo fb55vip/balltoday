@@ -290,7 +290,7 @@ table {
       rgba(3, 8, 15, 0.62) 100%
     ),
     linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(2, 5, 9, 0.76)),
-    url("/assets/images/stadium-bg.jpg") center / cover no-repeat;
+    url("/assets/stadium-premium.png") center / cover no-repeat;
 }
 
 .hero-overlay {
