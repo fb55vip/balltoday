@@ -2511,50 +2511,43 @@ async function registerServiceWorker() {
 }
 
 function bindInstallPrompt() {
-  window.addEventListener(
-    "beforeinstallprompt",
-    event => {
-      event.preventDefault();
+  const installButton = $("#installButton");
+  const heroInstallButtons = $$('[data-install-app]');
 
-      state.installPrompt =
-        event;
+  const setReady = () => {
+    if (installButton) installButton.hidden = false;
+  };
 
-      const button =
-        $("#installButton");
+  window.addEventListener("beforeinstallprompt", event => {
+    event.preventDefault();
+    state.installPrompt = event;
+    setReady();
+  });
 
-      if (button) {
-        button.hidden =
-          false;
-      }
+  async function requestInstall() {
+    if (state.installPrompt) {
+      state.installPrompt.prompt();
+      await state.installPrompt.userChoice;
+      state.installPrompt = null;
+      return;
     }
-  );
 
-  const installButton =
-    $("#installButton");
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const message = isIOS
+      ? "บน iPhone: แตะปุ่มแชร์ แล้วเลือก ‘เพิ่มไปยังหน้าจอโฮม’"
+      : "เปิดเมนูเบราว์เซอร์ แล้วเลือก ‘ติดตั้งแอป’ หรือ ‘เพิ่มไปยังหน้าจอหลัก’";
+
+    window.alert(message);
+  }
 
   if (installButton) {
-    installButton.onclick =
-      async () => {
-        if (
-          !state.installPrompt
-        ) {
-          return;
-        }
-
-        state.installPrompt
-          .prompt();
-
-        await state
-          .installPrompt
-          .userChoice;
-
-        state.installPrompt =
-          null;
-
-        installButton.hidden =
-          true;
-      };
+    installButton.hidden = false;
+    installButton.onclick = requestInstall;
   }
+
+  heroInstallButtons.forEach(button => {
+    button.onclick = requestInstall;
+  });
 }
 
 /* =========================================================
@@ -2821,6 +2814,118 @@ function bindModals() {
   );
 }
 
+
+/* =========================================================
+   BALLSTEP CALCULATOR
+========================================================= */
+
+function getBallstepFactor(odd, result) {
+  const decimalOdd = Number(odd);
+  if (!Number.isFinite(decimalOdd) || decimalOdd < 1) return null;
+
+  switch (result) {
+    case "win":
+      return decimalOdd;
+    case "half-win":
+      return (decimalOdd + 1) / 2;
+    case "void":
+      return 1;
+    case "half-loss":
+      return 0.5;
+    case "loss":
+      return 0;
+    default:
+      return decimalOdd;
+  }
+}
+
+function bindBallstepCalculator() {
+  const rows = $("#ballstepRows");
+  const addButton = $("#addBallstepRow");
+  const calculateButton = $("#calculateBallstep");
+  const stakeInput = $("#ballstepStake");
+  const resultBox = $("#ballstepResult");
+
+  if (!rows || !addButton || !calculateButton || !stakeInput || !resultBox) return;
+
+  function renumberRows() {
+    $$(".ballstep-row", rows).forEach((row, index) => {
+      const odd = $(".ballstep-odd", row);
+      const result = $(".ballstep-result", row);
+      if (odd) odd.setAttribute("aria-label", `อัตราต่อรองคู่ที่ ${index + 1}`);
+      if (result) result.setAttribute("aria-label", `ผลคู่ที่ ${index + 1}`);
+    });
+  }
+
+  function addRow() {
+    const row = document.createElement("div");
+    row.className = "ballstep-row";
+    row.innerHTML = `
+      <input class="ballstep-odd" type="number" inputmode="decimal" min="1" step="0.01" placeholder="กรอกอัตราต่อรอง">
+      <select class="ballstep-result">
+        <option value="win">ชนะ</option>
+        <option value="half-win">ได้ครึ่ง</option>
+        <option value="void">คืนทุน</option>
+        <option value="half-loss">เสียครึ่ง</option>
+        <option value="loss">แพ้</option>
+      </select>
+      <button class="ballstep-remove" type="button" aria-label="ลบคู่นี้">×</button>
+    `;
+    rows.appendChild(row);
+    renumberRows();
+  }
+
+  rows.addEventListener("click", event => {
+    const button = event.target.closest(".ballstep-remove");
+    if (!button) return;
+    const allRows = $$(".ballstep-row", rows);
+    if (allRows.length <= 1) return;
+    button.closest(".ballstep-row")?.remove();
+    renumberRows();
+  });
+
+  addButton.onclick = addRow;
+
+  calculateButton.onclick = () => {
+    const stake = Number(stakeInput.value);
+    const rowItems = $$(".ballstep-row", rows);
+    let combined = 1;
+    let validCount = 0;
+
+    for (const row of rowItems) {
+      const odd = $(".ballstep-odd", row)?.value;
+      const result = $(".ballstep-result", row)?.value;
+      const factor = getBallstepFactor(odd, result);
+
+      if (factor === null) continue;
+      combined *= factor;
+      validCount += 1;
+    }
+
+    if (!validCount || !Number.isFinite(stake) || stake <= 0) {
+      resultBox.hidden = false;
+      resultBox.innerHTML = '<strong>กรุณากรอกอัตราต่อรองอย่างน้อย 1 คู่ และจำนวนเงินเดิมพัน</strong>';
+      return;
+    }
+
+    const payout = stake * combined;
+    const profit = payout - stake;
+    const money = new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    resultBox.hidden = false;
+    resultBox.innerHTML = `
+      <div class="ballstep-result-grid">
+        <div class="ballstep-result-item"><span>จำนวนคู่ที่คำนวณ</span><strong>${validCount}</strong></div>
+        <div class="ballstep-result-item"><span>ตัวคูณรวม</span><strong>${combined.toFixed(4)}</strong></div>
+        <div class="ballstep-result-item"><span>ยอดรับโดยประมาณ</span><strong>${money.format(payout)} บาท</strong></div>
+      </div>
+      <p style="margin:12px 0 0;color:var(--muted)">กำไร/ขาดทุนโดยประมาณ: <strong>${money.format(profit)} บาท</strong></p>
+    `;
+  };
+
+  renumberRows();
+}
+
 /* =========================================================
    INITIAL LOAD AND TIMERS
 ========================================================= */
@@ -2887,6 +2992,7 @@ async function initialize() {
   bindRefreshButton();
   bindModals();
   bindInstallPrompt();
+  bindBallstepCalculator();
 
   registerServiceWorker();
 
