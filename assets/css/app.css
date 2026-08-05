@@ -278,21 +278,25 @@ table {
 /* Hero */
 
 .hero-section {
-  position: relative;
-  min-height: 560px;
-  overflow: hidden;
-  border-bottom: 1px solid var(--line);
-  background:
-    linear-gradient(
-      90deg,
-      rgba(1, 3, 7, 0.97) 0%,
-      rgba(2, 6, 12, 0.89) 40%,
-      rgba(3, 8, 15, 0.62) 100%
-    ),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(2, 5, 9, 0.76)),
-    url("/assets/stadium-premium.png") center / cover no-repeat;
-}
+    position: relative;
+    min-height: 560px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
 
+    background:
+        linear-gradient(
+            90deg,
+            rgba(1, 3, 7, 0.97) 0%,
+            rgba(2, 6, 12, 0.89) 40%,
+            rgba(3, 8, 15, 0.62) 100%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.18),
+            rgba(2, 5, 9, 0.76)
+        ),
+        url("/assets/stadium-premium.png") center center / cover no-repeat;
+}
 .hero-overlay {
   position: absolute;
   inset: 0;
