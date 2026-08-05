@@ -2046,3 +2046,30 @@ table {
 @media(max-width:900px){.hn-club-card{grid-template-columns:1fr}.hn-club-media{min-height:360px}}
 @media(max-width:760px){.score-iframe-crop{height:76vh}.hn-club-card{min-height:auto}.hn-club-media{min-height:430px}.hn-club-content{padding:22px 18px 24px}.hn-club-content h2{font-size:23px}.hn-club-button{width:100%}}
 @media(max-width:460px){.hn-club-media{min-height:360px}.score-iframe-crop{height:74vh}}
+/* ปิดเฉพาะข้อความมุมขวาบนของ iframe */
+.score-widget-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.score-widget-shell::after {
+  content: "";
+  position: absolute;
+  z-index: 30;
+  top: 66px;
+  right: 0;
+  width: 210px;
+  height: 21px;
+  background: #ffffff;
+  pointer-events: none;
+}
+
+/* มือถือ */
+@media (max-width: 760px) {
+  .score-widget-shell::after {
+    top: 60px;
+    right: 0;
+    width: 115px;
+    height: 14px;
+  }
+}
