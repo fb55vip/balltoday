@@ -295,7 +295,7 @@ table {
             rgba(0, 0, 0, 0.18),
             rgba(2, 5, 9, 0.76)
         ),
-        url("/assets/stadium-premium.png") center center / cover no-repeat;
+         url("/assets/stadium-premium.png") center center / cover no-repeat;
 }
 .hero-overlay {
   position: absolute;
