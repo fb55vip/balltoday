@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>BallToday Admin | จัดการบทความทีเด็ด</title>
+  <link rel="stylesheet" href="/assets/css/admin.css?v=1.0.0">
+</head>
+<body>
+  <main class="admin-shell">
+    <section id="loginView" class="admin-card login-card">
+      <div class="brand">⚽ <strong>Ball<span>Today</span></strong></div>
+      <h1>เข้าสู่ระบบแอดมิน</h1>
+      <p>จัดการบทความทีเด็ดและบทวิเคราะห์</p>
+      <form id="loginForm">
+        <label>ชื่อผู้ใช้<input id="username" autocomplete="username" required></label>
+        <label>รหัสผ่าน<input id="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">เข้าสู่ระบบ</button>
+      </form>
+      <div id="loginMessage" class="message" aria-live="polite"></div>
+    </section>
+
+    <section id="dashboardView" class="dashboard" hidden>
+      <header class="dashboard-head">
+        <div><div class="brand">⚽ <strong>Ball<span>Today</span></strong></div><h1>จัดการบทความทีเด็ด</h1></div>
+        <button id="logoutButton" class="ghost">ออกจากระบบ</button>
+      </header>
+
+      <div class="admin-grid">
+        <section class="admin-card editor-card">
+          <h2 id="editorTitle">เพิ่มบทความใหม่</h2>
+          <form id="articleForm">
+            <input id="articleId" type="hidden">
+            <label>หัวข้อบทความ<input id="title" maxlength="160" required></label>
+            <div class="two-col">
+              <label>ลีก<input id="league" maxlength="80" placeholder="เช่น พรีเมียร์ลีก"></label>
+              <label>คู่แข่งขัน<input id="matchName" maxlength="120" placeholder="เช่น ลิเวอร์พูล พบ อาร์เซนอล"></label>
+            </div>
+            <div class="two-col">
+              <label>เวลาแข่งขัน<input id="matchTime" type="datetime-local"></label>
+              <label>รูปภาพ URL<input id="imageUrl" type="url" placeholder="https://..."></label>
+            </div>
+            <label>คำเกริ่น<textarea id="excerpt" rows="3" maxlength="300"></textarea></label>
+            <label>เนื้อหาบทความ<textarea id="content" rows="12" required></textarea></label>
+            <label class="check"><input id="published" type="checkbox"> เผยแพร่ทันที</label>
+            <div class="actions"><button type="submit">บันทึกบทความ</button><button id="resetButton" type="button" class="ghost">ล้างฟอร์ม</button></div>
+          </form>
+          <div id="editorMessage" class="message" aria-live="polite"></div>
+        </section>
+
+        <section class="admin-card list-card">
+          <div class="list-head"><h2>บทความทั้งหมด</h2><button id="refreshArticles" class="ghost">รีเฟรช</button></div>
+          <div id="articleList" class="article-list"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script src="/assets/js/admin.js?v=1.0.0" defer></script>
+</body>
+</html>
