@@ -1,8 +1,254 @@
-const API_BASE="https://v3.football.api-sports.io";
-const ALLOWED=new Set(["https://fb55vip.com","https://www.fb55vip.com","http://localhost:5500","http://127.0.0.1:5500"]),DEFAULT_ORIGIN="https://fb55vip.com";
-const TTL={live:20,fixtures:180,standings:900,match:25,events:25,statistics:30,lineups:600,players:120,predictions:1800,odds:300,teams:1800,leagues:1800,scorers:1800};
-export default{async fetch(request,env,ctx){const url=new URL(request.url),cors=makeCors(request.headers.get("Origin")||"");if(request.method==="OPTIONS")return new Response(null,{status:204,headers:cors});if(request.method!=="GET")return out({success:false,message:"Method not allowed"},405,cors);if(!env.API_FOOTBALL_KEY)return out({success:false,message:"API_FOOTBALL_KEY is not configured"},500,cors);try{switch(url.pathname){case"/":case"/api":case"/api/health":return out({success:true,service:"BallToday Football API",provider:"API-Football v3",upstream:API_BASE,status:"online",endpoints:["/api/live","/api/fixtures?date=2026-08-01","/api/standings?league=39&season=2026","/api/match?id=123456","/api/events?fixture=123456","/api/statistics?fixture=123456","/api/lineups?fixture=123456","/api/players?fixture=123456","/api/predictions?fixture=123456"]},200,cors,30);case"/api/live":return proxy("/fixtures",{live:"all",timezone:"Asia/Bangkok"},TTL.live,env,ctx,cors);case"/api/fixtures":{const date=url.searchParams.get("date")||bangkokDate();if(!validDate(date))return bad("Invalid date",cors);return proxy("/fixtures",{date,timezone:"Asia/Bangkok"},TTL.fixtures,env,ctx,cors)}case"/api/standings":{const league=url.searchParams.get("league")||"39",season=url.searchParams.get("season")||"2026";if(!num(league)||!season4(season))return bad("Invalid league or season",cors);return proxy("/standings",{league,season},TTL.standings,env,ctx,cors)}case"/api/match":return fixtureEndpoint("/fixtures","id",url,TTL.match,env,ctx,cors,{timezone:"Asia/Bangkok"});case"/api/events":return fixtureEndpoint("/fixtures/events","fixture",url,TTL.events,env,ctx,cors);case"/api/statistics":return fixtureEndpoint("/fixtures/statistics","fixture",url,TTL.statistics,env,ctx,cors);case"/api/lineups":return fixtureEndpoint("/fixtures/lineups","fixture",url,TTL.lineups,env,ctx,cors);case"/api/players":return fixtureEndpoint("/fixtures/players","fixture",url,TTL.players,env,ctx,cors);case"/api/predictions":return fixtureEndpoint("/predictions","fixture",url,TTL.predictions,env,ctx,cors);case"/api/odds":return fixtureEndpoint("/odds","fixture",url,TTL.odds,env,ctx,cors);case"/api/top-scorers":{const league=url.searchParams.get("league")||"39",season=url.searchParams.get("season")||"2026";return proxy("/players/topscorers",{league,season},TTL.scorers,env,ctx,cors)}case"/api/teams":{const search=(url.searchParams.get("search")||"").trim();if(search.length<3)return bad("Search requires at least 3 characters",cors);return proxy("/teams",{search},TTL.teams,env,ctx,cors)}case"/api/leagues":{const search=(url.searchParams.get("search")||"").trim();if(search.length<3)return bad("Search requires at least 3 characters",cors);return proxy("/leagues",{search},TTL.leagues,env,ctx,cors)}default:return out({success:false,message:"Endpoint not found"},404,cors)}}catch(e){return out({success:false,message:"Worker error",detail:e instanceof Error?e.message:"Unknown error"},500,cors)}}};
-function fixtureEndpoint(endpoint,key,url,ttl,env,ctx,cors,extra={}){const id=url.searchParams.get(key);if(!num(id))return bad("Fixture id is required",cors);return proxy(endpoint,{[key]:id,...extra},ttl,env,ctx,cors)}
-async function proxy(endpoint,params,ttl,env,ctx,cors){const u=new URL(API_BASE+endpoint);Object.entries(params||{}).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=="")u.searchParams.set(k,String(v))});const cache=caches.default,key=new Request(u.toString(),{method:"GET"}),hit=await cache.match(key);if(hit){const h=new Headers(hit.headers);apply(h,cors);h.set("X-BallToday-Cache","HIT");return new Response(hit.body,{status:hit.status,headers:h})}const r=await fetch(u.toString(),{headers:{Accept:"application/json","x-apisports-key":env.API_FOOTBALL_KEY}}),text=await r.text(),data=parse(text),providerError=extractError(data);if(r.status===429||/too many requests|rate.?limit|requests per minute|maximum number of requests/i.test(providerError))return out({success:false,message:"API rate limit exceeded",detail:providerError||"Too many requests",retryAfter:r.headers.get("retry-after")||"60"},429,{...cors,"Retry-After":r.headers.get("retry-after")||"60"});if(!r.ok||providerError)return out({success:false,message:"API-Football returned an error",detail:providerError||data||text},r.ok?502:r.status,cors);const ch=new Headers({"Content-Type":"application/json; charset=UTF-8","Cache-Control":`public,max-age=${ttl},s-maxage=${ttl},stale-while-revalidate=${Math.max(ttl,60)}`,"X-Content-Type-Options":"nosniff"}),save=new Response(text,{status:200,headers:ch});ctx.waitUntil(cache.put(key,save.clone()).catch(()=>{}));const h=new Headers(ch);apply(h,cors);h.set("X-BallToday-Cache","MISS");return new Response(text,{status:200,headers:h})}
-function makeCors(origin){return{"Access-Control-Allow-Origin":ALLOWED.has(origin)?origin:DEFAULT_ORIGIN,"Access-Control-Allow-Methods":"GET,OPTIONS","Access-Control-Allow-Headers":"Content-Type","Access-Control-Max-Age":"86400","Vary":"Origin"}}
-function out(data,status=200,headers={},ttl=0){const h=new Headers({"Content-Type":"application/json; charset=UTF-8","Cache-Control":ttl?`public,max-age=${ttl},s-maxage=${ttl}`:"no-store","X-Content-Type-Options":"nosniff"});apply(h,headers);return new Response(JSON.stringify(data,null,2),{status,headers:h})}function apply(h,v){Object.entries(v||{}).forEach(([k,x])=>h.set(k,x))}function bad(m,c){return out({success:false,message:m},400,c)}function parse(x){try{return JSON.parse(x)}catch{return null}}function extractError(d){if(!d||typeof d!=="object"||!d.errors)return"";if(typeof d.errors==="string")return d.errors;if(Array.isArray(d.errors))return d.errors.filter(Boolean).join(" | ");return Object.entries(d.errors).filter(([,v])=>v).map(([k,v])=>`${k}: ${String(v)}`).join(" | ")}function num(v){return/^\d+$/.test(String(v||""))}function season4(v){return/^\d{4}$/.test(String(v||""))}function validDate(v){return/^\d{4}-\d{2}-\d{2}$/.test(String(v||""))}function bangkokDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}
+"use strict";
+
+const ALLOWED_ORIGINS = new Set([
+  "https://fb55vip.com",
+  "https://www.fb55vip.com"
+]);
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const cors = makeCors(request);
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: cors });
+    }
+
+    try {
+      if (url.pathname === "/" && request.method === "GET") {
+        return json({ success: true, service: "HN FOOTBALL SCORE Content API", status: "online" }, 200, cors);
+      }
+
+      if (url.pathname === "/api/admin/login" && request.method === "POST") {
+        return handleLogin(request, env, cors);
+      }
+
+      if (url.pathname === "/api/admin/articles" && request.method === "GET") {
+        await requireAdmin(request, env);
+        const { results } = await env.DB.prepare(`
+          SELECT * FROM articles ORDER BY featured DESC, updated_at DESC, id DESC
+        `).all();
+        const articles = (results || []).map(normalizeArticle);
+        return json({ success: true, articles, stats: calculateStats(articles) }, 200, cors);
+      }
+
+      if (url.pathname === "/api/admin/articles" && request.method === "POST") {
+        await requireAdmin(request, env);
+        const data = await readJson(request);
+        validateArticle(data);
+        const slug = await createUniqueSlug(env.DB, data.slug || data.title);
+        const status = normalizeStatus(data.status);
+        const publishedAt = getPublicationTime(status, data.publish_at);
+        const result = await env.DB.prepare(`
+          INSERT INTO articles (
+            title, slug, league, match_name, match_time, confidence,
+            cover_image, excerpt, content, author, status, featured,
+            created_at, updated_at, published_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?)
+        `).bind(
+          cleanText(data.title), slug, nullableText(data.league), nullableText(data.match_name),
+          nullableText(data.match_time), normalizeConfidence(data.confidence),
+          nullableText(data.image_url || data.cover_image), nullableText(data.excerpt),
+          cleanText(data.content), "บอส สิทธิกร", status, data.featured ? 1 : 0, publishedAt
+        ).run();
+        return json({ success: true, id: result.meta?.last_row_id, message: "บันทึกบทความเรียบร้อย" }, 201, cors);
+      }
+
+      const adminMatch = url.pathname.match(/^\/api\/admin\/articles\/(\d+)$/);
+      if (adminMatch) {
+        await requireAdmin(request, env);
+        const id = Number(adminMatch[1]);
+        if (request.method === "PUT") {
+          const existing = await env.DB.prepare("SELECT * FROM articles WHERE id = ? LIMIT 1").bind(id).first();
+          if (!existing) throw new HttpError(404, "ไม่พบบทความ");
+          const data = await readJson(request);
+          validateArticle(data);
+          const status = normalizeStatus(data.status);
+          const publishedAt = getPublicationTime(status, data.publish_at);
+          await env.DB.prepare(`
+            UPDATE articles SET
+              title=?, league=?, match_name=?, match_time=?, confidence=?, cover_image=?,
+              excerpt=?, content=?, status=?, featured=?, updated_at=datetime('now'), published_at=?
+            WHERE id=?
+          `).bind(
+            cleanText(data.title), nullableText(data.league), nullableText(data.match_name),
+            nullableText(data.match_time), normalizeConfidence(data.confidence),
+            nullableText(data.image_url || data.cover_image), nullableText(data.excerpt),
+            cleanText(data.content), status, data.featured ? 1 : 0, publishedAt, id
+          ).run();
+          return json({ success: true, message: "แก้ไขบทความเรียบร้อย" }, 200, cors);
+        }
+        if (request.method === "DELETE") {
+          const result = await env.DB.prepare("DELETE FROM articles WHERE id = ?").bind(id).run();
+          if (!result.meta?.changes) throw new HttpError(404, "ไม่พบบทความ");
+          return json({ success: true, message: "ลบบทความเรียบร้อย" }, 200, cors);
+        }
+      }
+
+      if (url.pathname === "/api/articles" && request.method === "GET") {
+        const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit")) || 12));
+        const now = new Date().toISOString();
+        const { results } = await env.DB.prepare(`
+          SELECT * FROM articles
+          WHERE status = 'published'
+             OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?)
+          ORDER BY featured DESC, COALESCE(published_at, created_at) DESC, id DESC
+          LIMIT ?
+        `).bind(now, limit).all();
+        return json({ success: true, articles: (results || []).map(normalizeArticle) }, 200, cors);
+      }
+
+      const publicMatch = url.pathname.match(/^\/api\/articles\/([^/]+)$/);
+      if (publicMatch && request.method === "GET") {
+        const slug = decodeURIComponent(publicMatch[1]);
+        const now = new Date().toISOString();
+        const article = await env.DB.prepare(`
+          SELECT * FROM articles
+          WHERE slug = ? AND (
+            status = 'published' OR
+            (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?)
+          ) LIMIT 1
+        `).bind(slug, now).first();
+        if (!article) throw new HttpError(404, "ไม่พบบทความ");
+        await env.DB.prepare("UPDATE articles SET views = views + 1 WHERE id = ?").bind(article.id).run();
+        return json({ success: true, article: normalizeArticle({ ...article, views: Number(article.views || 0) + 1 }) }, 200, cors);
+      }
+
+      return json({ success: false, message: "Endpoint not found" }, 404, cors);
+    } catch (error) {
+      if (error instanceof HttpError) return json({ success: false, message: error.message }, error.status, cors);
+      console.error(error);
+      return json({ success: false, message: "เกิดข้อผิดพลาดในระบบ" }, 500, cors);
+    }
+  }
+};
+
+async function handleLogin(request, env, cors) {
+  const body = await readJson(request);
+  if (!timingSafeEqual(body.username || "", env.ADMIN_USERNAME || "") ||
+      !timingSafeEqual(body.password || "", env.ADMIN_PASSWORD || "")) {
+    throw new HttpError(401, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+  }
+  return json({ success: true, token: await createToken(env.SESSION_SECRET), expiresIn: 28800 }, 200, cors);
+}
+
+async function requireAdmin(request, env) {
+  const match = (request.headers.get("Authorization") || "").match(/^Bearer\s+(.+)$/i);
+  if (!match || !(await verifyToken(match[1], env.SESSION_SECRET))) {
+    throw new HttpError(401, "Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");
+  }
+}
+
+function normalizeStatus(value) {
+  return ["draft", "published", "scheduled"].includes(value) ? value : "draft";
+}
+
+function getPublicationTime(status, publishAt) {
+  if (status === "draft") return null;
+  if (status === "published") return new Date().toISOString();
+  const date = new Date(publishAt || "");
+  if (Number.isNaN(date.getTime())) throw new HttpError(400, "กรุณาระบุเวลาเผยแพร่ที่ถูกต้อง");
+  return date.toISOString();
+}
+
+function normalizeArticle(a) {
+  const effective = a.status === "scheduled" && a.published_at && new Date(a.published_at) <= new Date()
+    ? "published" : a.status;
+  return {
+    ...a,
+    image_url: a.cover_image || "",
+    publish_at: a.published_at || null,
+    published: effective === "published",
+    effective_status: effective,
+    featured: Boolean(a.featured),
+    confidence: Number(a.confidence || 0),
+    views: Number(a.views || 0)
+  };
+}
+
+function calculateStats(articles) {
+  return {
+    total: articles.length,
+    published: articles.filter(a => a.effective_status === "published").length,
+    scheduled: articles.filter(a => a.status === "scheduled" && a.effective_status !== "published").length,
+    draft: articles.filter(a => a.status === "draft").length,
+    featured: articles.filter(a => a.featured).length
+  };
+}
+
+function validateArticle(data) {
+  if (!cleanText(data.title)) throw new HttpError(400, "กรุณากรอกหัวข้อบทความ");
+  if (!cleanText(data.content)) throw new HttpError(400, "กรุณากรอกเนื้อหาบทความ");
+  if (String(data.title).length > 160) throw new HttpError(400, "หัวข้อบทความยาวเกินไป");
+}
+
+async function createUniqueSlug(db, source) {
+  const base = slugify(source) || `article-${Date.now()}`;
+  let slug = base;
+  for (let n = 2; ; n++) {
+    const row = await db.prepare("SELECT id FROM articles WHERE slug = ? LIMIT 1").bind(slug).first();
+    if (!row) return slug;
+    slug = `${base}-${n}`;
+  }
+}
+
+function slugify(value) {
+  return String(value || "").trim().toLowerCase().normalize("NFKD")
+    .replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 120);
+}
+
+async function createToken(secret) {
+  if (!secret) throw new Error("SESSION_SECRET is not configured");
+  const payload = base64UrlEncode(JSON.stringify({ role: "admin", exp: Math.floor(Date.now()/1000) + 28800 }));
+  return `${payload}.${await sign(payload, secret)}`;
+}
+
+async function verifyToken(token, secret) {
+  if (!token || !secret) return false;
+  const [payload, signature, extra] = token.split(".");
+  if (!payload || !signature || extra) return false;
+  if (!timingSafeEqual(signature, await sign(payload, secret))) return false;
+  try {
+    const data = JSON.parse(base64UrlDecode(payload));
+    return data.role === "admin" && Number(data.exp) > Math.floor(Date.now()/1000);
+  } catch { return false; }
+}
+
+async function sign(value, secret) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name:"HMAC", hash:"SHA-256" }, false, ["sign"]);
+  return bytesToBase64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(value))));
+}
+
+async function readJson(request) {
+  try { return await request.json(); }
+  catch { throw new HttpError(400, "รูปแบบข้อมูลไม่ถูกต้อง"); }
+}
+
+function makeCors(request) {
+  const origin = request.headers.get("Origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "https://fb55vip.com",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin"
+  };
+}
+
+function json(data, status=200, extra={}) {
+  const headers = new Headers(extra);
+  headers.set("Content-Type", "application/json; charset=UTF-8");
+  headers.set("Cache-Control", "no-store");
+  headers.set("X-Content-Type-Options", "nosniff");
+  return new Response(JSON.stringify(data), { status, headers });
+}
+
+function cleanText(v) { return String(v ?? "").trim(); }
+function nullableText(v) { const s=cleanText(v); return s || null; }
+function normalizeConfidence(v) { const n=Number(v); return Number.isFinite(n) ? Math.max(0,Math.min(100,Math.round(n))) : 0; }
+function timingSafeEqual(a,b) { a=String(a);b=String(b);if(a.length!==b.length)return false;let r=0;for(let i=0;i<a.length;i++)r|=a.charCodeAt(i)^b.charCodeAt(i);return r===0; }
+function base64UrlEncode(v) { return bytesToBase64Url(new TextEncoder().encode(v)); }
+function base64UrlDecode(v) { const b=v.replace(/-/g,"+").replace(/_/g,"/").padEnd(Math.ceil(v.length/4)*4,"="); return decodeURIComponent([...atob(b)].map(c=>`%${c.charCodeAt(0).toString(16).padStart(2,"0")}`).join("")); }
+function bytesToBase64Url(bytes) { let s="";for(const b of bytes)s+=String.fromCharCode(b);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,""); }
+class HttpError extends Error { constructor(status,message){super(message);this.status=status;} }
