@@ -1,17 +1,19 @@
-BallToday Ultra Premium V9
+HN FOOTBALL SCORE Final
 
-อัปโหลดไฟล์เหล่านี้ทับของเดิมใน GitHub repository: balltoday
+แบรนด์หน้าเว็บเปลี่ยนจาก BallToday เป็น HN FOOTBALL SCORE แล้ว โดยคง BY บอส สิทธิกร และระบบเดิมทั้งหมด
 
+อัปโหลดทับ GitHub repository เดิม:
 - index.html
-- assets/css/app.css
+- admin.html
+- assets/css/admin.css
+- assets/js/admin.js
 - assets/js/app.js
-- assets/hn-footballclub.png
 
-การเปลี่ยนแปลง V9
-- ปุ่มดาวน์โหลดแอปยังอยู่บนแถบด้านบน
-- ปุ่มลำดับที่ 3 ใน Hero เปลี่ยนเป็น วิธีคิดบิลบอลสเต็ป
-- ปุ่มดังกล่าวเลื่อนไปยังเครื่องคำนวณบอลสเต็ปในหน้าเดียวกัน
-- ผลบอลสด 888Score และส่วนอื่นยังทำงานตามเดิม
+Cloudflare Worker:
+- นำ worker/index.js ไปแทนโค้ดของ balltoday-content-api แล้ว Deploy
+- Binding D1 ต้องชื่อ DB และชี้ไป balltoday-content
+- Secrets เดิม ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET ใช้ต่อได้
 
-หลังอัปโหลดให้ Commit changes แล้วรอ GitHub Pages deploy
-
+หมายเหตุ:
+- ชื่อภายในทางเทคนิค เช่น BALLTODAY_CONFIG, balltoday-content-api และ session key เดิม ถูกเก็บไว้เพื่อไม่ให้ระบบเสีย
+- หน้าเว็บและหน้า CMS แสดงชื่อ HN FOOTBALL SCORE พร้อม BY บอส สิทธิกร
