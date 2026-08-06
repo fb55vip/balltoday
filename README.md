@@ -1,19 +1,24 @@
-HN FOOTBALL SCORE Final
+HN FOOTBALL SCORE V10 Final
 
-แบรนด์หน้าเว็บเปลี่ยนจาก BallToday เป็น HN FOOTBALL SCORE แล้ว โดยคง BY บอส สิทธิกร และระบบเดิมทั้งหมด
+อัปโหลดไฟล์ทั้งหมดในโฟลเดอร์นี้ทับ GitHub repository balltoday ที่ branch main /(root)
 
-อัปโหลดทับ GitHub repository เดิม:
-- index.html
-- admin.html
-- assets/css/admin.css
-- assets/js/admin.js
-- assets/js/app.js
+ไฟล์ Cloudflare Worker:
+- worker/index.js ให้วางทับ Worker balltoday-content-api แล้ว Deploy
+- worker/schema.sql ใช้เฉพาะกรณียังไม่มีตาราง articles; ถ้ามีตารางแล้วไม่ต้องรันซ้ำ
 
-Cloudflare Worker:
-- นำ worker/index.js ไปแทนโค้ดของ balltoday-content-api แล้ว Deploy
-- Binding D1 ต้องชื่อ DB และชี้ไป balltoday-content
-- Secrets เดิม ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET ใช้ต่อได้
+Worker bindings/secrets ที่ต้องมี:
+- D1 Binding: DB -> balltoday-content
+- ADMIN_USERNAME (Secret)
+- ADMIN_PASSWORD (Secret)
+- SESSION_SECRET (Secret)
 
-หมายเหตุ:
-- ชื่อภายในทางเทคนิค เช่น BALLTODAY_CONFIG, balltoday-content-api และ session key เดิม ถูกเก็บไว้เพื่อไม่ให้ระบบเสีย
-- หน้าเว็บและหน้า CMS แสดงชื่อ HN FOOTBALL SCORE พร้อม BY บอส สิทธิกร
+URL:
+- หน้าเว็บ: https://fb55vip.com/
+- แอดมิน: https://fb55vip.com/admin.html
+- Content API: https://balltoday-content-api.noppdsoma.workers.dev/
+
+หลังอัปโหลด:
+1. รอ GitHub Pages Deploy เป็นสีเขียว
+2. ล้าง cache เว็บไซต์หรือเปิด ?v=20260806-v10
+3. ตรวจหน้าแอดมินและสร้างบทความโดยเลือกเผยแพร่
+4. บทความจะแสดงในส่วนบทวิเคราะห์หน้าแรก
