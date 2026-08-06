@@ -1,78 +1,34 @@
-const CACHE = "balltoday-v20260806-1";
-
+const CACHE_NAME = "hn-football-score-v10-20260806";
 const STATIC_ASSETS = [
-  "/assets/icons/icon.svg",
-  "/assets/images/stadium-bg.jpg",
-  "/manifest.webmanifest"
+  "/assets/css/app.css?v=20260806-v10",
+  "/assets/css/admin.css?v=20260806-v10",
+  "/assets/js/config.js?v=20260806-v10",
+  "/assets/js/app.js?v=20260806-v10",
+  "/assets/js/admin.js?v=20260806-v10",
+  "/manifest.webmanifest",
+  "/assets/icons/icon.svg"
 ];
-
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(STATIC_ASSETS))
-  );
-
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(STATIC_ASSETS.map(asset => cache.add(asset)))));
   self.skipWaiting();
 });
-
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE)
-          .map(key => caches.delete(key))
-      )
-    )
-  );
-
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))));
   self.clients.claim();
 });
-
 self.addEventListener("fetch", event => {
   const request = event.request;
   const url = new URL(request.url);
-
-  // ไม่แคช API และ iframe ภายนอก
-  if (
-    request.method !== "GET" ||
-    url.hostname.includes("workers.dev") ||
-    url.hostname.includes("888scoreonline.net")
-  ) {
+  if (request.method !== "GET" || url.hostname.includes("workers.dev") || url.hostname.includes("888scoreonline.net")) return;
+  if (request.mode === "navigate" || request.destination === "document") {
+    event.respondWith(fetch(request, {cache:"no-store"}).catch(() => caches.match(request)));
     return;
   }
-
-  // HTML ใช้ Network First
-  if (
-    request.mode === "navigate" ||
-    request.destination === "document"
-  ) {
-    event.respondWith(
-      fetch(request, { cache: "no-store" })
-        .then(response => response)
-        .catch(() => caches.match("/"))
-    );
-    return;
-  }
-
-  // CSS / JS / รูปภาพ ใช้ Cache First
-  event.respondWith(
-    caches.match(request).then(cacheResponse => {
-      if (cacheResponse) return cacheResponse;
-
-      return fetch(request).then(networkResponse => {
-        if (
-          networkResponse &&
-          networkResponse.status === 200 &&
-          networkResponse.type === "basic"
-        ) {
-          const clone = networkResponse.clone();
-          caches.open(CACHE).then(cache => {
-            cache.put(request, clone);
-          });
-        }
-
-        return networkResponse;
-      });
-    })
-  );
+  event.respondWith(fetch(request).then(response => {
+    if (response && response.status === 200 && response.type === "basic") {
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+    }
+    return response;
+  }).catch(() => caches.match(request)));
 });
