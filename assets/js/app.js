@@ -329,7 +329,7 @@ function createErrorMarkup(
 function log(...values) {
   if (CFG.debug) {
     console.log(
-      "[BallToday]",
+      "[HN FOOTBALL SCORE]",
       ...values
     );
   }
@@ -1015,13 +1015,6 @@ async function loadFixtures({
 
     bindFixtureItems();
 
-    if (
-      state.currentDateOffset === 0
-    ) {
-      renderAnalysisList(
-        fixtures
-      );
-    }
   } catch (error) {
     log(
       "Fixtures error:",
@@ -2926,6 +2919,365 @@ function bindBallstepCalculator() {
   renumberRows();
 }
 
+
+/* =========================================================
+   ADMIN PUBLISHED ARTICLES
+========================================================= */
+
+const CONTENT_API =
+  "https://balltoday-content-api.noppdsoma.workers.dev";
+
+async function loadPublishedArticles() {
+  const container =
+    $("#analysisList");
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="loading-state">
+      <span class="loading-spinner"></span>
+      <p>กำลังโหลดบทความ...</p>
+    </div>
+  `;
+
+  try {
+    const response = await fetch(
+      `${CONTENT_API}/api/articles?limit=12`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        },
+        cache: "no-store"
+      }
+    );
+
+    const data = await response
+      .json()
+      .catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          `HTTP ${response.status}`
+      );
+    }
+
+    const articles =
+      Array.isArray(data.articles)
+        ? data.articles
+        : [];
+
+    if (!articles.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <p>ยังไม่มีบทความที่เผยแพร่</p>
+        </div>
+      `;
+
+      return;
+    }
+
+    container.innerHTML =
+      articles
+        .map(article => `
+          <article class="analysis-item">
+            <div class="analysis-thumb">
+              ${
+                article.image_url
+                  ? `
+                    <img
+                      src="${escapeHtml(
+                        article.image_url
+                      )}"
+                      alt="${escapeHtml(
+                        article.title
+                      )}"
+                      loading="lazy"
+                      decoding="async"
+                      onerror="
+                        this.style.display='none';
+                      "
+                    >
+                  `
+                  : `
+                    <span
+                      class="team-logo-placeholder"
+                      aria-hidden="true"
+                    >
+                      ⚽
+                    </span>
+                  `
+              }
+            </div>
+
+            <div class="analysis-content">
+              <span class="section-kicker">
+                ${escapeHtml(
+                  article.league ||
+                    "บทวิเคราะห์"
+                )}
+              </span>
+
+              <h3>
+                ${escapeHtml(
+                  article.title ||
+                    "บทวิเคราะห์ฟุตบอล"
+                )}
+              </h3>
+
+              ${
+                article.match_name
+                  ? `
+                    <p>
+                      ${escapeHtml(
+                        article.match_name
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
+
+              ${
+                article.match_time
+                  ? `
+                    <p>
+                      ${escapeHtml(
+                        formatBangkokDateTime(
+                          article.match_time
+                        )
+                      )}
+                    </p>
+                  `
+                  : ""
+              }
+
+              <p>
+                ${escapeHtml(
+                  article.excerpt ||
+                    "อ่านบทวิเคราะห์และแนวทางฟุตบอลล่าสุด"
+                )}
+              </p>
+
+              <button
+                class="analysis-button"
+                type="button"
+                data-content-article="${escapeHtml(
+                  article.slug || ""
+                )}"
+              >
+                อ่านบทความ →
+              </button>
+            </div>
+          </article>
+        `)
+        .join("");
+
+    $$(
+      "[data-content-article]"
+    ).forEach(button => {
+      button.onclick = () =>
+        openPublishedArticle(
+          button.dataset
+            .contentArticle
+        );
+    });
+  } catch (error) {
+    log(
+      "Content articles error:",
+      error
+    );
+
+    container.innerHTML = `
+      <div class="error-state">
+        <p>โหลดบทความไม่สำเร็จ</p>
+        <small>
+          ${escapeHtml(
+            error.message ||
+              "กรุณาลองใหม่อีกครั้ง"
+          )}
+        </small>
+      </div>
+    `;
+  }
+}
+
+async function openPublishedArticle(
+  slug
+) {
+  const modal =
+    $("#analysisModal");
+
+  const content =
+    $("#analysisModalContent");
+
+  if (
+    !modal ||
+    !content ||
+    !slug
+  ) {
+    return;
+  }
+
+  openModal(modal);
+
+  content.innerHTML = `
+    <div class="loading-state">
+      <span class="loading-spinner"></span>
+      <p>กำลังโหลดบทความ...</p>
+    </div>
+  `;
+
+  try {
+    const response = await fetch(
+      `${CONTENT_API}/api/articles/${encodeURIComponent(
+        slug
+      )}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        },
+        cache: "no-store"
+      }
+    );
+
+    const data = await response
+      .json()
+      .catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          `HTTP ${response.status}`
+      );
+    }
+
+    const article =
+      data.article || {};
+
+    content.innerHTML = `
+      <article class="published-article">
+        ${
+          article.image_url
+            ? `
+              <img
+                src="${escapeHtml(
+                  article.image_url
+                )}"
+                alt="${escapeHtml(
+                  article.title || ""
+                )}"
+                loading="lazy"
+                decoding="async"
+                style="
+                  width:100%;
+                  max-height:420px;
+                  object-fit:cover;
+                  border-radius:14px;
+                  margin-bottom:18px;
+                "
+              >
+            `
+            : ""
+        }
+
+        <span class="section-kicker">
+          ${escapeHtml(
+            article.league ||
+              "บทวิเคราะห์"
+          )}
+        </span>
+
+        <h2>
+          ${escapeHtml(
+            article.title ||
+              "บทวิเคราะห์ฟุตบอล"
+          )}
+        </h2>
+
+        ${
+          article.match_name
+            ? `
+              <p>
+                <strong>คู่แข่งขัน:</strong>
+                ${escapeHtml(
+                  article.match_name
+                )}
+              </p>
+            `
+            : ""
+        }
+
+        ${
+          article.match_time
+            ? `
+              <p>
+                <strong>เวลาแข่งขัน:</strong>
+                ${escapeHtml(
+                  formatBangkokDateTime(
+                    article.match_time
+                  )
+                )}
+              </p>
+            `
+            : ""
+        }
+
+        ${
+          article.excerpt
+            ? `
+              <p>
+                ${escapeHtml(
+                  article.excerpt
+                )}
+              </p>
+            `
+            : ""
+        }
+
+        <div
+          style="
+            white-space:pre-wrap;
+            line-height:1.8;
+          "
+        >
+          ${escapeHtml(
+            article.content || ""
+          )}
+        </div>
+
+        <p style="margin-top:20px">
+          โดย
+          ${escapeHtml(
+            article.author ||
+              "บอส สิทธิกร"
+          )}
+        </p>
+      </article>
+    `;
+  } catch (error) {
+    log(
+      "Open content article error:",
+      error
+    );
+
+    content.innerHTML = `
+      <div class="error-state">
+        <p>เปิดบทความไม่สำเร็จ</p>
+        <small>
+          ${escapeHtml(
+            error.message ||
+              "กรุณาลองใหม่อีกครั้ง"
+          )}
+        </small>
+      </div>
+    `;
+  }
+}
+
 /* =========================================================
    INITIAL LOAD AND TIMERS
 ========================================================= */
@@ -2952,7 +3304,10 @@ async function checkHealth() {
 }
 
 async function initialLoad() {
-  await loadFixtures();
+  await Promise.all([
+    loadFixtures(),
+    loadPublishedArticles()
+  ]);
 
   await sleep(1500);
 
