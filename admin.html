@@ -4,58 +4,130 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow">
-  <title>BallToday Admin | จัดการบทความทีเด็ด</title>
-  <link rel="stylesheet" href="/assets/css/admin.css?v=1.0.0">
+  <meta name="theme-color" content="#07090d">
+  <title>HN FOOTBALL SCORE CMS | ระบบจัดการบทความ</title>
+  <link rel="stylesheet" href="/assets/css/admin.css?v=20260806-cms-final">
 </head>
 <body>
   <main class="admin-shell">
-    <section id="loginView" class="admin-card login-card">
-      <div class="brand">⚽ <strong>Ball<span>Today</span></strong></div>
-      <h1>เข้าสู่ระบบแอดมิน</h1>
-      <p>จัดการบทความทีเด็ดและบทวิเคราะห์</p>
-      <form id="loginForm">
+    <section id="loginView" class="login-wrap">
+      <form id="loginForm" class="panel login-card" autocomplete="on">
+        <a class="brand" href="/" aria-label="กลับหน้า HN FOOTBALL SCORE">⚽ <strong>HN <span>FOOTBALL SCORE</span></strong></a>
+        <p class="eyebrow">SECURE CONTENT MANAGEMENT</p>
+        <h1>เข้าสู่ระบบแอดมิน</h1>
+        <p class="muted">จัดการบทความทีเด็ด บทวิเคราะห์ และรูปหน้าปก</p>
         <label>ชื่อผู้ใช้<input id="username" autocomplete="username" required></label>
         <label>รหัสผ่าน<input id="password" type="password" autocomplete="current-password" required></label>
-        <button type="submit">เข้าสู่ระบบ</button>
+        <button id="loginButton" class="primary" type="submit">เข้าสู่ระบบ</button>
+        <div id="loginMessage" class="message" aria-live="polite"></div>
       </form>
-      <div id="loginMessage" class="message" aria-live="polite"></div>
     </section>
 
     <section id="dashboardView" class="dashboard" hidden>
-      <header class="dashboard-head">
-        <div><div class="brand">⚽ <strong>Ball<span>Today</span></strong></div><h1>จัดการบทความทีเด็ด</h1></div>
-        <button id="logoutButton" class="ghost">ออกจากระบบ</button>
+      <header class="topbar">
+        <div>
+          <a class="brand" href="/">⚽ <strong>HN <span>FOOTBALL SCORE</span></strong></a>
+          <h1>ระบบจัดการบทความ</h1>
+        </div>
+        <div class="top-actions">
+          <a class="ghost link-button" href="/" target="_blank" rel="noopener">ดูเว็บไซต์</a>
+          <button id="logoutButton" class="ghost" type="button">ออกจากระบบ</button>
+        </div>
       </header>
 
+      <section class="stats-grid" aria-label="สรุปบทความ">
+        <article class="stat-card"><span>ทั้งหมด</span><strong id="statTotal">0</strong></article>
+        <article class="stat-card"><span>เผยแพร่</span><strong id="statPublished">0</strong></article>
+        <article class="stat-card"><span>ตั้งเวลา</span><strong id="statScheduled">0</strong></article>
+        <article class="stat-card"><span>ฉบับร่าง</span><strong id="statDraft">0</strong></article>
+        <article class="stat-card"><span>ปักหมุด</span><strong id="statFeatured">0</strong></article>
+      </section>
+
       <div class="admin-grid">
-        <section class="admin-card editor-card">
-          <h2 id="editorTitle">เพิ่มบทความใหม่</h2>
+        <section class="panel editor-panel">
+          <div class="panel-head">
+            <div><p class="eyebrow">ARTICLE EDITOR</p><h2 id="editorTitle">เพิ่มบทความใหม่</h2></div>
+            <button id="resetButton" type="button" class="ghost">ล้างฟอร์ม</button>
+          </div>
+
           <form id="articleForm">
             <input id="articleId" type="hidden">
-            <label>หัวข้อบทความ<input id="title" maxlength="160" required></label>
+            <label>หัวข้อบทความ<input id="title" maxlength="160" required placeholder="เช่น ทีเด็ดพรีเมียร์ลีกคืนนี้"></label>
+
             <div class="two-col">
-              <label>ลีก<input id="league" maxlength="80" placeholder="เช่น พรีเมียร์ลีก"></label>
+              <label>ลีก
+                <select id="league">
+                  <option value="">เลือกลีก</option>
+                  <option>พรีเมียร์ลีก</option><option>ลาลีกา</option><option>เซเรียอา</option>
+                  <option>บุนเดสลีกา</option><option>ลีกเอิง</option><option>ยูฟ่า แชมเปียนส์ลีก</option>
+                  <option>ยูฟ่า ยูโรปาลีก</option><option>ไทยลีก</option><option>ฟุตบอลทีมชาติ</option>
+                  <option value="อื่น ๆ">อื่น ๆ</option>
+                </select>
+              </label>
               <label>คู่แข่งขัน<input id="matchName" maxlength="120" placeholder="เช่น ลิเวอร์พูล พบ อาร์เซนอล"></label>
             </div>
+
             <div class="two-col">
               <label>เวลาแข่งขัน<input id="matchTime" type="datetime-local"></label>
-              <label>รูปภาพ URL<input id="imageUrl" type="url" placeholder="https://..."></label>
+              <label>คะแนนความมั่นใจ (%)<input id="confidence" type="number" min="0" max="100" step="1" value="70"></label>
             </div>
-            <label>คำเกริ่น<textarea id="excerpt" rows="3" maxlength="300"></textarea></label>
-            <label>เนื้อหาบทความ<textarea id="content" rows="12" required></textarea></label>
-            <label class="check"><input id="published" type="checkbox"> เผยแพร่ทันที</label>
-            <div class="actions"><button type="submit">บันทึกบทความ</button><button id="resetButton" type="button" class="ghost">ล้างฟอร์ม</button></div>
+
+            <div class="image-section">
+              <label>ลิงก์รูปหน้าปก<input id="imageUrl" type="url" placeholder="https://..."></label>
+              <img id="coverPreview" class="cover-preview" alt="ตัวอย่างรูปหน้าปก" hidden>
+            </div>
+
+            <label>คำเกริ่น<textarea id="excerpt" rows="3" maxlength="500" placeholder="สรุปสั้น ๆ สำหรับหน้าแรก"></textarea></label>
+            <label>เนื้อหาบทความ<textarea id="content" rows="14" required placeholder="เขียนบทวิเคราะห์ที่นี่..."></textarea></label>
+
+            <div class="two-col">
+              <label>สถานะ
+                <select id="status">
+                  <option value="draft">บันทึกร่าง</option>
+                  <option value="published">เผยแพร่ทันที</option>
+                  <option value="scheduled">ตั้งเวลาเผยแพร่</option>
+                </select>
+              </label>
+              <label id="publishAtWrap" hidden>เวลาเผยแพร่<input id="publishAt" type="datetime-local"></label>
+            </div>
+
+            <label class="check"><input id="featured" type="checkbox"> 📌 ปักหมุดบทความนี้</label>
+
+            <div class="form-actions">
+              <button id="previewButton" class="ghost" type="button">👀 ดูตัวอย่าง</button>
+              <button id="saveButton" class="primary" type="submit">บันทึกบทความ</button>
+            </div>
           </form>
           <div id="editorMessage" class="message" aria-live="polite"></div>
         </section>
 
-        <section class="admin-card list-card">
-          <div class="list-head"><h2>บทความทั้งหมด</h2><button id="refreshArticles" class="ghost">รีเฟรช</button></div>
+        <section class="panel list-panel">
+          <div class="panel-head">
+            <div><p class="eyebrow">CONTENT LIBRARY</p><h2>บทความทั้งหมด</h2></div>
+            <button id="refreshArticles" class="ghost" type="button">รีเฟรช</button>
+          </div>
+          <div class="filters">
+            <input id="searchInput" type="search" placeholder="ค้นหาหัวข้อ คู่แข่งขัน หรือลีก">
+            <select id="statusFilter"><option value="">ทุกสถานะ</option><option value="published">เผยแพร่</option><option value="scheduled">ตั้งเวลา</option><option value="draft">ฉบับร่าง</option></select>
+          </div>
           <div id="articleList" class="article-list"></div>
         </section>
       </div>
     </section>
   </main>
-  <script src="/assets/js/admin.js?v=1.0.0" defer></script>
+
+  <dialog id="previewModal" class="preview-modal">
+    <article class="preview-card">
+      <button id="closePreview" class="modal-close" type="button" aria-label="ปิด">×</button>
+      <img id="previewImage" alt="" hidden>
+      <p id="previewLeague" class="eyebrow"></p>
+      <h2 id="previewTitle"></h2>
+      <div id="previewMeta" class="preview-meta"></div>
+      <p id="previewExcerpt" class="lead"></p>
+      <div id="previewContent" class="preview-content"></div>
+    </article>
+  </dialog>
+
+  <script src="/assets/js/admin.js?v=20260806-cms-final" defer></script>
 </body>
 </html>
