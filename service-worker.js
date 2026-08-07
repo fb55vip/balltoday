@@ -1,4 +1,4 @@
-const CACHE_NAME = "hn-football-score-v10-20260806";
+const CACHE_NAME = "hn-football-score-v11-20260807";
 const STATIC_ASSETS = [
   "/assets/css/app.css?v=20260806-v10",
   "/assets/css/admin.css?v=20260806-v10",
