@@ -2944,7 +2944,7 @@ async function loadPublishedArticles() {
 
   try {
     const response = await fetch(
-      `${CONTENT_API}/api/articles?limit=12`,
+      `${CONTENT_API}/api/articles?type=analysis&limit=12`,
       {
         method: "GET",
         headers: {
@@ -3319,6 +3319,59 @@ async function loadHomepagePopup(){
   }catch(error){log("Homepage popup error:",error)}
 }
 
+
+/* =========================================================
+   ADMIN PUBLISHED NEWS
+========================================================= */
+
+async function loadPublishedNews() {
+  const container = $("#newsList");
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="loading-state">
+      <span class="loading-spinner"></span>
+      <p>กำลังโหลดข่าวฟุตบอล...</p>
+    </div>
+  `;
+
+  try {
+    const response = await fetch(
+      `${CONTENT_API}/api/articles?type=news&limit=8`,
+      { headers:{Accept:"application/json"}, cache:"no-store" }
+    );
+    const data = await response.json().catch(()=>({}));
+    if (!response.ok) throw new Error(data.message || `HTTP ${response.status}`);
+    const items = Array.isArray(data.articles) ? data.articles : [];
+
+    if (!items.length) {
+      container.innerHTML = `<div class="empty-state"><p>ยังไม่มีข่าวฟุตบอลที่เผยแพร่</p></div>`;
+      return;
+    }
+
+    container.innerHTML = items.map(article => `
+      <article class="news-item">
+        <div class="news-image">
+          ${article.image_url ? `<img src="${escapeHtml(article.image_url)}" alt="${escapeHtml(article.title||"ข่าวฟุตบอล")}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">` : ""}
+        </div>
+        <div class="news-content">
+          <span class="news-category">${escapeHtml(article.league || "ข่าวฟุตบอล")}</span>
+          <h3>${escapeHtml(article.title || "ข่าวฟุตบอลล่าสุด")}</h3>
+          <p>${escapeHtml(article.excerpt || "ติดตามข่าวฟุตบอลล่าสุดจาก HN FOOTBALL SCORE")}</p>
+          <button class="analysis-button" type="button" data-news-article="${escapeHtml(article.slug||"")}">อ่านข่าว →</button>
+        </div>
+      </article>
+    `).join("");
+
+    $$("[data-news-article]").forEach(button=>{
+      button.onclick=()=>openPublishedArticle(button.dataset.newsArticle);
+    });
+  } catch(error) {
+    log("News error:", error);
+    container.innerHTML = `<div class="error-state"><p>โหลดข่าวฟุตบอลไม่สำเร็จ</p></div>`;
+  }
+}
+
 /* =========================================================
    INITIAL LOAD AND TIMERS
 ========================================================= */
@@ -3347,7 +3400,8 @@ async function checkHealth() {
 async function initialLoad() {
   await Promise.all([
     loadFixtures(),
-    loadPublishedArticles()
+    loadPublishedArticles(),
+    loadPublishedNews()
   ]);
 
   await sleep(1500);
