@@ -2950,7 +2950,8 @@ async function loadPublishedArticles() {
         headers: {
           Accept: "application/json"
         },
-        cache: "no-store"
+        cache: "no-store",
+        mode: "cors"
       }
     );
 
@@ -3140,7 +3141,8 @@ async function openPublishedArticle(
         headers: {
           Accept: "application/json"
         },
-        cache: "no-store"
+        cache: "no-store",
+        mode: "cors"
       }
     );
 
@@ -3289,7 +3291,7 @@ async function loadHomepagePopup(){
     const p=data.popup;
     if(!response.ok||!p||!p.image_url)return;
     const key=`hn_popup_${p.updated_at||p.image_url}`;
-    if(p.once_per_session&&sessionStorage.getItem(key))return;
+    if(p.once_per_session){try{if(sessionStorage.getItem(key))return}catch{}}
 
     const overlay=document.createElement("div");
     overlay.id="hnHomepagePopup";
