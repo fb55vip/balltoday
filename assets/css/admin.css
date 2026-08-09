@@ -8,3 +8,8 @@
 .news-mode-badge{display:inline-flex;padding:4px 9px;border-radius:999px;background:rgba(59,130,246,.15);color:#93c5fd;font-size:12px;font-weight:900}
 .article-type{font-size:12px;font-weight:900;letter-spacing:.04em;color:var(--muted)}
 @media(max-width:640px){.dashboard-shortcuts>*{width:100%}}
+
+/* HN FOOTBALL SCORE Admin v14 */
+[data-admin-panel][hidden]{display:none!important}
+.admin-tab{white-space:nowrap}
+.news-admin-intro{border-color:rgba(74,168,255,.28)}
