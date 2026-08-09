@@ -8,6 +8,33 @@ let token=sessionStorage.getItem("balltoday_admin_token")||"";
 let articles=[];
 let currentType="analysis";
 
+
+const ANALYSIS_CATEGORIES = [
+  "", "พรีเมียร์ลีก", "ลาลีกา", "เซเรียอา", "บุนเดสลีกา", "ลีกเอิง",
+  "ยูฟ่า แชมเปียนส์ลีก", "ยูฟ่า ยูโรปาลีก", "ไทยลีก", "ฟุตบอลทีมชาติ", "อื่น ๆ"
+];
+const NEWS_CATEGORIES = [
+  "", "ข่าวล่าสุด", "พรีเมียร์ลีก", "ลาลีกา", "เซเรียอา", "บุนเดสลีกา", "ลีกเอิง",
+  "ยูฟ่า แชมเปียนส์ลีก", "ฟุตบอลไทย", "ตลาดซื้อขาย", "ทีมชาติ", "ข่าวนักเตะ", "อื่น ๆ"
+];
+function setCategoryOptions(type, selected=""){
+  const select=$("#league");
+  if(!select)return;
+  const list=type==="news"?NEWS_CATEGORIES:ANALYSIS_CATEGORIES;
+  select.innerHTML=list.map((v,i)=>`<option value="${esc(v)}">${i===0?(type==="news"?"เลือกหมวดข่าว":"เลือกลีก"):esc(v)}</option>`).join("");
+  select.value=list.includes(selected)?selected:(selected?"อื่น ๆ":"");
+}
+function renderCurrentStats(){
+  const scoped=articles.filter(a=>(a.content_type||"analysis")===currentType);
+  renderStats({
+    total:scoped.length,
+    published:scoped.filter(a=>a.effective_status==="published").length,
+    scheduled:scoped.filter(a=>a.status==="scheduled"&&a.effective_status!=="published").length,
+    draft:scoped.filter(a=>a.status==="draft").length,
+    featured:scoped.filter(a=>a.featured).length
+  });
+}
+
 async function api(path,options={}){
   const headers={...(options.headers||{})};
   if(!(options.body instanceof FormData))headers["Content-Type"]="application/json";
@@ -39,7 +66,9 @@ function setEditorMode(type){
   $("#saveButton").textContent=news?"บันทึกข่าว":"บันทึกบทวิเคราะห์";
   $("#libraryTitle").textContent=news?"ข่าวฟุตบอลทั้งหมด":"บทวิเคราะห์ทั้งหมด";
   $("#searchInput").placeholder=news?"ค้นหาหัวข้อข่าวหรือหมวดข่าว":"ค้นหาหัวข้อ คู่แข่งขัน หรือลีก";
+  setCategoryOptions(currentType);
   resetForm(false);
+  renderCurrentStats();
   render();
 }
 
@@ -79,6 +108,7 @@ function renderStats(s={}){
 
 function resetForm(clearMessage=true){
   $("#articleForm").reset();
+  setCategoryOptions(currentType);
   $("#articleId").value="";
   $("#contentType").value=currentType;
   $("#confidence").value="70";
@@ -120,7 +150,7 @@ async function loadArticles(){
     $("#articleList").innerHTML='<div class="spinner"></div>';
     const d=await api("/api/admin/articles");
     articles=d.articles||[];
-    renderStats(d.stats||{});
+    renderCurrentStats();
     render();
   }catch(e){
     if(/เข้าสู่ระบบ|session|unauthorized/i.test(e.message)){token="";sessionStorage.removeItem("balltoday_admin_token");showLogin()}
@@ -152,7 +182,7 @@ function fillForm(a){
   $(".admin-grid").classList.toggle("news-mode",currentType==="news");
   $("#articleId").value=a.id;
   $("#title").value=a.title||"";
-  $("#league").value=[...$("#league").options].some(o=>o.value===a.league)?a.league:"อื่น ๆ";
+  setCategoryOptions(currentType,a.league||"");
   $("#matchName").value=a.match_name||"";
   $("#matchTime").value=localInput(a.match_time);
   $("#confidence").value=a.confidence||0;
