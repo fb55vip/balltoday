@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#07090d">
   <title>HN FOOTBALL SCORE CMS | ระบบจัดการบทความ</title>
-  <link rel="stylesheet" href="/assets/css/admin.css?v=20260806-v10">
+  <link rel="stylesheet" href="/assets/css/admin.css?v=20260809-v12">
 </head>
 <body>
   <main class="admin-shell">
@@ -35,7 +35,8 @@
         </div>
       </header>
 
-      <section class="stats-grid" aria-label="สรุปบทความ">
+      <nav class="admin-tabs"><button class="admin-tab active" type="button" data-admin-tab="articles">📝 บทความ / ข่าว</button><button class="admin-tab" type="button" data-admin-tab="popup">🖼️ Popup ทีเด็ดวันนี้</button></nav>
+      <section data-admin-panel="articles"><section class="stats-grid" aria-label="สรุปบทความ">
         <article class="stat-card"><span>ทั้งหมด</span><strong id="statTotal">0</strong></article>
         <article class="stat-card"><span>เผยแพร่</span><strong id="statPublished">0</strong></article>
         <article class="stat-card"><span>ตั้งเวลา</span><strong id="statScheduled">0</strong></article>
@@ -112,7 +113,20 @@
           </div>
           <div id="articleList" class="article-list"></div>
         </section>
-      </div>
+      </div></section>
+      <section class="panel popup-panel" data-admin-panel="popup" hidden>
+        <div class="panel-head"><div><p class="eyebrow">HOMEPAGE POPUP</p><h2>Popup ทีเด็ดวันนี้</h2></div><button id="refreshPopup" class="ghost" type="button">รีเฟรช</button></div>
+        <p class="muted">ตั้งค่ารูปที่เด้งอัตโนมัติเมื่อผู้ชมเข้าเว็บไซต์ เปิด/ปิด กำหนดลิงก์ และช่วงเวลาแสดงได้</p>
+        <form id="popupForm">
+          <label class="check"><input id="popupEnabled" type="checkbox"> เปิดใช้งาน Popup</label>
+          <label>ชื่อรายการ<input id="popupTitle" maxlength="160" placeholder="เช่น ทีเด็ดวันนี้"></label>
+          <div class="image-section"><label>URL รูป Popup<input id="popupImageUrl" type="url" placeholder="https://..."></label><img id="popupImagePreview" class="cover-preview popup-preview" alt="ตัวอย่าง Popup" hidden></div>
+          <label>ลิงก์เมื่อกดรูป<input id="popupLinkUrl" type="url" placeholder="https://fb55vip.com/..."></label>
+          <div class="two-col"><label>เริ่มแสดง<input id="popupStartAt" type="datetime-local"></label><label>สิ้นสุดการแสดง<input id="popupEndAt" type="datetime-local"></label></div>
+          <label class="check"><input id="popupOncePerSession" type="checkbox" checked> แสดงครั้งเดียวต่อการเปิดเว็บ</label>
+          <div class="form-actions"><button id="popupPreviewButton" class="ghost" type="button">👀 ดูรูป</button><button id="savePopupButton" class="primary" type="submit">บันทึก Popup</button></div>
+        </form><div id="popupMessage" class="message" aria-live="polite"></div>
+      </section>
     </section>
   </main>
 
@@ -128,6 +142,6 @@
     </article>
   </dialog>
 
-  <script src="/assets/js/admin.js?v=20260806-v10" defer></script>
+  <script src="/assets/js/admin.js?v=20260809-v12" defer></script>
 </body>
 </html>
