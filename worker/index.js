@@ -2,7 +2,8 @@
 
 const ALLOWED_ORIGINS = new Set([
   "https://fb55vip.com",
-  "https://www.fb55vip.com"
+  "https://www.fb55vip.com",
+  "https://balltoday.pages.dev"
 ]);
 
 export default {
@@ -15,8 +16,8 @@ export default {
     }
 
     try {
-      if (url.pathname === "/" && request.method === "GET") {
-        return json({ success: true, service: "HN FOOTBALL SCORE Content API", status: "online" }, 200, cors);
+      if ((url.pathname === "/" || url.pathname === "/api/health") && request.method === "GET") {
+        return json({ success: true, service: "HN FOOTBALL SCORE Content API", status: "online", version: "v14" }, 200, cors);
       }
 
       if (url.pathname === "/api/admin/login" && request.method === "POST") {
