@@ -85,6 +85,11 @@ export default {
         }
       }
 
+
+      if (url.pathname === "/api/admin/popup" && request.method === "GET") { await requireAdmin(request,env);await ensurePopupTable(env.DB);const row=await env.DB.prepare("SELECT * FROM site_popup WHERE id=1").first();return json({success:true,popup:normalizePopup(row)},200,cors); }
+      if (url.pathname === "/api/admin/popup" && request.method === "PUT") { await requireAdmin(request,env);await ensurePopupTable(env.DB);const d=await readJson(request);if(d.enabled&&!cleanText(d.image_url))throw new HttpError(400,"กรุณาระบุ URL รูป Popup");const s=nullableIso(d.start_at),e=nullableIso(d.end_at);if(s&&e&&new Date(e)<=new Date(s))throw new HttpError(400,"เวลาสิ้นสุดต้องอยู่หลังเวลาเริ่ม");await env.DB.prepare(`INSERT INTO site_popup(id,enabled,title,image_url,link_url,start_at,end_at,once_per_session,updated_at) VALUES(1,?,?,?,?,?,?,?,datetime('now')) ON CONFLICT(id) DO UPDATE SET enabled=excluded.enabled,title=excluded.title,image_url=excluded.image_url,link_url=excluded.link_url,start_at=excluded.start_at,end_at=excluded.end_at,once_per_session=excluded.once_per_session,updated_at=datetime('now')`).bind(d.enabled?1:0,nullableText(d.title),nullableText(d.image_url),nullableText(d.link_url),s,e,d.once_per_session===false?0:1).run();return json({success:true,message:"บันทึก Popup เรียบร้อย"},200,cors); }
+      if (url.pathname === "/api/popup" && request.method === "GET") { await ensurePopupTable(env.DB);const p=normalizePopup(await env.DB.prepare("SELECT * FROM site_popup WHERE id=1").first()),n=Date.now();const active=p.enabled&&p.image_url&&(!p.start_at||new Date(p.start_at).getTime()<=n)&&(!p.end_at||new Date(p.end_at).getTime()>=n);return json({success:true,popup:active?p:null},200,cors); }
+
       if (url.pathname === "/api/articles" && request.method === "GET") {
         const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit")) || 12));
         const now = new Date().toISOString();
@@ -243,6 +248,11 @@ function json(data, status=200, extra={}) {
   headers.set("X-Content-Type-Options", "nosniff");
   return new Response(JSON.stringify(data), { status, headers });
 }
+
+
+async function ensurePopupTable(db){await db.prepare(`CREATE TABLE IF NOT EXISTS site_popup(id INTEGER PRIMARY KEY CHECK(id=1),enabled INTEGER NOT NULL DEFAULT 0,title TEXT,image_url TEXT,link_url TEXT,start_at TEXT,end_at TEXT,once_per_session INTEGER NOT NULL DEFAULT 1,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`).run();}
+function normalizePopup(r){return r?{enabled:Boolean(r.enabled),title:r.title||"",image_url:r.image_url||"",link_url:r.link_url||"",start_at:r.start_at||null,end_at:r.end_at||null,once_per_session:Boolean(r.once_per_session),updated_at:r.updated_at||null}:{enabled:false,title:"",image_url:"",link_url:"",start_at:null,end_at:null,once_per_session:true};}
+function nullableIso(v){if(!v)return null;const d=new Date(v);if(Number.isNaN(d.getTime()))throw new HttpError(400,"รูปแบบวันที่หรือเวลาไม่ถูกต้อง");return d.toISOString();}
 
 function cleanText(v) { return String(v ?? "").trim(); }
 function nullableText(v) { const s=cleanText(v); return s || null; }
