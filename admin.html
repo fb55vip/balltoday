@@ -6,7 +6,7 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#07090d">
   <title>HN FOOTBALL SCORE CMS | ระบบจัดการบทความ</title>
-  <link rel="stylesheet" href="/assets/css/admin.css?v=20260809-v12">
+  <link rel="stylesheet" href="/assets/css/admin.css?v=20260809-v13">
 </head>
 <body>
   <main class="admin-shell">
@@ -35,8 +35,26 @@
         </div>
       </header>
 
-      <nav class="admin-tabs"><button class="admin-tab active" type="button" data-admin-tab="articles">📝 บทความ / ข่าว</button><button class="admin-tab" type="button" data-admin-tab="popup">🖼️ Popup ทีเด็ดวันนี้</button></nav>
-      <section data-admin-panel="articles"><section class="stats-grid" aria-label="สรุปบทความ">
+      <nav class="admin-tabs" aria-label="HN FOOTBALL SCORE ADMIN">
+        <button class="admin-tab active" type="button" data-admin-tab="dashboard">📊 Dashboard</button>
+        <button class="admin-tab" type="button" data-admin-tab="analysis">📝 บทวิเคราะห์</button>
+        <button class="admin-tab" type="button" data-admin-tab="news">📰 ข่าวฟุตบอล</button>
+        <button class="admin-tab" type="button" data-admin-tab="popup">🖼️ Popup ทีเด็ดวันนี้</button>
+      </nav>
+      <section data-admin-panel="dashboard">
+        <section class="dashboard-welcome panel">
+          <p class="eyebrow">HN FOOTBALL SCORE ADMIN</p>
+          <h2>Dashboard</h2>
+          <p class="muted">จัดการบทวิเคราะห์ ข่าวฟุตบอล และ Popup ทีเด็ดวันนี้ จากหลังบ้านเดียว</p>
+          <div class="dashboard-shortcuts">
+            <button type="button" class="ghost" data-go-tab="analysis">📝 เพิ่มบทวิเคราะห์</button>
+            <button type="button" class="ghost" data-go-tab="news">📰 เพิ่มข่าวฟุตบอล</button>
+            <button type="button" class="ghost" data-go-tab="popup">🖼️ ตั้งค่า Popup</button>
+          </div>
+        </section>
+      </section>
+
+      <section data-admin-panel="analysis" hidden><section class="stats-grid" aria-label="สรุปบทความ">
         <article class="stat-card"><span>ทั้งหมด</span><strong id="statTotal">0</strong></article>
         <article class="stat-card"><span>เผยแพร่</span><strong id="statPublished">0</strong></article>
         <article class="stat-card"><span>ตั้งเวลา</span><strong id="statScheduled">0</strong></article>
@@ -47,16 +65,16 @@
       <div class="admin-grid">
         <section class="panel editor-panel">
           <div class="panel-head">
-            <div><p class="eyebrow">ARTICLE EDITOR</p><h2 id="editorTitle">เพิ่มบทความใหม่</h2></div>
+            <div><p class="eyebrow">ARTICLE EDITOR</p><h2 id="editorTitle">เพิ่มบทวิเคราะห์ใหม่</h2></div>
             <button id="resetButton" type="button" class="ghost">ล้างฟอร์ม</button>
           </div>
 
-          <form id="articleForm">
+          <form id="articleForm"><input id="contentType" type="hidden" value="analysis">
             <input id="articleId" type="hidden">
-            <label>หัวข้อบทความ<input id="title" maxlength="160" required placeholder="เช่น ทีเด็ดพรีเมียร์ลีกคืนนี้"></label>
+            <label><span id="titleLabel">หัวข้อบทวิเคราะห์</span><input id="title" maxlength="160" required placeholder="เช่น ทีเด็ดพรีเมียร์ลีกคืนนี้"></label>
 
             <div class="two-col">
-              <label>ลีก
+              <label><span id="leagueLabel">ลีก</span>
                 <select id="league">
                   <option value="">เลือกลีก</option>
                   <option>พรีเมียร์ลีก</option><option>ลาลีกา</option><option>เซเรียอา</option>
@@ -65,12 +83,12 @@
                   <option value="อื่น ๆ">อื่น ๆ</option>
                 </select>
               </label>
-              <label>คู่แข่งขัน<input id="matchName" maxlength="120" placeholder="เช่น ลิเวอร์พูล พบ อาร์เซนอล"></label>
+              <label class="analysis-only">คู่แข่งขัน<input id="matchName" maxlength="120" placeholder="เช่น ลิเวอร์พูล พบ อาร์เซนอล"></label>
             </div>
 
             <div class="two-col">
-              <label>เวลาแข่งขัน<input id="matchTime" type="datetime-local"></label>
-              <label>คะแนนความมั่นใจ (%)<input id="confidence" type="number" min="0" max="100" step="1" value="70"></label>
+              <label class="analysis-only">เวลาแข่งขัน<input id="matchTime" type="datetime-local"></label>
+              <label class="analysis-only">คะแนนความมั่นใจ (%)<input id="confidence" type="number" min="0" max="100" step="1" value="70"></label>
             </div>
 
             <div class="image-section">
@@ -78,8 +96,8 @@
               <img id="coverPreview" class="cover-preview" alt="ตัวอย่างรูปหน้าปก" hidden>
             </div>
 
-            <label>คำเกริ่น<textarea id="excerpt" rows="3" maxlength="500" placeholder="สรุปสั้น ๆ สำหรับหน้าแรก"></textarea></label>
-            <label>เนื้อหาบทความ<textarea id="content" rows="14" required placeholder="เขียนบทวิเคราะห์ที่นี่..."></textarea></label>
+            <label><span id="excerptLabel">คำเกริ่น</span><textarea id="excerpt" rows="3" maxlength="500" placeholder="สรุปสั้น ๆ สำหรับหน้าแรก"></textarea></label>
+            <label><span id="contentLabel">เนื้อหาบทวิเคราะห์</span><textarea id="content" rows="14" required placeholder="เขียนบทวิเคราะห์ที่นี่..."></textarea></label>
 
             <div class="two-col">
               <label>สถานะ
@@ -92,11 +110,11 @@
               <label id="publishAtWrap" hidden>เวลาเผยแพร่<input id="publishAt" type="datetime-local"></label>
             </div>
 
-            <label class="check"><input id="featured" type="checkbox"> 📌 ปักหมุดบทความนี้</label>
+            <label class="check"><input id="featured" type="checkbox"> 📌 <span id="featuredLabel">ปักหมุดบทวิเคราะห์นี้</span></label>
 
             <div class="form-actions">
               <button id="previewButton" class="ghost" type="button">👀 ดูตัวอย่าง</button>
-              <button id="saveButton" class="primary" type="submit">บันทึกบทความ</button>
+              <button id="saveButton" class="primary" type="submit">บันทึกบทวิเคราะห์</button>
             </div>
           </form>
           <div id="editorMessage" class="message" aria-live="polite"></div>
@@ -104,7 +122,7 @@
 
         <section class="panel list-panel">
           <div class="panel-head">
-            <div><p class="eyebrow">CONTENT LIBRARY</p><h2>บทความทั้งหมด</h2></div>
+            <div><p class="eyebrow">CONTENT LIBRARY</p><h2 id="libraryTitle">บทวิเคราะห์ทั้งหมด</h2></div>
             <button id="refreshArticles" class="ghost" type="button">รีเฟรช</button>
           </div>
           <div class="filters">
@@ -114,6 +132,18 @@
           <div id="articleList" class="article-list"></div>
         </section>
       </div></section>
+      </section>
+
+      <section data-admin-panel="news" hidden>
+        <section class="panel news-admin-intro">
+          <p class="eyebrow">FOOTBALL NEWS</p>
+          <h2>ข่าวฟุตบอล</h2>
+          <p class="muted">ใช้เครื่องมือด้านล่างเพื่อเพิ่ม แก้ไข หรือลบข่าว ระบบจะสลับแบบฟอร์มเป็นโหมดข่าวอัตโนมัติ</p>
+          <button id="openNewsEditor" class="primary" type="button">+ เพิ่มข่าวฟุตบอล</button>
+        </section>
+        <div id="newsAdminMount"></div>
+      </section>
+
       <section class="panel popup-panel" data-admin-panel="popup" hidden>
         <div class="panel-head"><div><p class="eyebrow">HOMEPAGE POPUP</p><h2>Popup ทีเด็ดวันนี้</h2></div><button id="refreshPopup" class="ghost" type="button">รีเฟรช</button></div>
         <p class="muted">ตั้งค่ารูปที่เด้งอัตโนมัติเมื่อผู้ชมเข้าเว็บไซต์ เปิด/ปิด กำหนดลิงก์ และช่วงเวลาแสดงได้</p>
@@ -142,6 +172,6 @@
     </article>
   </dialog>
 
-  <script src="/assets/js/admin.js?v=20260809-v12" defer></script>
+  <script src="/assets/js/admin.js?v=20260809-v13" defer></script>
 </body>
 </html>
