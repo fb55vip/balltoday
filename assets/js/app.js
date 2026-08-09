@@ -2950,8 +2950,7 @@ async function loadPublishedArticles() {
         headers: {
           Accept: "application/json"
         },
-        cache: "no-store",
-        mode: "cors"
+        cache: "no-store"
       }
     );
 
@@ -3141,8 +3140,7 @@ async function openPublishedArticle(
         headers: {
           Accept: "application/json"
         },
-        cache: "no-store",
-        mode: "cors"
+        cache: "no-store"
       }
     );
 
@@ -3313,9 +3311,9 @@ async function loadHomepagePopup(){
 
     const content=p.link_url?document.createElement("a"):document.createElement("div");
     if(p.link_url){content.href=p.link_url;content.target="_blank";content.rel="noopener noreferrer"}
-    content.appendChild(img);box.append(close,content);overlay.appendChild(box);document.body.appendChild(overlay);
+    content.appendChild(img);box.append(close,content);overlay.appendChild(box);document.body.appendChild(overlay);document.body.classList.add("modal-open");
 
-    const dismiss=()=>{if(p.once_per_session){try{sessionStorage.setItem(key,"1")}catch{}}overlay.remove()};
+    const dismiss=()=>{if(p.once_per_session){try{sessionStorage.setItem(key,"1")}catch{}}overlay.remove();document.body.classList.remove("modal-open")};
     close.onclick=dismiss;
     overlay.onclick=e=>{if(e.target===overlay)dismiss()};
   }catch(error){log("Homepage popup error:",error)}
