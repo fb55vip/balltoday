@@ -24,6 +24,7 @@ export default {
       }
 
       if (url.pathname === "/api/admin/articles" && request.method === "GET") {
+        await ensureContentColumns(env.DB);
         await requireAdmin(request, env);
         const { results } = await env.DB.prepare(`
           SELECT * FROM articles ORDER BY featured DESC, updated_at DESC, id DESC
@@ -33,6 +34,7 @@ export default {
       }
 
       if (url.pathname === "/api/admin/articles" && request.method === "POST") {
+        await ensureContentColumns(env.DB);
         await requireAdmin(request, env);
         const data = await readJson(request);
         validateArticle(data);
@@ -42,14 +44,15 @@ export default {
         const result = await env.DB.prepare(`
           INSERT INTO articles (
             title, slug, league, match_name, match_time, confidence,
-            cover_image, excerpt, content, author, status, featured,
+            cover_image, excerpt, content, author, status, featured, content_type,
             created_at, updated_at, published_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?)
         `).bind(
           cleanText(data.title), slug, nullableText(data.league), nullableText(data.match_name),
           nullableText(data.match_time), normalizeConfidence(data.confidence),
           nullableText(data.image_url || data.cover_image), nullableText(data.excerpt),
-          cleanText(data.content), "บอส สิทธิกร", status, data.featured ? 1 : 0, publishedAt
+          cleanText(data.content), "บอส สิทธิกร", status, data.featured ? 1 : 0,
+          normalizeContentType(data.content_type), publishedAt
         ).run();
         return json({ success: true, id: result.meta?.last_row_id, message: "บันทึกบทความเรียบร้อย" }, 201, cors);
       }
@@ -59,6 +62,7 @@ export default {
         await requireAdmin(request, env);
         const id = Number(adminMatch[1]);
         if (request.method === "PUT") {
+          await ensureContentColumns(env.DB);
           const existing = await env.DB.prepare("SELECT * FROM articles WHERE id = ? LIMIT 1").bind(id).first();
           if (!existing) throw new HttpError(404, "ไม่พบบทความ");
           const data = await readJson(request);
@@ -68,13 +72,14 @@ export default {
           await env.DB.prepare(`
             UPDATE articles SET
               title=?, league=?, match_name=?, match_time=?, confidence=?, cover_image=?,
-              excerpt=?, content=?, status=?, featured=?, updated_at=datetime('now'), published_at=?
+              excerpt=?, content=?, status=?, featured=?, content_type=?, updated_at=datetime('now'), published_at=?
             WHERE id=?
           `).bind(
             cleanText(data.title), nullableText(data.league), nullableText(data.match_name),
             nullableText(data.match_time), normalizeConfidence(data.confidence),
             nullableText(data.image_url || data.cover_image), nullableText(data.excerpt),
-            cleanText(data.content), status, data.featured ? 1 : 0, publishedAt, id
+            cleanText(data.content), status, data.featured ? 1 : 0,
+            normalizeContentType(data.content_type), publishedAt, id
           ).run();
           return json({ success: true, message: "แก้ไขบทความเรียบร้อย" }, 200, cors);
         }
@@ -91,20 +96,35 @@ export default {
       if (url.pathname === "/api/popup" && request.method === "GET") { await ensurePopupTable(env.DB);const p=normalizePopup(await env.DB.prepare("SELECT * FROM site_popup WHERE id=1").first()),n=Date.now();const active=p.enabled&&p.image_url&&(!p.start_at||new Date(p.start_at).getTime()<=n)&&(!p.end_at||new Date(p.end_at).getTime()>=n);return json({success:true,popup:active?p:null},200,cors); }
 
       if (url.pathname === "/api/articles" && request.method === "GET") {
+        await ensureContentColumns(env.DB);
         const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit")) || 12));
         const now = new Date().toISOString();
-        const { results } = await env.DB.prepare(`
-          SELECT * FROM articles
-          WHERE status = 'published'
-             OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?)
-          ORDER BY featured DESC, COALESCE(published_at, created_at) DESC, id DESC
-          LIMIT ?
-        `).bind(now, limit).all();
+        const type = url.searchParams.get("type");
+        let results;
+        if (type === "analysis" || type === "news") {
+          ({ results } = await env.DB.prepare(`
+            SELECT * FROM articles
+            WHERE COALESCE(content_type,'analysis') = ?
+              AND (status = 'published'
+               OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?))
+            ORDER BY featured DESC, COALESCE(published_at, created_at) DESC, id DESC
+            LIMIT ?
+          `).bind(type, now, limit).all());
+        } else {
+          ({ results } = await env.DB.prepare(`
+            SELECT * FROM articles
+            WHERE status = 'published'
+               OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?)
+            ORDER BY featured DESC, COALESCE(published_at, created_at) DESC, id DESC
+            LIMIT ?
+          `).bind(now, limit).all());
+        }
         return json({ success: true, articles: (results || []).map(normalizeArticle) }, 200, cors);
       }
 
       const publicMatch = url.pathname.match(/^\/api\/articles\/([^/]+)$/);
       if (publicMatch && request.method === "GET") {
+        await ensureContentColumns(env.DB);
         const slug = decodeURIComponent(publicMatch[1]);
         const now = new Date().toISOString();
         const article = await env.DB.prepare(`
@@ -144,6 +164,18 @@ async function requireAdmin(request, env) {
   }
 }
 
+
+async function ensureContentColumns(db) {
+  const info = await db.prepare("PRAGMA table_info(articles)").all();
+  const names = new Set((info.results || []).map(r => r.name));
+  if (!names.has("content_type")) {
+    await db.prepare("ALTER TABLE articles ADD COLUMN content_type TEXT NOT NULL DEFAULT 'analysis'").run();
+  }
+}
+function normalizeContentType(value) {
+  return value === "news" ? "news" : "analysis";
+}
+
 function normalizeStatus(value) {
   return ["draft", "published", "scheduled"].includes(value) ? value : "draft";
 }
@@ -167,6 +199,7 @@ function normalizeArticle(a) {
     effective_status: effective,
     featured: Boolean(a.featured),
     confidence: Number(a.confidence || 0),
+    content_type: a.content_type || "analysis",
     views: Number(a.views || 0)
   };
 }
@@ -177,7 +210,9 @@ function calculateStats(articles) {
     published: articles.filter(a => a.effective_status === "published").length,
     scheduled: articles.filter(a => a.status === "scheduled" && a.effective_status !== "published").length,
     draft: articles.filter(a => a.status === "draft").length,
-    featured: articles.filter(a => a.featured).length
+    featured: articles.filter(a => a.featured).length,
+    analysis: articles.filter(a => (a.content_type || "analysis") === "analysis").length,
+    news: articles.filter(a => a.content_type === "news").length
   };
 }
 
