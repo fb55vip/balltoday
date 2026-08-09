@@ -3278,6 +3278,47 @@ async function openPublishedArticle(
   }
 }
 
+
+/* =========================================================
+   HN FOOTBALL SCORE - HOMEPAGE POPUP
+========================================================= */
+async function loadHomepagePopup(){
+  try{
+    const response=await fetch(`${CONTENT_API}/api/popup`,{headers:{Accept:"application/json"},cache:"no-store"});
+    const data=await response.json().catch(()=>({}));
+    const p=data.popup;
+    if(!response.ok||!p||!p.image_url)return;
+    const key=`hn_popup_${p.updated_at||p.image_url}`;
+    if(p.once_per_session&&sessionStorage.getItem(key))return;
+
+    const overlay=document.createElement("div");
+    overlay.id="hnHomepagePopup";
+    overlay.setAttribute("role","dialog");
+    overlay.setAttribute("aria-modal","true");
+    overlay.style.cssText="position:fixed;inset:0;z-index:999999;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)";
+
+    const box=document.createElement("div");
+    box.style.cssText="position:relative;width:min(720px,94vw);max-height:92vh";
+
+    const close=document.createElement("button");
+    close.type="button";close.textContent="×";close.setAttribute("aria-label","ปิด Popup");
+    close.style.cssText="position:absolute;top:-13px;right:-13px;z-index:3;width:44px;height:44px;border:1px solid #fff;border-radius:50%;background:#0b0b0d;color:#fff;font-size:30px;cursor:pointer";
+
+    const img=document.createElement("img");
+    img.src=p.image_url;img.alt=p.title||"ทีเด็ดวันนี้";img.decoding="async";
+    img.style.cssText="display:block;width:100%;max-height:88vh;object-fit:contain;border-radius:18px;background:#070707;box-shadow:0 24px 70px rgba(0,0,0,.65)";
+    img.onerror=()=>overlay.remove();
+
+    const content=p.link_url?document.createElement("a"):document.createElement("div");
+    if(p.link_url){content.href=p.link_url;content.target="_blank";content.rel="noopener noreferrer"}
+    content.appendChild(img);box.append(close,content);overlay.appendChild(box);document.body.appendChild(overlay);
+
+    const dismiss=()=>{if(p.once_per_session){try{sessionStorage.setItem(key,"1")}catch{}}overlay.remove()};
+    close.onclick=dismiss;
+    overlay.onclick=e=>{if(e.target===overlay)dismiss()};
+  }catch(error){log("Homepage popup error:",error)}
+}
+
 /* =========================================================
    INITIAL LOAD AND TIMERS
 ========================================================= */
@@ -3341,6 +3382,8 @@ function startAutomaticRefresh() {
 }
 
 async function initialize() {
+  loadHomepagePopup();
+
   bindNavigation();
   bindDateTabs();
   bindLeagueSelect();
