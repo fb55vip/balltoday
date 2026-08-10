@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#07090d">
   <title>HN FOOTBALL SCORE ADMIN | ระบบจัดการเนื้อหา</title>
   <link rel="stylesheet" href="/assets/css/admin.css?v=20260809-v14">
+  <link rel="stylesheet" href="/assets/css/admin-seo-v18.css?v=20260810-v18">
 </head>
 <body>
   <main class="admin-shell">
@@ -41,6 +42,7 @@
         <button class="admin-tab" type="button" data-admin-tab="news">📰 ข่าวฟุตบอล</button>
         <button class="admin-tab" type="button" data-admin-tab="popup">🖼️ Popup ทีเด็ดวันนี้</button>
       </nav>
+
       <section data-admin-panel="dashboard">
         <section class="dashboard-welcome panel">
           <p class="eyebrow">HN FOOTBALL SCORE ADMIN</p>
@@ -54,91 +56,119 @@
         </section>
       </section>
 
-      <section data-admin-panel="analysis" hidden><section class="stats-grid" aria-label="สรุปบทความ">
-        <article class="stat-card"><span>ทั้งหมด</span><strong id="statTotal">0</strong></article>
-        <article class="stat-card"><span>เผยแพร่</span><strong id="statPublished">0</strong></article>
-        <article class="stat-card"><span>ตั้งเวลา</span><strong id="statScheduled">0</strong></article>
-        <article class="stat-card"><span>ฉบับร่าง</span><strong id="statDraft">0</strong></article>
-        <article class="stat-card"><span>ปักหมุด</span><strong id="statFeatured">0</strong></article>
-      </section>
-
-      <div class="admin-grid">
-        <section class="panel editor-panel">
-          <div class="panel-head">
-            <div><p class="eyebrow">ARTICLE EDITOR</p><h2 id="editorTitle">เพิ่มบทวิเคราะห์ใหม่</h2></div>
-            <button id="resetButton" type="button" class="ghost">ล้างฟอร์ม</button>
-          </div>
-
-          <form id="articleForm"><input id="contentType" type="hidden" value="analysis">
-            <input id="articleId" type="hidden">
-            <label><span id="titleLabel">หัวข้อบทวิเคราะห์</span><input id="title" maxlength="160" required placeholder="เช่น ทีเด็ดพรีเมียร์ลีกคืนนี้"></label>
-
-            <div class="two-col">
-              <label><span id="leagueLabel">ลีก</span>
-                <select id="league">
-                  <option value="">เลือกลีก</option>
-                  <option>พรีเมียร์ลีก</option><option>ลาลีกา</option><option>เซเรียอา</option>
-                  <option>บุนเดสลีกา</option><option>ลีกเอิง</option><option>ยูฟ่า แชมเปียนส์ลีก</option>
-                  <option>ยูฟ่า ยูโรปาลีก</option><option>ไทยลีก</option><option>ฟุตบอลทีมชาติ</option>
-                  <option value="อื่น ๆ">อื่น ๆ</option>
-                </select>
-              </label>
-              <label class="analysis-only">คู่แข่งขัน<input id="matchName" maxlength="120" placeholder="เช่น ลิเวอร์พูล พบ อาร์เซนอล"></label>
-            </div>
-
-            <div class="two-col">
-              <label class="analysis-only">เวลาแข่งขัน<input id="matchTime" type="datetime-local"></label>
-              <label class="analysis-only">คะแนนความมั่นใจ (%)<input id="confidence" type="number" min="0" max="100" step="1" value="70"></label>
-            </div>
-
-            <div class="image-section">
-              <label>ลิงก์รูปหน้าปก<input id="imageUrl" type="url" placeholder="https://..."></label>
-              <img id="coverPreview" class="cover-preview" alt="ตัวอย่างรูปหน้าปก" hidden>
-            </div>
-
-            <label><span id="excerptLabel">คำเกริ่น</span><textarea id="excerpt" rows="3" maxlength="500" placeholder="สรุปสั้น ๆ สำหรับหน้าแรก"></textarea></label>
-            <label><span id="contentLabel">เนื้อหาบทวิเคราะห์</span><textarea id="content" rows="14" required placeholder="เขียนบทวิเคราะห์ที่นี่..."></textarea></label>
-
-            <div class="two-col">
-              <label>สถานะ
-                <select id="status">
-                  <option value="draft">บันทึกร่าง</option>
-                  <option value="published">เผยแพร่ทันที</option>
-                  <option value="scheduled">ตั้งเวลาเผยแพร่</option>
-                </select>
-              </label>
-              <label id="publishAtWrap" hidden>เวลาเผยแพร่<input id="publishAt" type="datetime-local"></label>
-            </div>
-
-            <label class="check"><input id="featured" type="checkbox"> 📌 <span id="featuredLabel">ปักหมุดบทวิเคราะห์นี้</span></label>
-
-            <div class="form-actions">
-              <button id="previewButton" class="ghost" type="button">👀 ดูตัวอย่าง</button>
-              <button id="saveButton" class="primary" type="submit">บันทึกบทวิเคราะห์</button>
-            </div>
-          </form>
-          <div id="editorMessage" class="message" aria-live="polite"></div>
+      <section data-admin-panel="analysis" hidden>
+        <section class="stats-grid" aria-label="สรุปบทความ">
+          <article class="stat-card"><span>ทั้งหมด</span><strong id="statTotal">0</strong></article>
+          <article class="stat-card"><span>เผยแพร่</span><strong id="statPublished">0</strong></article>
+          <article class="stat-card"><span>ตั้งเวลา</span><strong id="statScheduled">0</strong></article>
+          <article class="stat-card"><span>ฉบับร่าง</span><strong id="statDraft">0</strong></article>
+          <article class="stat-card"><span>ปักหมุด</span><strong id="statFeatured">0</strong></article>
         </section>
 
-        <section class="panel list-panel">
-          <div class="panel-head">
-            <div><p class="eyebrow">CONTENT LIBRARY</p><h2 id="libraryTitle">บทวิเคราะห์ทั้งหมด</h2></div>
-            <button id="refreshArticles" class="ghost" type="button">รีเฟรช</button>
-          </div>
-          <div class="filters">
-            <input id="searchInput" type="search" placeholder="ค้นหาหัวข้อ คู่แข่งขัน หรือลีก">
-            <select id="statusFilter"><option value="">ทุกสถานะ</option><option value="published">เผยแพร่</option><option value="scheduled">ตั้งเวลา</option><option value="draft">ฉบับร่าง</option></select>
-          </div>
-          <div id="articleList" class="article-list"></div>
-        </section>
-      </div>
+        <div class="admin-grid">
+          <section class="panel editor-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">ARTICLE EDITOR</p><h2 id="editorTitle">เพิ่มบทวิเคราะห์ใหม่</h2></div>
+              <button id="resetButton" type="button" class="ghost">ล้างฟอร์ม</button>
+            </div>
+
+            <form id="articleForm">
+              <input id="contentType" type="hidden" value="analysis">
+              <input id="articleId" type="hidden">
+
+              <label><span id="titleLabel">หัวข้อบทวิเคราะห์</span><input id="title" maxlength="160" required placeholder="เช่น วิเคราะห์ ลิเวอร์พูล พบ อาร์เซนอล"></label>
+
+              <div class="two-col">
+                <label><span id="leagueLabel">ลีก</span><select id="league"></select></label>
+                <label class="analysis-only">คู่แข่งขัน<input id="matchName" maxlength="120" placeholder="เช่น ลิเวอร์พูล พบ อาร์เซนอล"></label>
+              </div>
+
+              <div class="two-col">
+                <label class="analysis-only">เวลาแข่งขัน<input id="matchTime" type="datetime-local"></label>
+                <label class="analysis-only">คะแนนความมั่นใจ (%)<input id="confidence" type="number" min="0" max="100" step="1" value="70"></label>
+              </div>
+
+              <div class="image-section">
+                <label>ลิงก์รูปหน้าปก<input id="imageUrl" type="url" placeholder="https://..."></label>
+                <img id="coverPreview" class="cover-preview" alt="ตัวอย่างรูปหน้าปก" hidden>
+              </div>
+
+              <label><span id="excerptLabel">คำเกริ่น</span><textarea id="excerpt" rows="3" maxlength="500" placeholder="สรุปสั้น ๆ สำหรับหน้าแรก"></textarea></label>
+              <label><span id="contentLabel">เนื้อหาบทวิเคราะห์</span><textarea id="content" rows="14" required placeholder="เขียนเนื้อหาที่นี่..."></textarea></label>
+
+              <details class="seo-box" open>
+                <summary>🔍 SEO อัตโนมัติ</summary>
+                <p class="seo-help">ระบบสร้างค่าเริ่มต้นให้จากหัวข้อ/คู่แข่งขัน คุณแก้เองได้ก่อนบันทึก</p>
+                <label class="check seo-auto-row"><input id="seoAuto" type="checkbox" checked> สร้าง SEO อัตโนมัติ</label>
+                <div class="two-col">
+                  <label>คีย์หลัก<input id="primaryKeyword" maxlength="120" placeholder="วิเคราะห์บอลวันนี้"></label>
+                  <label>คีย์รอง<input id="secondaryKeywords" maxlength="500" placeholder="วิเคราะห์ก่อนเกม, ลิเวอร์พูล, อาร์เซนอล"></label>
+                </div>
+                <label>SEO Title<input id="seoTitle" maxlength="160" placeholder="หัวข้อสำหรับ Google"></label>
+                <label>Meta Description<textarea id="metaDescription" rows="3" maxlength="320" placeholder="คำอธิบายสำหรับผลค้นหา"></textarea></label>
+                <div class="two-col">
+                  <label>URL Slug<input id="slug" maxlength="120" placeholder="liverpool-vs-arsenal"></label>
+                  <label>Canonical URL<input id="canonicalUrl" type="url" placeholder="https://www.fb55vip.com/article.html?slug=..."></label>
+                </div>
+                <label>OG Title<input id="ogTitle" maxlength="160"></label>
+                <label>OG Description<textarea id="ogDescription" rows="2" maxlength="320"></textarea></label>
+                <label>OG Image<input id="ogImage" type="url" placeholder="ใช้รูปหน้าปกอัตโนมัติ"></label>
+                <div class="seo-preview">
+                  <strong id="seoPreviewTitle">HN FOOTBALL SCORE</strong>
+                  <span id="seoPreviewUrl">www.fb55vip.com</span>
+                  <p id="seoPreviewDescription">ตัวอย่างผลค้นหา Google จะแสดงตรงนี้</p>
+                </div>
+
+                <div class="seo-guard" id="seoGuard">
+                  <div class="seo-guard-head">
+                    <strong>🛡️ SEO Guard</strong>
+                    <span id="seoGuardScore" class="seo-score">0/100</span>
+                  </div>
+                  <ul id="seoGuardList" class="seo-guard-list"></ul>
+                </div>
+
+              </details>
+
+              <div class="two-col">
+                <label>สถานะ
+                  <select id="status">
+                    <option value="draft">บันทึกร่าง</option>
+                    <option value="published">เผยแพร่ทันที</option>
+                    <option value="scheduled">ตั้งเวลาเผยแพร่</option>
+                  </select>
+                </label>
+                <label id="publishAtWrap" hidden>เวลาเผยแพร่<input id="publishAt" type="datetime-local"></label>
+              </div>
+
+              <label class="check"><input id="featured" type="checkbox"> 📌 <span id="featuredLabel">ปักหมุดบทวิเคราะห์นี้</span></label>
+
+              <div class="form-actions">
+                <button id="previewButton" class="ghost" type="button">👀 ดูตัวอย่าง</button>
+                <button id="saveButton" class="primary" type="submit">บันทึกบทวิเคราะห์</button>
+              </div>
+            </form>
+            <div id="editorMessage" class="message" aria-live="polite"></div>
+          </section>
+
+          <section class="panel list-panel">
+            <div class="panel-head">
+              <div><p class="eyebrow">CONTENT LIBRARY</p><h2 id="libraryTitle">บทวิเคราะห์ทั้งหมด</h2></div>
+              <button id="refreshArticles" class="ghost" type="button">รีเฟรช</button>
+            </div>
+            <div class="filters">
+              <input id="searchInput" type="search" placeholder="ค้นหาหัวข้อ คู่แข่งขัน หรือลีก">
+              <select id="statusFilter"><option value="">ทุกสถานะ</option><option value="published">เผยแพร่</option><option value="scheduled">ตั้งเวลา</option><option value="draft">ฉบับร่าง</option></select>
+            </div>
+            <div id="articleList" class="article-list"></div>
+          </section>
+        </div>
       </section>
 
       <section data-admin-panel="news" hidden>
         <section class="panel news-admin-intro">
           <p class="eyebrow">FOOTBALL NEWS</p>
           <h2>ข่าวฟุตบอล</h2>
-          <p class="muted">ใช้เครื่องมือด้านล่างเพื่อเพิ่ม แก้ไข หรือลบข่าว ระบบจะสลับแบบฟอร์มเป็นโหมดข่าวอัตโนมัติ</p>
+          <p class="muted">เพิ่มข่าวและ SEO จากฟอร์มเดียว ระบบจะเปลี่ยนคีย์หลักเป็น “ข่าวฟุตบอล” อัตโนมัติ</p>
           <button id="openNewsEditor" class="primary" type="button">+ เพิ่มข่าวฟุตบอล</button>
         </section>
         <div id="newsAdminMount"></div>
@@ -155,7 +185,8 @@
           <div class="two-col"><label>เริ่มแสดง<input id="popupStartAt" type="datetime-local"></label><label>สิ้นสุดการแสดง<input id="popupEndAt" type="datetime-local"></label></div>
           <label class="check"><input id="popupOncePerSession" type="checkbox" checked> แสดงครั้งเดียวต่อการเปิดเว็บ</label>
           <div class="form-actions"><button id="popupPreviewButton" class="ghost" type="button">👀 ดูรูป</button><button id="savePopupButton" class="primary" type="submit">บันทึก Popup</button></div>
-        </form><div id="popupMessage" class="message" aria-live="polite"></div>
+        </form>
+        <div id="popupMessage" class="message" aria-live="polite"></div>
       </section>
     </section>
   </main>
@@ -172,6 +203,6 @@
     </article>
   </dialog>
 
-  <script src="/assets/js/admin.js?v=20260809-v14" defer></script>
+  <script src="/assets/js/admin-v18.js?v=20260810-v18" defer></script>
 </body>
 </html>
