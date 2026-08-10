@@ -1,0 +1,58 @@
+/* HN FOOTBALL SCORE V17 — SEO editor only */
+.seo-box{margin-top:4px;padding:15px;border:1px solid rgba(239,27,45,.28);border-radius:14px;background:linear-gradient(145deg,rgba(239,27,45,.055),rgba(5,10,17,.35))}
+.seo-box summary{cursor:pointer;font-weight:1000;color:#fff;font-size:15px}
+.seo-help{margin:8px 0 12px;font-size:12px;color:var(--muted)}
+.seo-auto-row{margin-bottom:12px}
+.seo-preview{margin-top:4px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#070b12}
+.seo-preview strong{display:block;color:#9fc5ff;font-size:16px;line-height:1.35}
+.seo-preview span{display:block;margin-top:4px;color:#6bd49e;font-size:11px;word-break:break-all}
+.seo-preview p{margin:6px 0 0;color:#aeb8c5;font-size:12px;line-height:1.55}
+.seo-meta{margin-top:7px;color:#7fb6ff}
+@media(max-width:640px){.seo-box{padding:12px}.seo-preview strong{font-size:14px}}
+
+
+/* ---------- V18 SEO Guard ---------- */
+.seo-guard{
+  margin-top:12px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  background:rgba(3,7,12,.62);
+}
+.seo-guard-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:9px;
+}
+.seo-score{
+  min-width:64px;
+  padding:5px 10px;
+  border-radius:999px;
+  text-align:center;
+  background:rgba(255,255,255,.06);
+  font-weight:1000;
+  font-size:12px;
+}
+.seo-score.good{color:#72e7ae;background:rgba(34,211,139,.1)}
+.seo-score.warn{color:#ffd36a;background:rgba(246,195,68,.1)}
+.seo-score.bad{color:#ff929d;background:rgba(239,27,45,.1)}
+.seo-guard-list{
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:grid;
+  gap:7px;
+}
+.seo-guard-list li{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  color:#aeb8c5;
+  font-size:11px;
+  line-height:1.45;
+}
+.seo-guard-list li.ok{color:#8eddb7}
+.seo-guard-list li.warn{color:#f2cd6a}
+.seo-guard-list li.bad{color:#ff8f99}
