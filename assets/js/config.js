@@ -30,6 +30,6 @@ window.BALLTODAY_CONFIG = Object.freeze({
   statistics: Object.freeze(["Ball Possession","Total Shots","Shots on Goal","Shots off Goal","Blocked Shots","Corner Kicks","Offsides","Fouls","Goalkeeper Saves","Total passes","Passes accurate"]),
   pwa: Object.freeze({enabled:true,serviceWorkerPath:"/service-worker.js"}),
   storage: Object.freeze({prefix:"hnfootballscore_",selectedLeague:"hnfootballscore_selected_league",lastUpdate:"hnfootballscore_last_update"}),
-  site: Object.freeze({name:"HN FOOTBALL SCORE",domain:"https://fb55vip.com",tagline:"ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว",footerName:"บอส สิทธิกร"}),
+  site: Object.freeze({name:"HN FOOTBALL SCORE",domain:"https://www.fb55vip.com",tagline:"ฟุตบอลอัปเดตอัตโนมัติ ครบจบในที่เดียว",footerName:"บอส สิทธิกร"}),
   debug:false
 });
