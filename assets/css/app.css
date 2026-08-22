@@ -2316,3 +2316,10 @@ table {
 .premium-badge{text-decoration:none}
 #knowledge .news-content h3 a{color:inherit;text-decoration:none}
 #knowledge .news-content h3 a:hover{text-decoration:underline}
+
+/* Homepage section order below the live-score panel */
+#analysis { order: 1; }
+#news { order: 2; }
+#ballstep { order: 3; }
+#hn-footballclub { order: 4; }
+#knowledge { order: 5; }
