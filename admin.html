@@ -40,6 +40,7 @@
         <button class="admin-tab active" type="button" data-admin-tab="dashboard">📊 Dashboard</button>
         <button class="admin-tab" type="button" data-admin-tab="analysis">📝 บทวิเคราะห์</button>
         <button class="admin-tab" type="button" data-admin-tab="news">📰 ข่าวฟุตบอล</button>
+        <button class="admin-tab" type="button" data-admin-tab="evergreen">📚 ความรู้ฟุตบอล</button>
         <button class="admin-tab" type="button" data-admin-tab="popup">🖼️ Popup ทีเด็ดวันนี้</button>
       </nav>
 
@@ -51,6 +52,7 @@
           <div class="dashboard-shortcuts">
             <button type="button" class="ghost" data-go-tab="analysis">📝 เพิ่มบทวิเคราะห์</button>
             <button type="button" class="ghost" data-go-tab="news">📰 เพิ่มข่าวฟุตบอล</button>
+            <button type="button" class="ghost" data-go-tab="evergreen">📚 เพิ่มบทความความรู้</button>
             <button type="button" class="ghost" data-go-tab="popup">🖼️ ตั้งค่า Popup</button>
           </div>
         </section>
@@ -108,7 +110,7 @@
                 <label>Meta Description<textarea id="metaDescription" rows="3" maxlength="320" placeholder="คำอธิบายสำหรับผลค้นหา"></textarea></label>
                 <div class="two-col">
                   <label>URL Slug<input id="slug" maxlength="120" placeholder="liverpool-vs-arsenal"></label>
-                  <label>Canonical URL<input id="canonicalUrl" type="url" placeholder="https://www.fb55vip.com/article.html?slug=..."></label>
+                  <label>Canonical URL<input id="canonicalUrl" type="url" placeholder="https://www.fb55vip.com/article?slug=..."></label>
                 </div>
                 <label>OG Title<input id="ogTitle" maxlength="160"></label>
                 <label>OG Description<textarea id="ogDescription" rows="2" maxlength="320"></textarea></label>
@@ -174,6 +176,16 @@
         <div id="newsAdminMount"></div>
       </section>
 
+      <section data-admin-panel="evergreen" hidden>
+        <section class="panel news-admin-intro">
+          <p class="eyebrow">EVERGREEN CONTENT</p>
+          <h2>ความรู้ฟุตบอล</h2>
+          <p class="muted">สร้างบทความกฎฟุตบอล ศัพท์ สถิติ และความรู้ที่ค้นหาได้ระยะยาว พร้อม SEO จากฟอร์มเดียว</p>
+          <button id="openEvergreenEditor" class="primary" type="button">+ เพิ่มบทความความรู้</button>
+        </section>
+        <div id="evergreenAdminMount"></div>
+      </section>
+
       <section class="panel popup-panel" data-admin-panel="popup" hidden>
         <div class="panel-head"><div><p class="eyebrow">HOMEPAGE POPUP</p><h2>Popup ทีเด็ดวันนี้</h2></div><button id="refreshPopup" class="ghost" type="button">รีเฟรช</button></div>
         <p class="muted">ตั้งค่ารูปที่เด้งอัตโนมัติเมื่อผู้ชมเข้าเว็บไซต์ เปิด/ปิด กำหนดลิงก์ และช่วงเวลาแสดงได้</p>
@@ -181,7 +193,7 @@
           <label class="check"><input id="popupEnabled" type="checkbox"> เปิดใช้งาน Popup</label>
           <label>ชื่อรายการ<input id="popupTitle" maxlength="160" placeholder="เช่น ทีเด็ดวันนี้"></label>
           <div class="image-section"><label>URL รูป Popup<input id="popupImageUrl" type="url" placeholder="https://..."></label><img id="popupImagePreview" class="cover-preview popup-preview" alt="ตัวอย่าง Popup" hidden></div>
-          <label>ลิงก์เมื่อกดรูป<input id="popupLinkUrl" type="url" placeholder="https://fb55vip.com/..."></label>
+          <label>ลิงก์เมื่อกดรูป<input id="popupLinkUrl" type="url" placeholder="https://www.fb55vip.com/..."></label>
           <div class="two-col"><label>เริ่มแสดง<input id="popupStartAt" type="datetime-local"></label><label>สิ้นสุดการแสดง<input id="popupEndAt" type="datetime-local"></label></div>
           <label class="check"><input id="popupOncePerSession" type="checkbox" checked> แสดงครั้งเดียวต่อการเปิดเว็บ</label>
           <div class="form-actions"><button id="popupPreviewButton" class="ghost" type="button">👀 ดูรูป</button><button id="savePopupButton" class="primary" type="submit">บันทึก Popup</button></div>
