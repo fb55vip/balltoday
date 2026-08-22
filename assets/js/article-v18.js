@@ -15,7 +15,7 @@ function date(v){if(!v)return"";const d=new Date(v);return Number.isNaN(d)?v:d.t
     const a=d.article||{};
     const title=a.seo_title||a.title||"HN FOOTBALL SCORE";
     const desc=a.meta_description||a.excerpt||"ข่าวฟุตบอลและบทวิเคราะห์ HN FOOTBALL SCORE";
-    const canonical=a.canonical_url||`${SITE}/article.html?slug=${encodeURIComponent(a.slug||slug)}`;
+    const canonical=a.canonical_url||`${SITE}/article?slug=${encodeURIComponent(a.slug||slug)}`;
     const image=a.og_image||a.image_url||`${SITE}/assets/og-image.png`;
     document.title=title;
     document.querySelector('meta[name="description"]').content=desc;
