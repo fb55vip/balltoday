@@ -17,7 +17,7 @@ export default {
 
     try {
       if ((url.pathname === "/" || url.pathname === "/api/health") && request.method === "GET") {
-        return json({ success: true, service: "HN FOOTBALL SCORE Content API", status: "online", version: "v14" }, 200, cors);
+        return json({ success: true, service: "HN FOOTBALL SCORE Content API", status: "online", version: "v19-seo" }, 200, cors);
       }
 
       if (url.pathname === "/api/admin/login" && request.method === "POST") {
@@ -46,14 +46,17 @@ export default {
           INSERT INTO articles (
             title, slug, league, match_name, match_time, confidence,
             cover_image, excerpt, content, author, status, featured, content_type,
-            created_at, updated_at, published_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?)
+            primary_keyword, secondary_keywords, seo_title, meta_description, canonical_url,
+            og_title, og_description, og_image, created_at, updated_at, published_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), ?)
         `).bind(
           cleanText(data.title), slug, nullableText(data.league), nullableText(data.match_name),
           nullableText(data.match_time), normalizeConfidence(data.confidence),
           nullableText(data.image_url || data.cover_image), nullableText(data.excerpt),
-          cleanText(data.content), "บอส สิทธิกร", status, data.featured ? 1 : 0,
-          normalizeContentType(data.content_type), publishedAt
+          cleanText(data.content), nullableText(data.author) || "บอส สิทธิกร", status, data.featured ? 1 : 0,
+          normalizeContentType(data.content_type), nullableText(data.primary_keyword), nullableText(data.secondary_keywords),
+          nullableText(data.seo_title), nullableText(data.meta_description), canonicalUrl(slug, data.canonical_url),
+          nullableText(data.og_title), nullableText(data.og_description), nullableText(data.og_image || data.image_url || data.cover_image), publishedAt
         ).run();
         return json({ success: true, id: result.meta?.last_row_id, message: "บันทึกบทความเรียบร้อย" }, 201, cors);
       }
@@ -72,15 +75,19 @@ export default {
           const publishedAt = getPublicationTime(status, data.publish_at);
           await env.DB.prepare(`
             UPDATE articles SET
-              title=?, league=?, match_name=?, match_time=?, confidence=?, cover_image=?,
-              excerpt=?, content=?, status=?, featured=?, content_type=?, updated_at=datetime('now'), published_at=?
+              title=?, slug=?, league=?, match_name=?, match_time=?, confidence=?, cover_image=?,
+              excerpt=?, content=?, author=?, status=?, featured=?, content_type=?,
+              primary_keyword=?, secondary_keywords=?, seo_title=?, meta_description=?, canonical_url=?,
+              og_title=?, og_description=?, og_image=?, updated_at=datetime('now'), published_at=?
             WHERE id=?
           `).bind(
-            cleanText(data.title), nullableText(data.league), nullableText(data.match_name),
+            cleanText(data.title), await createUniqueSlugForUpdate(env.DB, data.slug || existing.slug || data.title, id), nullableText(data.league), nullableText(data.match_name),
             nullableText(data.match_time), normalizeConfidence(data.confidence),
             nullableText(data.image_url || data.cover_image), nullableText(data.excerpt),
-            cleanText(data.content), status, data.featured ? 1 : 0,
-            normalizeContentType(data.content_type), publishedAt, id
+            cleanText(data.content), nullableText(data.author) || existing.author || "บอส สิทธิกร", status, data.featured ? 1 : 0,
+            normalizeContentType(data.content_type), nullableText(data.primary_keyword), nullableText(data.secondary_keywords),
+            nullableText(data.seo_title), nullableText(data.meta_description), canonicalUrl(await createUniqueSlugForUpdate(env.DB, data.slug || existing.slug || data.title, id), data.canonical_url),
+            nullableText(data.og_title), nullableText(data.og_description), nullableText(data.og_image || data.image_url || data.cover_image), publishedAt, id
           ).run();
           return json({ success: true, message: "แก้ไขบทความเรียบร้อย" }, 200, cors);
         }
@@ -98,11 +105,11 @@ export default {
 
       if (url.pathname === "/api/articles" && request.method === "GET") {
         await ensureContentColumns(env.DB);
-        const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit")) || 12));
+        const limit = Math.min(500, Math.max(1, Number(url.searchParams.get("limit")) || 12));
         const now = new Date().toISOString();
         const type = url.searchParams.get("type");
         let results;
-        if (type === "analysis" || type === "news") {
+        if (["analysis", "news", "evergreen"].includes(type)) {
           ({ results } = await env.DB.prepare(`
             SELECT * FROM articles
             WHERE COALESCE(content_type,'analysis') = ?
@@ -121,6 +128,17 @@ export default {
           `).bind(now, limit).all());
         }
         return json({ success: true, articles: (results || []).map(normalizeArticle) }, 200, cors);
+      }
+
+      if (url.pathname === "/api/sitemap" && request.method === "GET") {
+        await ensureContentColumns(env.DB);
+        const now = new Date().toISOString();
+        const { results } = await env.DB.prepare(`
+          SELECT slug, content_type, updated_at, published_at, created_at FROM articles
+          WHERE status = 'published' OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?)
+          ORDER BY COALESCE(updated_at, published_at, created_at) DESC
+        `).bind(now).all();
+        return json({ success: true, articles: results || [] }, 200, cors);
       }
 
       const publicMatch = url.pathname.match(/^\/api\/articles\/([^/]+)$/);
@@ -169,12 +187,16 @@ async function requireAdmin(request, env) {
 async function ensureContentColumns(db) {
   const info = await db.prepare("PRAGMA table_info(articles)").all();
   const names = new Set((info.results || []).map(r => r.name));
-  if (!names.has("content_type")) {
-    await db.prepare("ALTER TABLE articles ADD COLUMN content_type TEXT NOT NULL DEFAULT 'analysis'").run();
-  }
+  const columns = [
+    ["content_type", "TEXT NOT NULL DEFAULT 'analysis'"],
+    ["primary_keyword", "TEXT"], ["secondary_keywords", "TEXT"], ["seo_title", "TEXT"],
+    ["meta_description", "TEXT"], ["canonical_url", "TEXT"], ["og_title", "TEXT"],
+    ["og_description", "TEXT"], ["og_image", "TEXT"]
+  ];
+  for (const [name, def] of columns) if (!names.has(name)) await db.prepare(`ALTER TABLE articles ADD COLUMN ${name} ${def}`).run();
 }
 function normalizeContentType(value) {
-  return value === "news" ? "news" : "analysis";
+  return ["news", "analysis", "evergreen"].includes(value) ? value : "analysis";
 }
 
 function normalizeStatus(value) {
@@ -192,6 +214,9 @@ function getPublicationTime(status, publishAt) {
 function normalizeArticle(a) {
   const effective = a.status === "scheduled" && a.published_at && new Date(a.published_at) <= new Date()
     ? "published" : a.status;
+  const type = a.content_type || "analysis";
+  const fallbackDesc = cleanText(a.excerpt) || (type === "news" ? "ข่าวฟุตบอลจาก HN FOOTBALL SCORE" : type === "evergreen" ? "ความรู้ฟุตบอลจาก HN FOOTBALL SCORE" : "บทวิเคราะห์ฟุตบอลจาก HN FOOTBALL SCORE");
+  const canonical = canonicalUrl(a.slug || "", a.canonical_url);
   return {
     ...a,
     image_url: a.cover_image || "",
@@ -200,7 +225,14 @@ function normalizeArticle(a) {
     effective_status: effective,
     featured: Boolean(a.featured),
     confidence: Number(a.confidence || 0),
-    content_type: a.content_type || "analysis",
+    content_type: type,
+    seo_title: a.seo_title || (a.title ? `${a.title} | HN FOOTBALL SCORE` : "HN FOOTBALL SCORE"),
+    meta_description: a.meta_description || fallbackDesc,
+    canonical_url: canonical,
+    og_title: a.og_title || a.seo_title || a.title || "HN FOOTBALL SCORE",
+    og_description: a.og_description || a.meta_description || fallbackDesc,
+    og_image: a.og_image || a.cover_image || "https://www.fb55vip.com/assets/og-image.png",
+    author: a.author || "บอส สิทธิกร",
     views: Number(a.views || 0)
   };
 }
@@ -213,7 +245,8 @@ function calculateStats(articles) {
     draft: articles.filter(a => a.status === "draft").length,
     featured: articles.filter(a => a.featured).length,
     analysis: articles.filter(a => (a.content_type || "analysis") === "analysis").length,
-    news: articles.filter(a => a.content_type === "news").length
+    news: articles.filter(a => a.content_type === "news").length,
+    evergreen: articles.filter(a => a.content_type === "evergreen").length
   };
 }
 
@@ -223,6 +256,20 @@ function validateArticle(data) {
   if (String(data.title).length > 160) throw new HttpError(400, "หัวข้อบทความยาวเกินไป");
 }
 
+
+function canonicalUrl(slug, supplied) {
+  const expected = `https://www.fb55vip.com/article?slug=${encodeURIComponent(slug)}`;
+  if (!supplied) return expected;
+  try {
+    const u = new URL(supplied);
+    if (u.hostname === "fb55vip.com" || u.hostname === "www.fb55vip.com") return expected;
+  } catch {}
+  return expected;
+}
+async function createUniqueSlugForUpdate(db, source, id) {
+  const base = slugify(source) || `article-${Date.now()}`; let slug = base;
+  for (let n=2;;n++) { const row=await db.prepare("SELECT id FROM articles WHERE slug = ? AND id != ? LIMIT 1").bind(slug,id).first(); if(!row)return slug; slug=`${base}-${n}`; }
+}
 async function createUniqueSlug(db, source) {
   const base = slugify(source) || `article-${Date.now()}`;
   let slug = base;
@@ -269,7 +316,7 @@ async function readJson(request) {
 function makeCors(request) {
   const origin = request.headers.get("Origin") || "";
   return {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "https://fb55vip.com",
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.has(origin) ? origin : "https://www.fb55vip.com",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
