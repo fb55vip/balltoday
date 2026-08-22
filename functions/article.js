@@ -1,23 +1,496 @@
-import {SITE,esc,formatDate,getArticle,getArticles,canonicalFor,pageShell} from "./_lib/content.js";
-export async function onRequestGet({request}){
-  const u=new URL(request.url),slug=u.searchParams.get("slug")||"";
-  if(!slug)return Response.redirect(`${SITE}/`,302);
-  const a=await getArticle(slug); if(!a)return new Response("ไม่พบบทความ",{status:404,headers:{"Content-Type":"text/plain; charset=UTF-8","X-Robots-Tag":"noindex"}});
-  const canonical=canonicalFor(a), title=a.seo_title||a.title||"HN FOOTBALL SCORE", desc=a.meta_description||a.excerpt||"ข่าวฟุตบอลและบทวิเคราะห์ HN FOOTBALL SCORE";
-  const image=a.og_image||a.image_url||`${SITE}/assets/og-image.png`;
-  const all=await getArticles(a.content_type||"analysis",20);
-  const related=all.filter(x=>x.slug&&x.slug!==a.slug).slice(0,4);
-  const breadcrumb={"@type":"BreadcrumbList","itemListElement":[
-    {"@type":"ListItem","position":1,"name":"หน้าแรก","item":`${SITE}/`},
-    {"@type":"ListItem","position":2,"name":a.content_type==="news"?"ข่าวฟุตบอล":a.content_type==="evergreen"?"ความรู้ฟุตบอล":"บทวิเคราะห์","item":`${SITE}/${a.content_type==="news"?"news":a.content_type==="evergreen"?"knowledge":"analysis"}`},
-    {"@type":"ListItem","position":3,"name":a.title,"item":canonical}
-  ]};
-  const article={"@type":a.content_type==="news"?"NewsArticle":"Article","@id":`${canonical}#article`,"headline":""};
-  const schema={"@context":"https://schema.org","@graph":[
-    {"@type":a.content_type==="news"?"NewsArticle":"Article","@id":`${canonical}#article","headline":a.title,"description":desc,"image":[image],"datePublished":a.publish_at||a.published_at||a.created_at,"dateModified":a.updated_at||a.publish_at||a.created_at,"author":{"@type":"Person","name":a.author||"บอส สิทธิกร","url":`${SITE}/about.html#author`},"publisher":{"@type":"Organization","name":"HN FOOTBALL SCORE","url":SITE,"logo":{"@type":"ImageObject","url":`${SITE}/assets/icons/icon.svg`}},"mainEntityOfPage":{"@type":"WebPage","@id":canonical},"inLanguage":"th-TH"},breadcrumb]};
-  const rel=related.length?`<section class="related"><h2>เนื้อหาที่เกี่ยวข้อง</h2><div class="related-grid">${related.map(x=>`<a href="/article?slug=${encodeURIComponent(x.slug)}"><strong>${esc(x.title)}</strong><span>${esc(x.league||"")}</span></a>`).join("")}</div></section>`:"";
-  const body=`<main class="article-shell"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">หน้าแรก</a> › <a href="/${a.content_type==="news"?"news":a.content_type==="evergreen"?"knowledge":"analysis"}">${a.content_type==="news"?"ข่าวฟุตบอล":a.content_type==="evergreen"?"ความรู้ฟุตบอล":"บทวิเคราะห์"}</a> › <span>${esc(a.title)}</span></nav><article class="article-card">${image?`<img class="cover" src="${esc(image)}" alt="${esc(a.title)}" loading="eager">`:""}<div class="body"><div class="kicker">${esc(a.league||(a.content_type==="news"?"ข่าวฟุตบอล":a.content_type==="evergreen"?"ความรู้ฟุตบอล":"บทวิเคราะห์"))}</div><h1>${esc(a.title)}</h1><div class="meta">${a.match_name?`<span>${esc(a.match_name)}</span>`:""}${a.match_time?`<span>${esc(formatDate(a.match_time))}</span>`:""}<span>โดย ${esc(a.author||"บอส สิทธิกร")}</span>${a.publish_at||a.published_at?`<span>เผยแพร่ ${esc(formatDate(a.publish_at||a.published_at))}</span>`:""}${a.updated_at?`<span>อัปเดต ${esc(formatDate(a.updated_at))}</span>`:""}</div>${a.excerpt?`<p class="lead">${esc(a.excerpt)}</p>`:""}<div class="content">${esc(a.content||"")}</div><div class="brand-foot">HN FOOTBALL SCORE • www.fb55vip.com</div></div></article>${rel}</main>`;
-  let html=pageShell({title,description:desc,canonical,body,schema,type:"article"});
-  html=html.replace(`<meta property="og:image" content="${SITE}/assets/og-image.png">`,`<meta property="og:image" content="${esc(image)}">`);
-  return new Response(html,{headers:{"Content-Type":"text/html; charset=UTF-8","Cache-Control":"public, max-age=0, s-maxage=120"}});
+const SITE_URL = "https://www.fb55vip.com";
+const SITE_NAME = "HN FOOTBALL SCORE";
+const CONTENT_API = "https://balltoday-content-api.fb55.workers.dev";
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function escapeJsonForHtml(value) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
+function stripHtml(value = "") {
+  return String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeText(value = "") {
+  return stripHtml(value).slice(0, 5000);
+}
+
+function safeUrl(value, fallback = "") {
+  try {
+    const url = new URL(value, SITE_URL);
+
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return url.href;
+    }
+  } catch (_) {}
+
+  return fallback;
+}
+
+function formatThaiDate(value) {
+  if (!value) return "";
+
+  try {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    return new Intl.DateTimeFormat("th-TH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Bangkok"
+    }).format(date);
+  } catch (_) {
+    return "";
+  }
+}
+
+function getArticleType(article) {
+  const type = String(
+    article.content_type ||
+    article.type ||
+    article.category ||
+    ""
+  ).toLowerCase();
+
+  if (
+    type.includes("news") ||
+    type.includes("ข่าว")
+  ) {
+    return "NewsArticle";
+  }
+
+  return "Article";
+}
+
+function getSection(article) {
+  const type = String(
+    article.content_type ||
+    article.type ||
+    article.category ||
+    ""
+  ).toLowerCase();
+
+  if (type.includes("news") || type.includes("ข่าว")) {
+    return {
+      name: "ข่าวฟุตบอล",
+      url: `${SITE_URL}/news`
+    };
+  }
+
+  if (
+    type.includes("knowledge") ||
+    type.includes("evergreen") ||
+    type.includes("ความรู้")
+  ) {
+    return {
+      name: "ความรู้ฟุตบอล",
+      url: `${SITE_URL}/knowledge`
+    };
+  }
+
+  return {
+    name: "บทวิเคราะห์",
+    url: `${SITE_URL}/analysis`
+  };
+}
+
+async function fetchArticle(slug) {
+  const endpoints = [
+    `${CONTENT_API}/api/articles/${encodeURIComponent(slug)}`,
+    `${CONTENT_API}/articles/${encodeURIComponent(slug)}`,
+    `${CONTENT_API}/api/content/${encodeURIComponent(slug)}`
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        headers: {
+          Accept: "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const data = await response.json();
+
+      const article =
+        data?.article ||
+        data?.data ||
+        data?.item ||
+        data;
+
+      if (article && typeof article === "object") {
+        return article;
+      }
+    } catch (_) {}
+  }
+
+  return null;
+}
+
+function buildNotFoundPage(slug) {
+  const title = "ไม่พบบทความ | HN FOOTBALL SCORE";
+  const canonical = `${SITE_URL}/article?slug=${encodeURIComponent(slug)}`;
+
+  return `<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,follow">
+  <title>${escapeHtml(title)}</title>
+  <link rel="canonical" href="${escapeHtml(canonical)}">
+</head>
+<body>
+  <main>
+    <h1>ไม่พบบทความ</h1>
+    <p>บทความที่คุณกำลังค้นหาอาจถูกย้ายหรือลบออกแล้ว</p>
+    <p><a href="${SITE_URL}/">กลับหน้า HN FOOTBALL SCORE</a></p>
+  </main>
+</body>
+</html>`;
+}
+
+function buildArticlePage(article, slug) {
+  const section = getSection(article);
+  const schemaType = getArticleType(article);
+
+  const headline =
+    article.title ||
+    article.headline ||
+    article.name ||
+    "HN FOOTBALL SCORE";
+
+  const intro =
+    article.intro ||
+    article.excerpt ||
+    article.summary ||
+    article.description ||
+    "";
+
+  const body =
+    article.content ||
+    article.body ||
+    article.article_content ||
+    article.analysis ||
+    "";
+
+  const seoTitle =
+    article.seo_title ||
+    `${headline} | ${SITE_NAME}`;
+
+  const metaDescription =
+    normalizeText(
+      article.meta_description ||
+      intro ||
+      body
+    ).slice(0, 160);
+
+  const canonical =
+    safeUrl(
+      article.canonical_url,
+      `${SITE_URL}/article?slug=${encodeURIComponent(slug)}`
+    );
+
+  const image =
+    safeUrl(
+      article.og_image ||
+      article.cover_image ||
+      article.image ||
+      article.image_url,
+      `${SITE_URL}/assets/images/og-default.jpg`
+    );
+
+  const ogTitle =
+    article.og_title ||
+    seoTitle;
+
+  const ogDescription =
+    normalizeText(
+      article.og_description ||
+      metaDescription
+    ).slice(0, 200);
+
+  const author =
+    article.author_name ||
+    article.author ||
+    "HN FOOTBALL SCORE";
+
+  const datePublished =
+    article.published_at ||
+    article.created_at ||
+    "";
+
+  const dateModified =
+    article.updated_at ||
+    article.modified_at ||
+    datePublished;
+
+  const displayPublished = formatThaiDate(datePublished);
+  const displayModified = formatThaiDate(dateModified);
+
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    headline,
+    description: metaDescription,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonical
+    },
+    image: image ? [image] : undefined,
+    datePublished: datePublished || undefined,
+    dateModified: dateModified || undefined,
+    author: {
+      "@type": "Organization",
+      name: author,
+      url: `${SITE_URL}/about`
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/assets/images/og-default.jpg`
+      }
+    }
+  };
+
+  Object.keys(articleSchema).forEach((key) => {
+    if (articleSchema[key] === undefined) {
+      delete articleSchema[key];
+    }
+  });
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "หน้าแรก",
+        item: `${SITE_URL}/`
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: section.name,
+        item: section.url
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: headline,
+        item: canonical
+      }
+    ]
+  };
+
+  const safeHeadline = escapeHtml(headline);
+  const safeIntro = escapeHtml(intro);
+  const safeAuthor = escapeHtml(author);
+  const safeSectionName = escapeHtml(section.name);
+
+  return `<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>${escapeHtml(seoTitle)}</title>
+
+  <meta
+    name="description"
+    content="${escapeHtml(metaDescription)}"
+  >
+
+  <meta name="robots" content="index,follow,max-image-preview:large">
+
+  <link
+    rel="canonical"
+    href="${escapeHtml(canonical)}"
+  >
+
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="${SITE_NAME}">
+  <meta property="og:title" content="${escapeHtml(ogTitle)}">
+  <meta
+    property="og:description"
+    content="${escapeHtml(ogDescription)}"
+  >
+  <meta property="og:url" content="${escapeHtml(canonical)}">
+  <meta property="og:image" content="${escapeHtml(image)}">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(ogTitle)}">
+  <meta
+    name="twitter:description"
+    content="${escapeHtml(ogDescription)}"
+  >
+  <meta name="twitter:image" content="${escapeHtml(image)}">
+
+  <script type="application/ld+json">${escapeJsonForHtml(articleSchema)}</script>
+  <script type="application/ld+json">${escapeJsonForHtml(breadcrumbSchema)}</script>
+
+  <link rel="stylesheet" href="/assets/css/app.css">
+  <link rel="stylesheet" href="/assets/css/article-v18.css">
+</head>
+
+<body>
+
+  <header>
+    <a href="/" aria-label="HN FOOTBALL SCORE">
+      HN FOOTBALL SCORE
+    </a>
+  </header>
+
+  <main>
+
+    <nav aria-label="breadcrumb">
+      <a href="/">หน้าแรก</a>
+      <span> › </span>
+      <a href="${escapeHtml(section.url)}">${safeSectionName}</a>
+      <span> › </span>
+      <span>${safeHeadline}</span>
+    </nav>
+
+    <article>
+
+      <header>
+        <p>${safeSectionName}</p>
+
+        <h1>${safeHeadline}</h1>
+
+        ${
+          safeIntro
+            ? `<p class="article-intro">${safeIntro}</p>`
+            : ""
+        }
+
+        <div class="article-meta">
+          <span>โดย ${safeAuthor}</span>
+
+          ${
+            displayPublished
+              ? `<span>เผยแพร่ ${escapeHtml(displayPublished)}</span>`
+              : ""
+          }
+
+          ${
+            displayModified &&
+            displayModified !== displayPublished
+              ? `<span>อัปเดต ${escapeHtml(displayModified)}</span>`
+              : ""
+          }
+        </div>
+      </header>
+
+      ${
+        image
+          ? `
+            <figure class="article-cover">
+              <img
+                src="${escapeHtml(image)}"
+                alt="${safeHeadline}"
+                loading="eager"
+                fetchpriority="high"
+              >
+            </figure>
+          `
+          : ""
+      }
+
+      <div class="article-content">
+        ${body}
+      </div>
+
+    </article>
+
+    <section class="article-navigation">
+      <h2>อ่านเพิ่มเติม</h2>
+
+      <p>
+        <a href="${escapeHtml(section.url)}">
+          ดู${safeSectionName}ทั้งหมด
+        </a>
+      </p>
+
+      <p>
+        <a href="/">
+          กลับหน้า HN FOOTBALL SCORE
+        </a>
+      </p>
+    </section>
+
+  </main>
+
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/article-v18.js"></script>
+
+</body>
+</html>`;
+}
+
+export async function onRequest(context) {
+  const request = context.request;
+  const url = new URL(request.url);
+
+  const slug = String(
+    url.searchParams.get("slug") || ""
+  ).trim();
+
+  if (!slug) {
+    return new Response(buildNotFoundPage(""), {
+      status: 404,
+      headers: {
+        "content-type": "text/html; charset=UTF-8",
+        "cache-control": "no-store"
+      }
+    });
+  }
+
+  const article = await fetchArticle(slug);
+
+  if (!article) {
+    return new Response(buildNotFoundPage(slug), {
+      status: 404,
+      headers: {
+        "content-type": "text/html; charset=UTF-8",
+        "cache-control": "no-store"
+      }
+    });
+  }
+
+  const html = buildArticlePage(article, slug);
+
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "content-type": "text/html; charset=UTF-8",
+      "cache-control": "public, max-age=60, s-maxage=300",
+      "x-content-type-options": "nosniff"
+    }
+  });
 }
