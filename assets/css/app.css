@@ -2307,3 +2307,7 @@ table {
     padding: 10px 13px 15px;
   }
 }
+
+.premium-badge{text-decoration:none}
+#knowledge .news-content h3 a{color:inherit;text-decoration:none}
+#knowledge .news-content h3 a:hover{text-decoration:underline}
