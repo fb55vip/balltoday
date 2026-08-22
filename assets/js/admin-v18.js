@@ -12,6 +12,7 @@ let seoTouched=false;
 
 const ANALYSIS_CATEGORIES=["","พรีเมียร์ลีก","ลาลีกา","เซเรียอา","บุนเดสลีกา","ลีกเอิง","ยูฟ่า แชมเปียนส์ลีก","ยูฟ่า ยูโรปาลีก","ไทยลีก","ฟุตบอลทีมชาติ","อื่น ๆ"];
 const NEWS_CATEGORIES=["","ข่าวล่าสุด","พรีเมียร์ลีก","ลาลีกา","เซเรียอา","บุนเดสลีกา","ลีกเอิง","ยูฟ่า แชมเปียนส์ลีก","ฟุตบอลไทย","ตลาดซื้อขาย","ทีมชาติ","ข่าวนักเตะ","อื่น ๆ"];
+const EVERGREEN_CATEGORIES=["","กฎฟุตบอล","ศัพท์ฟุตบอล","สถิติฟุตบอล","รายการแข่งขัน","พื้นฐานฟุตบอล","ประวัติฟุตบอล","อื่น ๆ"];
 
 function esc(v=""){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function localInput(v){if(!v)return"";const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v).slice(0,16);const p=n=>String(n).padStart(2,"0");return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`}
@@ -32,8 +33,8 @@ async function api(path,options={}){
 
 function setCategoryOptions(type,selected=""){
   const select=$("#league"); if(!select)return;
-  const list=type==="news"?NEWS_CATEGORIES:ANALYSIS_CATEGORIES;
-  select.innerHTML=list.map((v,i)=>`<option value="${esc(v)}">${i===0?(type==="news"?"เลือกหมวดข่าว":"เลือกลีก"):esc(v)}</option>`).join("");
+  const list=type==="news"?NEWS_CATEGORIES:type==="evergreen"?EVERGREEN_CATEGORIES:ANALYSIS_CATEGORIES;
+  select.innerHTML=list.map((v,i)=>`<option value="${esc(v)}">${i===0?(type==="news"?"เลือกหมวดข่าว":type==="evergreen"?"เลือกหมวดความรู้":"เลือกลีก"):esc(v)}</option>`).join("");
   select.value=list.includes(selected)?selected:(selected?"อื่น ๆ":"");
 }
 
@@ -45,23 +46,23 @@ function getTeamKeywords(){
 
 function buildSeo(force=false){
   if(!$("#seoAuto").checked && !force){updateSeoPreview();return}
-  const news=currentType==="news";
+  const news=currentType==="news", evergreen=currentType==="evergreen";
   const title=$("#title").value.trim();
   const excerpt=$("#excerpt").value.trim();
   const category=$("#league").value.trim();
   const match=$("#matchName").value.trim();
   const teams=getTeamKeywords();
 
-  const primary=news?"ข่าวฟุตบอล":"วิเคราะห์บอลวันนี้";
-  const secondary=[news?"ข่าวฟุตบอลวันนี้":"วิเคราะห์ก่อนเกม",news?"ข่าวบอลล่าสุด":"พรีวิวฟุตบอล",category,...teams].filter(Boolean);
+  const primary=news?"ข่าวฟุตบอล":evergreen?"ความรู้ฟุตบอล":"วิเคราะห์ฟุตบอล";
+  const secondary=[news?"ข่าวฟุตบอลวันนี้":evergreen?"กติกาและความรู้ฟุตบอล":"วิเคราะห์ก่อนเกม",news?"ข่าวบอลล่าสุด":evergreen?"คู่มือฟุตบอล":"พรีวิวฟุตบอล",category,...teams].filter(Boolean);
   const unique=[...new Set(secondary)];
-  const seoTitle=title?(title.includes("HN FOOTBALL SCORE")?title:`${title} | HN FOOTBALL SCORE`):(news?"ข่าวฟุตบอลล่าสุด | HN FOOTBALL SCORE":"วิเคราะห์บอลวันนี้ | HN FOOTBALL SCORE");
+  const seoTitle=title?(title.includes("HN FOOTBALL SCORE")?title:`${title} | HN FOOTBALL SCORE`):(news?"ข่าวฟุตบอลล่าสุด | HN FOOTBALL SCORE":evergreen?"ความรู้ฟุตบอล | HN FOOTBALL SCORE":"บทวิเคราะห์ฟุตบอล | HN FOOTBALL SCORE");
   const description=shortText(excerpt||(
-    news?`ติดตาม${title||"ข่าวฟุตบอลล่าสุด"} พร้อมรายละเอียดสำคัญกับ HN FOOTBALL SCORE`:
+    news?`ติดตาม${title||"ข่าวฟุตบอลล่าสุด"} พร้อมรายละเอียดสำคัญกับ HN FOOTBALL SCORE`:evergreen?`${title||"ความรู้ฟุตบอล"} อธิบายหลักการและข้อมูลสำคัญแบบอ่านง่ายจาก HN FOOTBALL SCORE`:
     `วิเคราะห์ก่อนเกม ${match||title||"ฟุตบอลวันนี้"} เจาะรูปเกม จุดชี้ขาด และมุมมอง HN FOOTBALL SCORE`
   ),155);
-  const slug=slugify(title||match||`${news?"news":"analysis"}-${Date.now()}`);
-  const canonical=slug?`${SITE_URL}/article.html?slug=${encodeURIComponent(slug)}`:"";
+  const slug=slugify(title||match||`${news?"news":evergreen?"knowledge":"analysis"}-${Date.now()}`);
+  const canonical=slug?`${SITE_URL}/article?slug=${encodeURIComponent(slug)}`:"";
 
   $("#primaryKeyword").value=primary;
   $("#secondaryKeywords").value=unique.join(", ");
@@ -182,19 +183,19 @@ async function showDashboard(){$("#loginView").hidden=true;$("#dashboardView").h
 function statusLabel(a){if(a.effective_status==="published"||a.status==="published")return["published","เผยแพร่"];if(a.status==="scheduled")return["scheduled","ตั้งเวลา"];return["draft","ฉบับร่าง"]}
 
 function setEditorMode(type){
-  currentType=type==="news"?"news":"analysis";
+  currentType=["news","evergreen"].includes(type)?type:"analysis";
   $("#contentType").value=currentType;
-  const news=currentType==="news";
-  $(".admin-grid").classList.toggle("news-mode",news);
-  $("#editorTitle").textContent=news?"เพิ่มข่าวฟุตบอลใหม่":"เพิ่มบทวิเคราะห์ใหม่";
-  $("#titleLabel").textContent=news?"หัวข้อข่าว":"หัวข้อบทวิเคราะห์";
-  $("#leagueLabel").textContent=news?"หมวดข่าว":"ลีก";
-  $("#excerptLabel").textContent=news?"คำโปรยข่าว":"คำเกริ่น";
-  $("#contentLabel").textContent=news?"เนื้อหาข่าว":"เนื้อหาบทวิเคราะห์";
-  $("#featuredLabel").textContent=news?"ปักหมุดข่าวนี้":"ปักหมุดบทวิเคราะห์นี้";
-  $("#saveButton").textContent=news?"บันทึกข่าว":"บันทึกบทวิเคราะห์";
-  $("#libraryTitle").textContent=news?"ข่าวฟุตบอลทั้งหมด":"บทวิเคราะห์ทั้งหมด";
-  $("#searchInput").placeholder=news?"ค้นหาหัวข้อข่าวหรือหมวดข่าว":"ค้นหาหัวข้อ คู่แข่งขัน หรือลีก";
+  const news=currentType==="news", evergreen=currentType==="evergreen";
+  $(".admin-grid").classList.toggle("news-mode",news||evergreen);
+  $("#editorTitle").textContent=news?"เพิ่มข่าวฟุตบอลใหม่":evergreen?"เพิ่มบทความความรู้ใหม่":"เพิ่มบทวิเคราะห์ใหม่";
+  $("#titleLabel").textContent=news?"หัวข้อข่าว":evergreen?"หัวข้อความรู้ฟุตบอล":"หัวข้อบทวิเคราะห์";
+  $("#leagueLabel").textContent=news?"หมวดข่าว":evergreen?"หมวดความรู้":"ลีก";
+  $("#excerptLabel").textContent=news?"คำโปรยข่าว":evergreen?"คำเกริ่นบทความ":"คำเกริ่น";
+  $("#contentLabel").textContent=news?"เนื้อหาข่าว":evergreen?"เนื้อหาความรู้ฟุตบอล":"เนื้อหาบทวิเคราะห์";
+  $("#featuredLabel").textContent=news?"ปักหมุดข่าวนี้":evergreen?"ปักหมุดบทความนี้":"ปักหมุดบทวิเคราะห์นี้";
+  $("#saveButton").textContent=news?"บันทึกข่าว":evergreen?"บันทึกความรู้":"บันทึกบทวิเคราะห์";
+  $("#libraryTitle").textContent=news?"ข่าวฟุตบอลทั้งหมด":evergreen?"ความรู้ฟุตบอลทั้งหมด":"บทวิเคราะห์ทั้งหมด";
+  $("#searchInput").placeholder=news?"ค้นหาหัวข้อข่าวหรือหมวดข่าว":evergreen?"ค้นหาหัวข้อความรู้หรือหมวด":"ค้นหาหัวข้อ คู่แข่งขัน หรือลีก";
   setCategoryOptions(currentType);
   resetForm(false);
   renderCurrentStats();
@@ -216,12 +217,18 @@ function setAdminTab(name){
     const grid=$(".admin-grid"),mount=$("#newsAdminMount");
     if(grid&&mount)mount.appendChild(grid);
   }
+  if(name==="evergreen"){
+    setEditorMode("evergreen");
+    const grid=$(".admin-grid"),mount=$("#evergreenAdminMount");
+    if(grid&&mount)mount.appendChild(grid);
+  }
   if(name==="popup")loadPopup();
 }
 
 $$("[data-admin-tab]").forEach(b=>b.addEventListener("click",()=>setAdminTab(b.dataset.adminTab)));
 $$("[data-go-tab]").forEach(b=>b.addEventListener("click",()=>setAdminTab(b.dataset.goTab)));
 $("#openNewsEditor")?.addEventListener("click",()=>{setAdminTab("news");window.scrollTo({top:0,behavior:"smooth"})});
+$("#openEvergreenEditor")?.addEventListener("click",()=>{setAdminTab("evergreen");window.scrollTo({top:0,behavior:"smooth"})});
 
 function renderStats(s={}){
   $("#statTotal").textContent=s.total||0;$("#statPublished").textContent=s.published||0;
@@ -249,7 +256,7 @@ function resetForm(clearMessage=true){
   $("#coverPreview").hidden=true;$("#coverPreview").removeAttribute("src");
   $("#seoAuto").checked=true;seoTouched=false;
   ["primaryKeyword","secondaryKeywords","seoTitle","metaDescription","slug","canonicalUrl","ogTitle","ogDescription","ogImage"].forEach(id=>$("#"+id).value="");
-  $("#editorTitle").textContent=currentType==="news"?"เพิ่มข่าวฟุตบอลใหม่":"เพิ่มบทวิเคราะห์ใหม่";
+  $("#editorTitle").textContent=currentType==="news"?"เพิ่มข่าวฟุตบอลใหม่":currentType==="evergreen"?"เพิ่มบทความความรู้ใหม่":"เพิ่มบทวิเคราะห์ใหม่";
   buildSeo(true);
   if(clearMessage)setMessage($("#editorMessage"),"");
 }
@@ -262,12 +269,12 @@ function render(){
     return type===currentType&&(!q||text.includes(q))&&(!f||a.status===f);
   });
   const box=$("#articleList");
-  if(!list.length){box.innerHTML=`<div class="empty">ยังไม่มี${currentType==="news"?"ข่าวฟุตบอล":"บทวิเคราะห์"}ที่ตรงกับตัวกรอง</div>`;return}
+  if(!list.length){box.innerHTML=`<div class="empty">ยังไม่มี${currentType==="news"?"ข่าวฟุตบอล":currentType==="evergreen"?"บทความความรู้":"บทวิเคราะห์"}ที่ตรงกับตัวกรอง</div>`;return}
   box.innerHTML=list.map(a=>{
     const[s,l]=statusLabel(a);
     return `<article class="article-item">
       <div class="article-top"><div>
-        <div class="article-type">${(a.content_type||"analysis")==="news"?"📰 ข่าวฟุตบอล":"📝 บทวิเคราะห์"}</div>
+        <div class="article-type">${(a.content_type||"analysis")==="news"?"📰 ข่าวฟุตบอล":(a.content_type||"analysis")==="evergreen"?"📚 ความรู้ฟุตบอล":"📝 บทวิเคราะห์"}</div>
         <h3>${esc(a.title)}</h3>
         <div class="article-meta"><span class="badge ${s}">${l}</span>${a.featured?'<span class="badge featured">📌 ปักหมุด</span>':""}<span>${esc(a.league||"ไม่ระบุหมวด")}</span>${a.match_name?`<span>${esc(a.match_name)}</span>`:""}</div>
         ${a.primary_keyword?`<div class="article-meta seo-meta">SEO: ${esc(a.primary_keyword)} • ${esc(a.slug||"")}</div>`:""}
@@ -291,14 +298,14 @@ async function loadArticles(){
 }
 
 function articleFromForm(){
-  const news=currentType==="news";
+  const news=currentType==="news", evergreen=currentType==="evergreen";
   if($("#seoAuto").checked && !seoTouched)buildSeo(true);
   return{
     content_type:currentType,
     title:$("#title").value.trim(),league:$("#league").value,
-    match_name:news?null:$("#matchName").value.trim(),
-    match_time:news?null:isoOrNull($("#matchTime").value),
-    confidence:news?0:Number($("#confidence").value||0),
+    match_name:(news||evergreen)?null:$("#matchName").value.trim(),
+    match_time:(news||evergreen)?null:isoOrNull($("#matchTime").value),
+    confidence:(news||evergreen)?0:Number($("#confidence").value||0),
     image_url:$("#imageUrl").value.trim(),
     excerpt:$("#excerpt").value.trim(),content:$("#content").value.trim(),
     status:$("#status").value,publish_at:isoOrNull($("#publishAt").value),featured:$("#featured").checked,
@@ -315,8 +322,8 @@ function articleFromForm(){
 }
 
 function fillForm(a){
-  currentType=(a.content_type||"analysis")==="news"?"news":"analysis";
-  $("#contentType").value=currentType;$(".admin-grid").classList.toggle("news-mode",currentType==="news");
+  currentType=["news","evergreen"].includes(a.content_type)?a.content_type:"analysis";
+  $("#contentType").value=currentType;$(".admin-grid").classList.toggle("news-mode",currentType!=="analysis");
   $("#articleId").value=a.id;$("#title").value=a.title||"";setCategoryOptions(currentType,a.league||"");
   $("#matchName").value=a.match_name||"";$("#matchTime").value=localInput(a.match_time);$("#confidence").value=a.confidence||0;
   $("#imageUrl").value=a.image_url||"";$("#excerpt").value=a.excerpt||"";$("#content").value=a.content||"";
@@ -325,16 +332,16 @@ function fillForm(a){
   $("#seoTitle").value=a.seo_title||"";$("#metaDescription").value=a.meta_description||"";$("#slug").value=a.slug||"";
   $("#canonicalUrl").value=a.canonical_url||"";$("#ogTitle").value=a.og_title||"";$("#ogDescription").value=a.og_description||"";$("#ogImage").value=a.og_image||a.image_url||"";
   $("#seoAuto").checked=!(a.seo_title||a.primary_keyword);seoTouched=!!(a.seo_title||a.primary_keyword);
-  $("#editorTitle").textContent=currentType==="news"?"แก้ไขข่าวฟุตบอล":"แก้ไขบทวิเคราะห์";
+  $("#editorTitle").textContent=currentType==="news"?"แก้ไขข่าวฟุตบอล":currentType==="evergreen"?"แก้ไขความรู้ฟุตบอล":"แก้ไขบทวิเคราะห์";
   updateCoverPreview();updateSeoPreview();window.scrollTo({top:0,behavior:"smooth"});
 }
 
 function openPreview(a){
   const image=a.image_url||"";
   $("#previewImage").hidden=!image;if(image)$("#previewImage").src=image;
-  $("#previewLeague").textContent=a.league||(currentType==="news"?"ข่าวฟุตบอล":"บทวิเคราะห์");
+  $("#previewLeague").textContent=a.league||(currentType==="news"?"ข่าวฟุตบอล":currentType==="evergreen"?"ความรู้ฟุตบอล":"บทวิเคราะห์");
   $("#previewTitle").textContent=a.title||"ตัวอย่าง";
-  $("#previewMeta").textContent=currentType==="news"?"ข่าวฟุตบอล":[a.match_name,a.match_time?new Date(a.match_time).toLocaleString("th-TH"):"",`ความมั่นใจ ${Number(a.confidence||0)}%`].filter(Boolean).join(" • ");
+  $("#previewMeta").textContent=currentType==="news"?"ข่าวฟุตบอล":currentType==="evergreen"?"ความรู้ฟุตบอล":[a.match_name,a.match_time?new Date(a.match_time).toLocaleString("th-TH"):"",`ความมั่นใจ ${Number(a.confidence||0)}%`].filter(Boolean).join(" • ");
   $("#previewExcerpt").textContent=a.excerpt||"";$("#previewContent").textContent=a.content||"";$("#previewModal").showModal();
 }
 function updateCoverPreview(){const u=$("#imageUrl").value.trim(),img=$("#coverPreview");img.hidden=!u;if(u)img.src=u}
@@ -369,7 +376,7 @@ $("#articleForm").addEventListener("submit",async e=>{
   const b=$("#saveButton");b.disabled=true;
   try{
     const d=await api(id?`/api/admin/articles/${id}`:"/api/admin/articles",{method:id?"PUT":"POST",body:JSON.stringify(payload)});
-    setMessage($("#editorMessage"),currentType==="news"?"บันทึกข่าว + SEO เรียบร้อย":"บันทึกบทวิเคราะห์ + SEO เรียบร้อย",true);
+    setMessage($("#editorMessage"),currentType==="news"?"บันทึกข่าว + SEO เรียบร้อย":currentType==="evergreen"?"บันทึกความรู้ + SEO เรียบร้อย":"บันทึกบทวิเคราะห์ + SEO เรียบร้อย",true);
     resetForm(false);await loadArticles();
   }catch(err){setMessage($("#editorMessage"),err.message)}
   finally{b.disabled=false}
