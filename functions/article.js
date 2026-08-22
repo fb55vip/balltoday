@@ -38,6 +38,15 @@ function safeUrl(value, fallback = "") {
   return fallback;
 }
 
+function canonicalUrl(value, fallback) {
+  try {
+    const url = new URL(value || fallback, SITE_URL);
+    if (url.hostname === "fb55vip.com") url.hostname = "www.fb55vip.com";
+    if (url.origin === SITE_URL) return url.href;
+  } catch (_) {}
+  return fallback;
+}
+
 function formatThaiDate(value) {
   if (!value) return "";
 
@@ -111,6 +120,15 @@ function getSection(article) {
   };
 }
 
+function getContentType(article) {
+  const type = String(
+    article.content_type || article.type || article.category || ""
+  ).toLowerCase();
+  if (type.includes("news") || type.includes("ข่าว")) return "news";
+  if (type.includes("knowledge") || type.includes("evergreen") || type.includes("ความรู้")) return "evergreen";
+  return "analysis";
+}
+
 async function fetchArticle(slug) {
   const endpoints = [
     `${CONTENT_API}/api/articles/${encodeURIComponent(slug)}`,
@@ -147,6 +165,30 @@ async function fetchArticle(slug) {
   return null;
 }
 
+async function fetchRelatedArticles(article, slug) {
+  const type = getContentType(article);
+  try {
+    const response = await fetch(
+      `${CONTENT_API}/api/articles?type=${encodeURIComponent(type)}&limit=12`,
+      { headers: { Accept: "application/json" } }
+    );
+    if (!response.ok) return [];
+    const data = await response.json();
+    const items = Array.isArray(data?.articles) ? data.articles : [];
+    const currentLeague = String(article.league || "").trim().toLowerCase();
+    return items
+      .filter((item) => item?.slug && item.slug !== slug && getContentType(item) === type)
+      .sort((a, b) => {
+        const aSame = currentLeague && String(a.league || "").trim().toLowerCase() === currentLeague ? 1 : 0;
+        const bSame = currentLeague && String(b.league || "").trim().toLowerCase() === currentLeague ? 1 : 0;
+        return bSame - aSame;
+      })
+      .slice(0, 4);
+  } catch (_) {
+    return [];
+  }
+}
+
 function buildNotFoundPage(slug) {
   const title = "ไม่พบบทความ | HN FOOTBALL SCORE";
   const canonical = `${SITE_URL}/article?slug=${encodeURIComponent(slug)}`;
@@ -170,7 +212,7 @@ function buildNotFoundPage(slug) {
 </html>`;
 }
 
-function buildArticlePage(article, slug) {
+function buildArticlePage(article, slug, relatedArticles = []) {
   const section = getSection(article);
   const schemaType = getArticleType(article);
 
@@ -206,7 +248,7 @@ function buildArticlePage(article, slug) {
     ).slice(0, 160);
 
   const canonical =
-    safeUrl(
+    canonicalUrl(
       article.canonical_url,
       `${SITE_URL}/article?slug=${encodeURIComponent(slug)}`
     );
@@ -217,7 +259,7 @@ function buildArticlePage(article, slug) {
       article.cover_image ||
       article.image ||
       article.image_url,
-      `${SITE_URL}/assets/images/og-default.jpg`
+      `${SITE_URL}/assets/og-image.png`
     );
 
   const ogTitle =
@@ -261,9 +303,9 @@ function buildArticlePage(article, slug) {
     datePublished: datePublished || undefined,
     dateModified: dateModified || undefined,
     author: {
-      "@type": "Organization",
+      "@type": author === SITE_NAME ? "Organization" : "Person",
       name: author,
-      url: `${SITE_URL}/about`
+      url: `${SITE_URL}/about.html#author`
     },
     publisher: {
       "@type": "Organization",
@@ -271,7 +313,7 @@ function buildArticlePage(article, slug) {
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/assets/images/og-default.jpg`
+        url: `${SITE_URL}/assets/og-image.png`
       }
     }
   };
@@ -311,6 +353,10 @@ function buildArticlePage(article, slug) {
   const safeIntro = escapeHtml(intro);
   const safeAuthor = escapeHtml(author);
   const safeSectionName = escapeHtml(section.name);
+  const relatedLinks = relatedArticles.map((item) => `
+        <li>
+          <a href="/article?slug=${encodeURIComponent(item.slug)}">${escapeHtml(item.title || item.headline || item.slug)}</a>
+        </li>`).join("");
 
   return `<!doctype html>
 <html lang="th">
@@ -431,6 +477,8 @@ function buildArticlePage(article, slug) {
     <section class="article-navigation">
       <h2>อ่านเพิ่มเติม</h2>
 
+      ${relatedLinks ? `<ul>${relatedLinks}\n      </ul>` : ""}
+
       <p>
         <a href="${escapeHtml(section.url)}">
           ดู${safeSectionName}ทั้งหมด
@@ -483,7 +531,8 @@ export async function onRequest(context) {
     });
   }
 
-  const html = buildArticlePage(article, slug);
+  const relatedArticles = await fetchRelatedArticles(article, slug);
+  const html = buildArticlePage(article, slug, relatedArticles);
 
   return new Response(html, {
     status: 200,
