@@ -3061,15 +3061,13 @@ async function loadPublishedArticles() {
                 )}
               </p>
 
-              <button
+              <a
                 class="analysis-button"
-                type="button"
-                data-content-article="${escapeHtml(
-                  article.slug || ""
-                )}"
+                href="/article?slug=${encodeURIComponent(article.slug||"")}"
+                data-content-article="${escapeHtml(article.slug||"")}"
               >
                 อ่านบทความ →
-              </button>
+              </a>
             </div>
           </article>
         `)
@@ -3358,7 +3356,7 @@ async function loadPublishedNews() {
           <span class="news-category">${escapeHtml(article.league || "ข่าวฟุตบอล")}</span>
           <h3>${escapeHtml(article.title || "ข่าวฟุตบอลล่าสุด")}</h3>
           <p>${escapeHtml(article.excerpt || "ติดตามข่าวฟุตบอลล่าสุดจาก HN FOOTBALL SCORE")}</p>
-          <button class="analysis-button" type="button" data-news-article="${escapeHtml(article.slug||"")}">อ่านข่าว →</button>
+          <a class="analysis-button" href="/article?slug=${encodeURIComponent(article.slug||"")}" data-news-article="${escapeHtml(article.slug||"")}">อ่านข่าว →</a>
         </div>
       </article>
     `).join("");
