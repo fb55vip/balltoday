@@ -1,7 +1,6 @@
 "use strict";
 
 const ALLOWED_ORIGINS = new Set([
-  "https://fb55vip.com",
   "https://www.fb55vip.com",
   "https://balltoday.pages.dev"
 ]);
@@ -106,28 +105,42 @@ export default {
       if (url.pathname === "/api/articles" && request.method === "GET") {
         await ensureContentColumns(env.DB);
         const limit = Math.min(500, Math.max(1, Number(url.searchParams.get("limit")) || 12));
+        const page = Math.max(1, Math.floor(Number(url.searchParams.get("page")) || 1));
+        const offset = (page - 1) * limit;
         const now = new Date().toISOString();
         const type = url.searchParams.get("type");
-        let results;
+        let results, totalRow;
         if (["analysis", "news", "evergreen"].includes(type)) {
+          totalRow = await env.DB.prepare(`
+            SELECT COUNT(*) AS total FROM articles
+            WHERE COALESCE(content_type,'analysis') = ?
+              AND (status = 'published'
+               OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?))
+          `).bind(type, now).first();
           ({ results } = await env.DB.prepare(`
             SELECT * FROM articles
             WHERE COALESCE(content_type,'analysis') = ?
               AND (status = 'published'
                OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?))
             ORDER BY featured DESC, COALESCE(published_at, created_at) DESC, id DESC
-            LIMIT ?
-          `).bind(type, now, limit).all());
+            LIMIT ? OFFSET ?
+          `).bind(type, now, limit, offset).all());
         } else {
+          totalRow = await env.DB.prepare(`
+            SELECT COUNT(*) AS total FROM articles
+            WHERE status = 'published'
+               OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?)
+          `).bind(now).first();
           ({ results } = await env.DB.prepare(`
             SELECT * FROM articles
             WHERE status = 'published'
                OR (status = 'scheduled' AND published_at IS NOT NULL AND published_at <= ?)
             ORDER BY featured DESC, COALESCE(published_at, created_at) DESC, id DESC
-            LIMIT ?
-          `).bind(now, limit).all());
+            LIMIT ? OFFSET ?
+          `).bind(now, limit, offset).all());
         }
-        return json({ success: true, articles: (results || []).map(normalizeArticle) }, 200, cors);
+        const total = Number(totalRow?.total || 0);
+        return json({ success: true, articles: (results || []).map(normalizeArticle), page, limit, total, total_pages: Math.max(1, Math.ceil(total / limit)) }, 200, cors);
       }
 
       if (url.pathname === "/api/sitemap" && request.method === "GET") {
