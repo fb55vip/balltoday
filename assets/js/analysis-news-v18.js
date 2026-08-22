@@ -7,7 +7,7 @@
     const b=card.querySelector("[data-content-article],[data-news-article]");
     return b?.dataset.contentArticle||b?.dataset.newsArticle||"";
   }
-  function openFull(slug){if(slug)location.href="/article.html?slug="+encodeURIComponent(slug)}
+  function openFull(slug){if(slug)location.href="/article?slug="+encodeURIComponent(slug)}
   function activate(card){
     if(!card||card.dataset.hnV18==="1")return;
     const slug=slugFrom(card);if(!slug)return;
