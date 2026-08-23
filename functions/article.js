@@ -259,7 +259,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
       article.cover_image ||
       article.image ||
       article.image_url,
-      `${SITE_URL}/assets/og-image.png`
+      `${SITE_URL}/assets/og-image.jpg`
     );
 
   const ogTitle =
@@ -305,7 +305,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
     author: {
       "@type": author === SITE_NAME ? "Organization" : "Person",
       name: author,
-      url: `${SITE_URL}/about.html#author`
+      url: `${SITE_URL}/author.html`
     },
     publisher: {
       "@type": "Organization",
@@ -313,7 +313,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/assets/og-image.png`
+        url: `${SITE_URL}/assets/og-image.jpg`
       }
     }
   };
