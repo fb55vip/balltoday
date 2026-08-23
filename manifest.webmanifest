@@ -1,11 +1,14 @@
 {
   "name": "HN FOOTBALL SCORE",
   "short_name": "HN SCORE",
-  "description": "ผลบอลสด ตารางบอล วิเคราะห์บอลวันนี้ โดย บอส สิทธิกร",
+  "description": "ผลบอลสด โปรแกรม ข่าวฟุตบอล ความรู้ฟุตบอล และบทวิเคราะห์ โดย บอส สิทธิกร",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#05070b",
   "theme_color": "#e7192d",
   "lang": "th",
-  "icons": [{"src":"/assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [
+    {"src":"/assets/icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
 }

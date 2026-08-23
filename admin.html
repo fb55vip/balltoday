@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#07090d">
   <title>HN FOOTBALL SCORE ADMIN | ระบบจัดการเนื้อหา</title>
   <link rel="stylesheet" href="/assets/css/admin.css?v=20260809-v14">
-  <link rel="stylesheet" href="/assets/css/admin-seo-v18.css?v=20260810-v18">
+  <link rel="stylesheet" href="/assets/css/admin-seo-v18.css?v=20260823-custom-league">
 </head>
 <body>
   <main class="admin-shell">
@@ -81,7 +81,7 @@
               <label><span id="titleLabel">หัวข้อบทวิเคราะห์</span><input id="title" maxlength="160" required placeholder="เช่น วิเคราะห์ ลิเวอร์พูล พบ อาร์เซนอล"></label>
 
               <div class="two-col">
-                <label><span id="leagueLabel">ลีก</span><select id="league"></select></label>
+                <label><span id="leagueLabel">ลีก</span><select id="league"></select><input id="customLeague" class="custom-league-input" maxlength="80" placeholder="พิมพ์ชื่อลีกหรือหมวดอื่น ๆ" hidden></label>
                 <label class="analysis-only">คู่แข่งขัน<input id="matchName" maxlength="120" placeholder="เช่น ลิเวอร์พูล พบ อาร์เซนอล"></label>
               </div>
 
@@ -215,6 +215,6 @@
     </article>
   </dialog>
 
-  <script src="/assets/js/admin-v18.js?v=20260810-v18" defer></script>
+  <script src="/assets/js/admin-v18.js?v=20260823-custom-league" defer></script>
 </body>
 </html>

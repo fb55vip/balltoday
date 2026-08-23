@@ -1,4 +1,4 @@
-const CACHE_NAME = "hn-football-score-v19-20260822-seo";
+const CACHE_NAME = "hn-football-score-v20-20260822-seo-final";
 const STATIC_ASSETS = [
   "/assets/css/app.css?v=20260809-v15",
   "/assets/css/admin.css?v=20260806-v10",
@@ -6,7 +6,10 @@ const STATIC_ASSETS = [
   "/assets/js/app.js?v=20260809-v15",
   "/assets/js/admin.js?v=20260806-v10",
   "/manifest.webmanifest",
-  "/assets/icons/icon.svg"
+  "/assets/icons/icon.svg",
+  "/assets/hn-footballclub.webp",
+  "/assets/stadium-premium.webp",
+  "/assets/og-image.jpg"
 ];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => Promise.allSettled(STATIC_ASSETS.map(asset => cache.add(asset)))));
