@@ -1,6 +1,6 @@
-const CACHE_NAME = "hn-football-score-v20-20260822-seo-final";
+const CACHE_NAME = "hn-football-score-v21-20260823-mobile-compact";
 const STATIC_ASSETS = [
-  "/assets/css/app.css?v=20260809-v15",
+  "/assets/css/app.css?v=20260823-mobile-compact-v1",
   "/assets/css/admin.css?v=20260806-v10",
   "/assets/js/config.js?v=20260806-v10",
   "/assets/js/app.js?v=20260809-v15",
