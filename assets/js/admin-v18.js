@@ -36,6 +36,19 @@ function setCategoryOptions(type,selected=""){
   const list=type==="news"?NEWS_CATEGORIES:type==="evergreen"?EVERGREEN_CATEGORIES:ANALYSIS_CATEGORIES;
   select.innerHTML=list.map((v,i)=>`<option value="${esc(v)}">${i===0?(type==="news"?"เลือกหมวดข่าว":type==="evergreen"?"เลือกหมวดความรู้":"เลือกลีก"):esc(v)}</option>`).join("");
   select.value=list.includes(selected)?selected:(selected?"อื่น ๆ":"");
+  updateCustomLeague(selected);
+}
+
+function updateCustomLeague(selected=""){
+  const select=$("#league"),input=$("#customLeague");if(!select||!input)return;
+  const custom=select.value==="อื่น ๆ";
+  input.hidden=!custom;input.required=custom;
+  if(custom&&selected&&selected!=="อื่น ๆ")input.value=selected;
+  if(!custom)input.value="";
+}
+
+function selectedLeague(){
+  return $("#league").value==="อื่น ๆ"?$("#customLeague").value.trim():$("#league").value.trim();
 }
 
 function getTeamKeywords(){
@@ -49,7 +62,7 @@ function buildSeo(force=false){
   const news=currentType==="news", evergreen=currentType==="evergreen";
   const title=$("#title").value.trim();
   const excerpt=$("#excerpt").value.trim();
-  const category=$("#league").value.trim();
+  const category=selectedLeague();
   const match=$("#matchName").value.trim();
   const teams=getTeamKeywords();
 
@@ -302,7 +315,7 @@ function articleFromForm(){
   if($("#seoAuto").checked && !seoTouched)buildSeo(true);
   return{
     content_type:currentType,
-    title:$("#title").value.trim(),league:$("#league").value,
+    title:$("#title").value.trim(),league:selectedLeague(),
     match_name:(news||evergreen)?null:$("#matchName").value.trim(),
     match_time:(news||evergreen)?null:isoOrNull($("#matchTime").value),
     confidence:(news||evergreen)?0:Number($("#confidence").value||0),
@@ -351,6 +364,8 @@ $("#logoutButton").onclick=()=>{token="";sessionStorage.removeItem("balltoday_ad
 $("#refreshArticles").onclick=loadArticles;$("#resetButton").onclick=()=>resetForm();
 $("#searchInput").oninput=render;$("#statusFilter").onchange=render;
 $("#status").onchange=()=>{$("#publishAtWrap").hidden=$("#status").value!=="scheduled"};
+$("#league").onchange=()=>{updateCustomLeague();if($("#seoAuto").checked&&!seoTouched)buildSeo()};
+$("#customLeague").oninput=()=>{if($("#seoAuto").checked&&!seoTouched)buildSeo()};
 $("#imageUrl").oninput=()=>{updateCoverPreview();if($("#seoAuto").checked&&!seoTouched)buildSeo()};
 $("#previewButton").onclick=()=>openPreview(articleFromForm());
 $("#closePreview").onclick=()=>$("#previewModal").close();
