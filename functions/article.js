@@ -1,6 +1,6 @@
 const SITE_URL = "https://www.fb55vip.com";
 const SITE_NAME = "HN FOOTBALL SCORE";
-const CONTENT_API = "https://balltoday-content-api.fb55.workers.dev";
+const CONTENT_API = "https://balltoday-content-api.noppdsoma.workers.dev";
 
 function escapeHtml(value = "") {
   return String(value)
