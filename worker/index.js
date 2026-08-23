@@ -244,7 +244,7 @@ function normalizeArticle(a) {
     canonical_url: canonical,
     og_title: a.og_title || a.seo_title || a.title || "HN FOOTBALL SCORE",
     og_description: a.og_description || a.meta_description || fallbackDesc,
-    og_image: a.og_image || a.cover_image || "https://www.fb55vip.com/assets/og-image.png",
+    og_image: a.og_image || a.cover_image || "https://www.fb55vip.com/assets/og-image.jpg",
     author: a.author || "บอส สิทธิกร",
     views: Number(a.views || 0)
   };
