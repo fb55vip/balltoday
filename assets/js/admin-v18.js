@@ -20,6 +20,23 @@ function isoOrNull(v){if(!v)return null;const d=new Date(v);return Number.isNaN(
 function setMessage(el,text,ok=false){if(!el)return;el.textContent=text||"";el.classList.toggle("success",ok)}
 function slugify(v){return String(v||"").trim().toLowerCase().normalize("NFKD").replace(/[^\p{L}\p{N}]+/gu,"-").replace(/^-+|-+$/g,"").slice(0,120)}
 function shortText(v,max=155){const s=String(v||"").replace(/\s+/g," ").trim();return s.length<=max?s:s.slice(0,max-1).trim()+"…"}
+function fitSeoTitle(v){
+  let s=String(v||"").replace(/\s+/g," ").trim();
+  if(s.length<35)s=`${s} | HN FOOTBALL SCORE`.trim();
+  return s.length<=65?s:s.slice(0,64).trim().replace(/[|\-–—,:;]+$/g,"")+"…";
+}
+function fitMetaDescription(v,fallback){
+  let s=String(v||"").replace(/\s+/g," ").trim();
+  const extra=String(fallback||"อ่านข้อมูลก่อนการแข่งขัน ฟอร์มล่าสุด จุดสำคัญ และแนวโน้มรูปเกมจาก HN FOOTBALL SCORE").replace(/\s+/g," ").trim();
+  if(s.length<110)s=`${s}${s?" ":""}${extra}`;
+  return shortText(s,160);
+}
+function uniqueSlugForEditor(base){
+  const currentId=String($("#articleId")?.value||"");let slug=slugify(base),n=2;
+  const used=v=>articles.some(a=>String(a.id)!==currentId&&normalizeForCompare(a.slug)===normalizeForCompare(v));
+  while(slug&&used(slug))slug=slugify(`${base}-${n++}`);
+  return slug;
+}
 
 async function api(path,options={}){
   const headers={...(options.headers||{})};
@@ -66,24 +83,25 @@ function buildSeo(force=false){
   const match=$("#matchName").value.trim();
   const teams=getTeamKeywords();
 
-  const primary=news?"ข่าวฟุตบอล":evergreen?"ความรู้ฟุตบอล":"วิเคราะห์ฟุตบอล";
+  const analysisPrimary=title.match(/(?:วิเคราะห์บอล|บทวิเคราะห์บอล)[^|–—:]{0,70}/i)?.[0]?.trim()||title.split(/\s+/).slice(0,Math.min(5,title.split(/\s+/).length)).join(" ")||"บทวิเคราะห์ฟุตบอล";
+  const primary=news?"ข่าวฟุตบอล":evergreen?"ความรู้ฟุตบอล":analysisPrimary;
   const secondary=[news?"ข่าวฟุตบอลวันนี้":evergreen?"กติกาและความรู้ฟุตบอล":"วิเคราะห์ก่อนเกม",news?"ข่าวบอลล่าสุด":evergreen?"คู่มือฟุตบอล":"พรีวิวฟุตบอล",category,...teams].filter(Boolean);
   const unique=[...new Set(secondary)];
-  const seoTitle=title?(title.includes("HN FOOTBALL SCORE")?title:`${title} | HN FOOTBALL SCORE`):(news?"ข่าวฟุตบอลล่าสุด | HN FOOTBALL SCORE":evergreen?"ความรู้ฟุตบอล | HN FOOTBALL SCORE":"บทวิเคราะห์ฟุตบอล | HN FOOTBALL SCORE");
-  const description=shortText(excerpt||(
+  const seoTitle=fitSeoTitle(title||(news?"ข่าวฟุตบอลล่าสุด":evergreen?"ความรู้ฟุตบอล":"บทวิเคราะห์ฟุตบอลวันนี้"));
+  const description=fitMetaDescription(excerpt||(
     news?`ติดตาม${title||"ข่าวฟุตบอลล่าสุด"} พร้อมรายละเอียดสำคัญกับ HN FOOTBALL SCORE`:evergreen?`${title||"ความรู้ฟุตบอล"} อธิบายหลักการและข้อมูลสำคัญแบบอ่านง่ายจาก HN FOOTBALL SCORE`:
     `วิเคราะห์ก่อนเกม ${match||title||"ฟุตบอลวันนี้"} เจาะรูปเกม จุดชี้ขาด และมุมมอง HN FOOTBALL SCORE`
-  ),155);
-  const slug=slugify(title||match||`${news?"news":evergreen?"knowledge":"analysis"}-${Date.now()}`);
+  ),`${primary} พร้อมรายละเอียดการแข่งขัน ฟอร์มล่าสุด สถิติ และประเด็นสำคัญก่อนเกม`);
+  const slug=uniqueSlugForEditor(title||match||`${news?"news":evergreen?"knowledge":"analysis"}-${Date.now()}`);
   const canonical=slug?`${SITE_URL}/article?slug=${encodeURIComponent(slug)}`:"";
 
   $("#primaryKeyword").value=primary;
   $("#secondaryKeywords").value=unique.join(", ");
-  $("#seoTitle").value=seoTitle.slice(0,160);
+  $("#seoTitle").value=seoTitle;
   $("#metaDescription").value=description;
   $("#slug").value=slug;
   $("#canonicalUrl").value=canonical;
-  $("#ogTitle").value=seoTitle.slice(0,160);
+  $("#ogTitle").value=seoTitle;
   $("#ogDescription").value=description;
   if(!$("#ogImage").value.trim())$("#ogImage").value=$("#imageUrl").value.trim();
   updateSeoPreview();
@@ -169,6 +187,9 @@ function getSeoGuardResult(){
 
   if(primary)add("ok",`คีย์หลัก: ${primary}`);
   else add("warn","ยังไม่มีคีย์หลัก",6);
+
+  if(primary&&normalizeForCompare(content).includes(normalizeForCompare(primary)))add("ok","คีย์หลักอยู่ในหัวข้อหรือเนื้อหาอย่างเป็นธรรมชาติ");
+  else if(primary)add("bad","คีย์หลักยังไม่อยู่ในหัวข้อ คำเกริ่น หรือเนื้อหา",10);
 
   const kwDensity=keywordStuffingScore(content,[primary,...secondary]);
   if(kwDensity>10)add("bad","คีย์เวิร์ดซ้ำถี่เกินไปในเนื้อหา ควรเขียนให้เป็นธรรมชาติ",15);
@@ -367,6 +388,11 @@ $("#status").onchange=()=>{$("#publishAtWrap").hidden=$("#status").value!=="sche
 $("#league").onchange=()=>{updateCustomLeague();if($("#seoAuto").checked&&!seoTouched)buildSeo()};
 $("#customLeague").oninput=()=>{if($("#seoAuto").checked&&!seoTouched)buildSeo()};
 $("#imageUrl").oninput=()=>{updateCoverPreview();if($("#seoAuto").checked&&!seoTouched)buildSeo()};
+$("#seoFixButton").onclick=()=>{
+  $("#seoAuto").checked=true;seoTouched=false;buildSeo(true);renderSeoGuard();
+  const guard=getSeoGuardResult();
+  setMessage($("#editorMessage"),guard.score===100?"SEO Guard พร้อมแล้ว 100/100":"ปรับข้อมูล SEO แล้ว กรุณาแก้รายการที่ยังไม่เขียว โดยเฉพาะความยาวและความครบถ้วนของเนื้อหา",guard.score===100);
+};
 $("#previewButton").onclick=()=>openPreview(articleFromForm());
 $("#closePreview").onclick=()=>$("#previewModal").close();
 $("#previewModal").addEventListener("click",e=>{if(e.target===$("#previewModal"))$("#previewModal").close()});
