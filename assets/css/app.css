@@ -23,6 +23,71 @@
   --header-height: 76px;
 }
 
+/* Mobile-only compact sizing for Community and Step Calculator. */
+@media (max-width:640px){
+  #hn-footballclub.hn-club-card{
+    grid-template-columns:1fr;
+    min-height:0;
+  }
+  #hn-footballclub .hn-club-media{
+    min-height:150px;
+    max-height:150px;
+  }
+  #hn-footballclub .hn-club-content{
+    padding:12px;
+  }
+  #hn-footballclub .section-kicker{font-size:9px}
+  #hn-footballclub .hn-club-content h2{font-size:18px}
+  #hn-footballclub .hn-club-content p{
+    margin:6px 0 10px;
+    font-size:12px;
+    line-height:1.55;
+  }
+  #hn-footballclub .hn-club-button{
+    width:100%;
+    min-height:42px;
+    padding:0 12px;
+    font-size:12px;
+    border-radius:12px;
+  }
+
+  #ballstep .card-header{padding:10px 12px}
+  #ballstep .section-kicker{font-size:8px}
+  #ballstep .card-header h2{font-size:15px}
+  #ballstep .ballstep-body{padding:10px}
+  #ballstep .ballstep-intro{
+    margin-bottom:9px;
+    font-size:10px;
+    line-height:1.5;
+  }
+  #ballstep .ballstep-rows{gap:6px}
+  #ballstep .ballstep-row{
+    grid-template-columns:minmax(0,1fr) 82px 34px;
+    gap:5px;
+  }
+  #ballstep .ballstep-row input,
+  #ballstep .ballstep-row select,
+  #ballstep .ballstep-stake-label input{
+    min-height:36px;
+    padding:0 8px;
+    font-size:11px;
+  }
+  #ballstep .ballstep-remove{font-size:17px}
+  #ballstep .ballstep-controls{
+    grid-template-columns:1fr;
+    gap:7px;
+    margin-top:9px;
+  }
+  #ballstep .ballstep-add,
+  #ballstep #calculateBallstep{
+    width:100%;
+    min-width:0;
+    min-height:36px;
+    font-size:11px;
+  }
+  #ballstep .ballstep-note{margin-top:7px;font-size:8px}
+}
+
 * {
   box-sizing: border-box;
 }
@@ -2047,7 +2112,7 @@ table {
 @media(max-width:900px){.hn-club-card{grid-template-columns:1fr}.hn-club-media{min-height:360px}}
 @media(max-width:760px){.score-iframe-crop{height:76vh}.hn-club-card{min-height:auto}.hn-club-media{min-height:430px}.hn-club-content{padding:22px 18px 24px}.hn-club-content h2{font-size:23px}.hn-club-button{width:100%}}
 @media(max-width:460px){.hn-club-media{min-height:360px}.score-iframe-crop{height:74vh}}
-/* Ã Â¸â€ºÃ Â¸Â´Ã Â¸â€Ã Â¹â‚¬Ã Â¸â€°Ã Â¸Å¾Ã Â¸Â²Ã Â¸Â°Ã Â¸â€šÃ Â¹â€°Ã Â¸Â­Ã Â¸â€žÃ Â¸Â§Ã Â¸Â²Ã Â¸Â¡Ã Â¸Â¡Ã Â¸Â¸Ã Â¸Â¡Ã Â¸â€šÃ Â¸Â§Ã Â¸Â²Ã Â¸Å¡Ã Â¸â„¢Ã Â¸â€šÃ Â¸Â­Ã Â¸â€¡ iframe */
+/* ÃƒÂ Ã‚Â¸Ã¢â‚¬ÂºÃƒÂ Ã‚Â¸Ã‚Â´ÃƒÂ Ã‚Â¸Ã¢â‚¬ÂÃƒÂ Ã‚Â¹Ã¢â€šÂ¬ÃƒÂ Ã‚Â¸Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã…Â¾ÃƒÂ Ã‚Â¸Ã‚Â²ÃƒÂ Ã‚Â¸Ã‚Â°ÃƒÂ Ã‚Â¸Ã¢â‚¬Å¡ÃƒÂ Ã‚Â¹Ã¢â‚¬Â°ÃƒÂ Ã‚Â¸Ã‚Â­ÃƒÂ Ã‚Â¸Ã¢â‚¬Å¾ÃƒÂ Ã‚Â¸Ã‚Â§ÃƒÂ Ã‚Â¸Ã‚Â²ÃƒÂ Ã‚Â¸Ã‚Â¡ÃƒÂ Ã‚Â¸Ã‚Â¡ÃƒÂ Ã‚Â¸Ã‚Â¸ÃƒÂ Ã‚Â¸Ã‚Â¡ÃƒÂ Ã‚Â¸Ã¢â‚¬Å¡ÃƒÂ Ã‚Â¸Ã‚Â§ÃƒÂ Ã‚Â¸Ã‚Â²ÃƒÂ Ã‚Â¸Ã…Â¡ÃƒÂ Ã‚Â¸Ã¢â€žÂ¢ÃƒÂ Ã‚Â¸Ã¢â‚¬Å¡ÃƒÂ Ã‚Â¸Ã‚Â­ÃƒÂ Ã‚Â¸Ã¢â‚¬Â¡ iframe */
 .score-widget-shell {
   position: relative;
   overflow: hidden;
@@ -2065,7 +2130,7 @@ table {
   pointer-events: none;
 }
 
-/* Ã Â¸Â¡Ã Â¸Â·Ã Â¸Â­Ã Â¸â€“Ã Â¸Â·Ã Â¸Â­ */
+/* ÃƒÂ Ã‚Â¸Ã‚Â¡ÃƒÂ Ã‚Â¸Ã‚Â·ÃƒÂ Ã‚Â¸Ã‚Â­ÃƒÂ Ã‚Â¸Ã¢â‚¬â€œÃƒÂ Ã‚Â¸Ã‚Â·ÃƒÂ Ã‚Â¸Ã‚Â­ */
 @media (max-width: 760px) {
   .score-widget-shell::after {
     top: 60px;
@@ -2464,4 +2529,30 @@ table {
     padding-inline: 12px;
     font-size: 12.5px;
   }
+}
+
+/* Final mobile sizing override: Community and Step Calculator only. */
+@media (max-width:640px){
+  #hn-footballclub.hn-club-card{grid-template-columns:1fr!important;min-height:0!important}
+  #hn-footballclub .hn-club-media{min-height:150px!important;max-height:150px!important}
+  #hn-footballclub .hn-club-content{padding:12px!important}
+  #hn-footballclub .section-kicker{font-size:9px!important}
+  #hn-footballclub .hn-club-content h2{font-size:18px!important}
+  #hn-footballclub .hn-club-content p{margin:6px 0 10px!important;font-size:12px!important;line-height:1.55!important}
+  #hn-footballclub .hn-club-button{width:100%!important;min-height:42px!important;padding:0 12px!important;font-size:12px!important;border-radius:12px!important}
+  #ballstep .card-header{padding:10px 12px!important}
+  #ballstep .section-kicker{font-size:8px!important}
+  #ballstep .card-header h2{font-size:15px!important}
+  #ballstep .ballstep-body{padding:10px!important}
+  #ballstep .ballstep-intro{margin-bottom:9px!important;font-size:10px!important;line-height:1.5!important}
+  #ballstep .ballstep-rows{gap:6px!important}
+  #ballstep .ballstep-row{grid-template-columns:minmax(0,1fr) 82px 34px!important;gap:5px!important}
+  #ballstep .ballstep-row input,
+  #ballstep .ballstep-row select,
+  #ballstep .ballstep-stake-label input{min-height:36px!important;padding:0 8px!important;font-size:11px!important}
+  #ballstep .ballstep-remove{font-size:17px!important}
+  #ballstep .ballstep-controls{grid-template-columns:1fr!important;gap:7px!important;margin-top:9px!important}
+  #ballstep .ballstep-add,
+  #ballstep #calculateBallstep{width:100%!important;min-width:0!important;min-height:36px!important;font-size:11px!important}
+  #ballstep .ballstep-note{margin-top:7px!important;font-size:8px!important}
 }
