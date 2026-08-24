@@ -1,0 +1,6 @@
+.content{white-space:normal;overflow-wrap:anywhere}
+.content p{margin:0 0 1.25em}
+.content h2{margin:1.6em 0 .65em;font-size:clamp(22px,5.5vw,32px);line-height:1.35}
+.content h2:after{content:"";display:block;width:76px;height:3px;margin-top:9px;background:linear-gradient(90deg,var(--red),transparent)}
+.cover{aspect-ratio:16/9;max-height:none}
+@media(max-width:640px){.article-shell{width:calc(100% - 24px);margin-top:18px}.body{padding:20px 17px}.body h1{font-size:clamp(28px,8.2vw,38px)}.lead{padding:13px 14px;font-size:17px}.content{font-size:17px;line-height:1.85}.breadcrumbs{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
