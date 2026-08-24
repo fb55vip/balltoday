@@ -1,0 +1,46 @@
+/* HN mobile layout patch — scoped away from the calculator */
+#analysis{order:1!important}
+#news{order:2!important}
+#knowledge{order:3!important}
+#hn-footballclub{order:4!important}
+#ballstep{order:5!important}
+.hero-buttons{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important}
+.hero-buttons .button{min-width:0!important;width:100%!important;padding:11px 5px!important;font-size:clamp(9px,1.7vw,13px)!important;white-space:normal!important;line-height:1.25!important}
+#analysis .analysis-list,#news .news-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+#analysis .analysis-item,#news .news-item{display:block!important;min-height:0!important;padding:9px!important}
+#analysis .analysis-thumb,#news .news-image{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:16/9!important;margin:0 0 8px!important}
+#analysis .analysis-content h3,#news .news-content h3{font-size:13px!important;line-height:1.4!important;-webkit-line-clamp:3!important}
+#analysis .analysis-content p,#news .news-content p{font-size:10px!important;line-height:1.45!important;-webkit-line-clamp:2!important}
+#analysis .analysis-button,#news .analysis-button{min-height:30px!important;margin-top:7px!important;padding:0 9px!important;font-size:10px!important}
+#knowledge .news-list{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important}
+#knowledge .news-item{display:block!important;min-height:0!important;padding:7px!important;border-radius:12px!important}
+#knowledge .news-image{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:16/9!important;margin:0 0 7px!important}
+#knowledge .news-content h3{font-size:11px!important;line-height:1.35!important;-webkit-line-clamp:3!important}
+#knowledge .news-content p{display:none!important}
+#knowledge .news-category{font-size:8px!important;min-height:19px!important}
+#knowledge .analysis-button{font-size:9px!important;margin-top:6px!important}
+#hn-footballclub.hn-club-card{min-height:300px!important;grid-template-columns:minmax(150px,.72fr) minmax(0,1.28fr)!important}
+#hn-footballclub .hn-club-media{min-height:300px!important;max-height:300px!important}
+#hn-footballclub .hn-club-content{padding:18px!important}
+#hn-footballclub .hn-club-content h2{font-size:22px!important}
+#hn-footballclub .hn-club-content p{margin:8px 0 14px!important}
+#hn-footballclub .hn-club-button{min-height:40px!important;padding:0 16px!important}
+@media(max-width:760px){
+  .hero-buttons{gap:4px!important}
+  .hero-buttons .button{padding:9px 2px!important;font-size:9px!important}
+  #analysis .analysis-list,#news .news-list{gap:6px!important;padding:8px!important}
+  #analysis .analysis-item,#news .news-item{padding:5px!important;border-radius:10px!important}
+  #analysis .analysis-content h3,#news .news-content h3{font-size:10px!important}
+  #analysis .analysis-content p,#news .news-content p{display:none!important}
+  #analysis .section-kicker,#news .news-category{font-size:8px!important}
+  #analysis .analysis-button,#news .analysis-button{min-height:25px!important;font-size:8px!important;padding:0 5px!important}
+  #knowledge .news-list{gap:4px!important;padding:7px!important}
+  #knowledge .news-item{padding:4px!important;border-radius:9px!important}
+  #knowledge .news-content h3{font-size:9px!important}
+  #knowledge .analysis-button{font-size:8px!important}
+  #hn-footballclub.hn-club-card{grid-template-columns:1fr!important;min-height:0!important}
+  #hn-footballclub .hn-club-media{min-height:190px!important;max-height:190px!important}
+  #hn-footballclub .hn-club-content{padding:14px!important}
+  #hn-footballclub .hn-club-content h2{font-size:19px!important}
+  #hn-footballclub .hn-club-button{width:100%!important;min-height:38px!important}
+}
