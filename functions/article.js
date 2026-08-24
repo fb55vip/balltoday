@@ -80,7 +80,7 @@ function getArticleType(article) {
 
   if (
     type.includes("news") ||
-    type.includes("ข่าว")
+    type.includes("à¸à¹à¸²à¸§")
   ) {
     return "NewsArticle";
   }
@@ -96,9 +96,9 @@ function getSection(article) {
     ""
   ).toLowerCase();
 
-  if (type.includes("news") || type.includes("ข่าว")) {
+  if (type.includes("news") || type.includes("à¸à¹à¸²à¸§")) {
     return {
-      name: "ข่าวฟุตบอล",
+      name: "à¸à¹à¸²à¸§à¸à¸¸à¸à¸à¸­à¸¥",
       url: `${SITE_URL}/news`
     };
   }
@@ -106,16 +106,16 @@ function getSection(article) {
   if (
     type.includes("knowledge") ||
     type.includes("evergreen") ||
-    type.includes("ความรู้")
+    type.includes("à¸à¸§à¸²à¸¡à¸£à¸¹à¹")
   ) {
     return {
-      name: "ความรู้ฟุตบอล",
+      name: "à¸à¸§à¸²à¸¡à¸£à¸¹à¹à¸à¸¸à¸à¸à¸­à¸¥",
       url: `${SITE_URL}/knowledge`
     };
   }
 
   return {
-    name: "บทวิเคราะห์",
+    name: "à¸à¸à¸§à¸´à¹à¸à¸£à¸²à¸°à¸«à¹",
     url: `${SITE_URL}/analysis`
   };
 }
@@ -124,8 +124,8 @@ function getContentType(article) {
   const type = String(
     article.content_type || article.type || article.category || ""
   ).toLowerCase();
-  if (type.includes("news") || type.includes("ข่าว")) return "news";
-  if (type.includes("knowledge") || type.includes("evergreen") || type.includes("ความรู้")) return "evergreen";
+  if (type.includes("news") || type.includes("à¸à¹à¸²à¸§")) return "news";
+  if (type.includes("knowledge") || type.includes("evergreen") || type.includes("à¸à¸§à¸²à¸¡à¸£à¸¹à¹")) return "evergreen";
   return "analysis";
 }
 
@@ -190,7 +190,7 @@ async function fetchRelatedArticles(article, slug) {
 }
 
 function buildNotFoundPage(slug) {
-  const title = "ไม่พบบทความ | HN FOOTBALL SCORE";
+  const title = "à¹à¸¡à¹à¸à¸à¸à¸à¸à¸§à¸²à¸¡ | HN FOOTBALL SCORE";
   const canonical = `${SITE_URL}/article?slug=${encodeURIComponent(slug)}`;
 
   return `<!doctype html>
@@ -204,9 +204,9 @@ function buildNotFoundPage(slug) {
 </head>
 <body>
   <main>
-    <h1>ไม่พบบทความ</h1>
-    <p>บทความที่คุณกำลังค้นหาอาจถูกย้ายหรือลบออกแล้ว</p>
-    <p><a href="${SITE_URL}/">กลับหน้า HN FOOTBALL SCORE</a></p>
+    <h1>à¹à¸¡à¹à¸à¸à¸à¸à¸à¸§à¸²à¸¡</h1>
+    <p>à¸à¸à¸à¸§à¸²à¸¡à¸à¸µà¹à¸à¸¸à¸à¸à¸³à¸¥à¸±à¸à¸à¹à¸à¸«à¸²à¸­à¸²à¸à¸à¸¹à¸à¸¢à¹à¸²à¸¢à¸«à¸£à¸·à¸­à¸¥à¸à¸­à¸­à¸à¹à¸¥à¹à¸§</p>
+    <p><a href="${SITE_URL}/">à¸à¸¥à¸±à¸à¸«à¸à¹à¸² HN FOOTBALL SCORE</a></p>
   </main>
 </body>
 </html>`;
@@ -331,7 +331,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
       {
         "@type": "ListItem",
         position: 1,
-        name: "หน้าแรก",
+        name: "à¸«à¸à¹à¸²à¹à¸£à¸",
         item: `${SITE_URL}/`
       },
       {
@@ -354,9 +354,10 @@ function buildArticlePage(article, slug, relatedArticles = []) {
   const safeAuthor = escapeHtml(author);
   const safeSectionName = escapeHtml(section.name);
   const relatedLinks = relatedArticles.map((item) => `
-        <li>
-          <a href="/article?slug=${encodeURIComponent(item.slug)}">${escapeHtml(item.title || item.headline || item.slug)}</a>
-        </li>`).join("");
+        <a href="/article?slug=${encodeURIComponent(item.slug)}">
+          <strong>${escapeHtml(item.title || item.headline || item.slug)}</strong>
+          <span>${safeSectionName}</span>
+        </a>`).join("");
 
   return `<!doctype html>
 <html lang="th">
@@ -400,54 +401,52 @@ function buildArticlePage(article, slug, relatedArticles = []) {
   <script type="application/ld+json">${escapeJsonForHtml(articleSchema)}</script>
   <script type="application/ld+json">${escapeJsonForHtml(breadcrumbSchema)}</script>
 
-  <link rel="stylesheet" href="/assets/css/app.css">
-  <link rel="stylesheet" href="/assets/css/article-v18.css">
+  <link rel="stylesheet" href="/assets/css/article-v18.css?v=20260825-final-v4">
 </head>
 
 <body>
 
-  <header>
-    <a href="/" aria-label="HN FOOTBALL SCORE">
-      HN FOOTBALL SCORE
-    </a>
+  <header class="article-header">
+    <a href="/" aria-label="HN FOOTBALL SCORE">â½ <strong>HN <span>FOOTBALL SCORE</span></strong></a>
   </header>
 
-  <main>
+  <main class="article-shell">
 
-    <nav aria-label="breadcrumb">
-      <a href="/">หน้าแรก</a>
-      <span> › </span>
+    <nav class="breadcrumbs" aria-label="breadcrumb">
+      <a href="/">à¸«à¸à¹à¸²à¹à¸£à¸</a>
+      <span> âº </span>
       <a href="${escapeHtml(section.url)}">${safeSectionName}</a>
-      <span> › </span>
+      <span> âº </span>
       <span>${safeHeadline}</span>
     </nav>
 
-    <article>
+    <article class="article-card">
+      <div class="body">
 
-      <header>
-        <p>${safeSectionName}</p>
+      <header class="article-title-block">
+        <p class="kicker">${safeSectionName}</p>
 
         <h1>${safeHeadline}</h1>
 
         ${
           safeIntro
-            ? `<p class="article-intro">${safeIntro}</p>`
+            ? `<p class="lead article-intro">${safeIntro}</p>`
             : ""
         }
 
-        <div class="article-meta">
-          <span>โดย ${safeAuthor}</span>
+        <div class="meta article-meta">
+          <span>à¹à¸à¸¢ ${safeAuthor}</span>
 
           ${
             displayPublished
-              ? `<span>เผยแพร่ ${escapeHtml(displayPublished)}</span>`
+              ? `<span>à¹à¸à¸¢à¹à¸à¸£à¹ ${escapeHtml(displayPublished)}</span>`
               : ""
           }
 
           ${
             displayModified &&
             displayModified !== displayPublished
-              ? `<span>อัปเดต ${escapeHtml(displayModified)}</span>`
+              ? `<span>à¸­à¸±à¸à¹à¸à¸ ${escapeHtml(displayModified)}</span>`
               : ""
           }
         </div>
@@ -457,7 +456,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
         image
           ? `
             <figure class="article-cover">
-              <img
+              <img class="cover"
                 src="${escapeHtml(image)}"
                 alt="${safeHeadline}"
                 loading="eager"
@@ -468,34 +467,26 @@ function buildArticlePage(article, slug, relatedArticles = []) {
           : ""
       }
 
-      <div class="article-content">
+      <div class="content article-content">
         ${body}
       </div>
 
-    </article>
+    <section class="related article-navigation">
+      <h2>à¸­à¹à¸²à¸à¹à¸à¸´à¹à¸¡à¹à¸à¸´à¸¡</h2>
 
-    <section class="article-navigation">
-      <h2>อ่านเพิ่มเติม</h2>
+      ${relatedLinks ? `<div class="related-grid">${relatedLinks}\n      </div>` : ""}
 
-      ${relatedLinks ? `<ul>${relatedLinks}\n      </ul>` : ""}
-
-      <p>
-        <a href="${escapeHtml(section.url)}">
-          ดู${safeSectionName}ทั้งหมด
-        </a>
-      </p>
-
-      <p>
-        <a href="/">
-          กลับหน้า HN FOOTBALL SCORE
-        </a>
-      </p>
+      <div class="related-grid related-home-links">
+        <a href="${escapeHtml(section.url)}"><strong>à¸à¸¹${safeSectionName}à¸à¸±à¹à¸à¸«à¸¡à¸</strong><span>à¸à¸¥à¸±à¸à¹à¸à¸¢à¸±à¸à¸«à¸à¹à¸²à¸£à¸§à¸¡à¸à¸à¸à¸§à¸²à¸¡</span></a>
+        <a href="/"><strong>HN FOOTBALL SCORE</strong><span>à¸à¸¥à¸±à¸à¸«à¸à¹à¸²à¸«à¸¥à¸±à¸</span></a>
+      </div>
     </section>
 
-  </main>
+      <div class="brand-foot">HN FOOTBALL SCORE â¢ www.fb55vip.com</div>
+      </div>
+    </article>
 
-  <script src="/assets/js/config.js"></script>
-  <script src="/assets/js/article-v18.js"></script>
+  </main>
 
 </body>
 </html>`;
