@@ -8,3 +8,24 @@
 .pagination{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin:24px 0 4px}.page-link{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;padding:0 13px;border:1px solid var(--line);border-radius:10px;background:#0b1019;color:#f4f7fb;text-decoration:none;font-weight:800}.page-link:hover{border-color:var(--red);color:#fff}.page-link.active{border-color:var(--red);background:var(--red);color:#fff}.page-nav{min-width:88px}.page-gap{color:var(--muted);padding:0 3px}
 
 .breadcrumbs{margin:0 0 16px;color:var(--muted);font-size:13px;line-height:1.6}.breadcrumbs a{color:#d7dee8;text-decoration:none}.breadcrumbs span{color:#9ba7b5}.related{margin-top:28px}.related h2{font-size:20px}.related-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.related-grid a{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:#fff;text-decoration:none}.related-grid span{color:var(--muted);font-size:12px}.hub-head{margin-bottom:20px;padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}.hub-head h1{margin:6px 0 8px;font-size:clamp(28px,5vw,46px)}.hub-head p{margin:0;color:#cbd5e1;line-height:1.8}.hub-list{display:grid;gap:14px}.hub-card{display:grid;grid-template-columns:180px 1fr;gap:18px;padding:14px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#101824,#070b12)}.hub-card img{width:180px;height:120px;object-fit:cover;border-radius:12px}.hub-card span{color:var(--red);font-size:12px;font-weight:800}.hub-card h2{margin:5px 0 8px;font-size:20px}.hub-card h2 a{color:#fff;text-decoration:none}.hub-card p{margin:0;color:#b6c0cc;line-height:1.7}.empty{padding:28px;text-align:center;color:var(--muted)}@media(max-width:640px){.related-grid{grid-template-columns:1fr}.hub-card{grid-template-columns:1fr}.hub-card img{width:100%;height:190px}}
+
+/* Compact reading layout for News and Analysis on phones. */
+@media(max-width:640px){
+  .article-header{padding:12px 14px}
+  .article-header a{font-size:15px}
+  .article-shell{width:calc(100% - 16px);margin:12px auto 30px}
+  .back{margin-bottom:10px;font-size:12px}
+  .article-card{border-radius:14px}
+  .cover{max-height:none;aspect-ratio:16/9}
+  .body{padding:14px 12px}
+  .breadcrumbs{margin-bottom:10px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kicker{font-size:9px}
+  .body h1{margin:5px 0 9px;font-size:24px;line-height:1.3}
+  .meta{gap:5px 9px;font-size:10px}
+  .lead{margin:14px 0;padding:10px 11px;font-size:14px;line-height:1.65}
+  .content{font-size:15px;line-height:1.75;overflow-wrap:anywhere}
+  .content p{margin:0 0 1.05em}
+  .content h2{margin:1.35em 0 .55em;font-size:19px;line-height:1.4}
+  .content h3{font-size:17px}
+  .brand-foot{margin-top:22px;padding-top:13px;font-size:10px}
+}
