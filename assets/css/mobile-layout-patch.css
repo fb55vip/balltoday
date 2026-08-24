@@ -43,3 +43,23 @@
   #hn-footballclub .hn-club-content h2{font-size:19px!important}
   #hn-footballclub .hn-club-button{width:100%!important;min-height:38px!important}
 }
+
+/* Final phone override: compact Community and keep buttons from stretching. */
+@media(max-width:640px){
+  #hn-footballclub.hn-club-card{grid-template-columns:1fr!important;min-height:0!important}
+  #hn-footballclub .hn-club-media{min-height:150px!important;max-height:150px!important;height:150px!important}
+  #hn-footballclub .hn-club-content{padding:12px!important}
+  #hn-footballclub .section-kicker{font-size:9px!important}
+  #hn-footballclub .hn-club-content h2{font-size:18px!important}
+  #hn-footballclub .hn-club-content p{margin:6px 0 10px!important;font-size:12px!important;line-height:1.55!important}
+  #hn-footballclub .hn-club-button{
+    flex:0 0 42px!important;
+    width:100%!important;
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    padding:0 12px!important;
+    border-radius:12px!important;
+    font-size:12px!important;
+  }
+}
