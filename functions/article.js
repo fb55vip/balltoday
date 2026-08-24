@@ -80,7 +80,7 @@ function getArticleType(article) {
 
   if (
     type.includes("news") ||
-    type.includes("à¸à¹à¸²à¸§")
+    type.includes("\u0E02\u0E48\u0E32\u0E27")
   ) {
     return "NewsArticle";
   }
@@ -96,9 +96,9 @@ function getSection(article) {
     ""
   ).toLowerCase();
 
-  if (type.includes("news") || type.includes("à¸à¹à¸²à¸§")) {
+  if (type.includes("news") || type.includes("\u0E02\u0E48\u0E32\u0E27")) {
     return {
-      name: "à¸à¹à¸²à¸§à¸à¸¸à¸à¸à¸­à¸¥",
+      name: "\u0E02\u0E48\u0E32\u0E27\u0E1F\u0E38\u0E15\u0E1A\u0E2D\u0E25",
       url: `${SITE_URL}/news`
     };
   }
@@ -106,16 +106,16 @@ function getSection(article) {
   if (
     type.includes("knowledge") ||
     type.includes("evergreen") ||
-    type.includes("à¸à¸§à¸²à¸¡à¸£à¸¹à¹")
+    type.includes("\u0E04\u0E27\u0E32\u0E21\u0E23\u0E39\u0E49")
   ) {
     return {
-      name: "à¸à¸§à¸²à¸¡à¸£à¸¹à¹à¸à¸¸à¸à¸à¸­à¸¥",
+      name: "\u0E04\u0E27\u0E32\u0E21\u0E23\u0E39\u0E49\u0E1F\u0E38\u0E15\u0E1A\u0E2D\u0E25",
       url: `${SITE_URL}/knowledge`
     };
   }
 
   return {
-    name: "à¸à¸à¸§à¸´à¹à¸à¸£à¸²à¸°à¸«à¹",
+    name: "\u0E1A\u0E17\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C",
     url: `${SITE_URL}/analysis`
   };
 }
@@ -124,8 +124,8 @@ function getContentType(article) {
   const type = String(
     article.content_type || article.type || article.category || ""
   ).toLowerCase();
-  if (type.includes("news") || type.includes("à¸à¹à¸²à¸§")) return "news";
-  if (type.includes("knowledge") || type.includes("evergreen") || type.includes("à¸à¸§à¸²à¸¡à¸£à¸¹à¹")) return "evergreen";
+  if (type.includes("news") || type.includes("\u0E02\u0E48\u0E32\u0E27")) return "news";
+  if (type.includes("knowledge") || type.includes("evergreen") || type.includes("\u0E04\u0E27\u0E32\u0E21\u0E23\u0E39\u0E49")) return "evergreen";
   return "analysis";
 }
 
@@ -190,7 +190,7 @@ async function fetchRelatedArticles(article, slug) {
 }
 
 function buildNotFoundPage(slug) {
-  const title = "à¹à¸¡à¹à¸à¸à¸à¸à¸à¸§à¸²à¸¡ | HN FOOTBALL SCORE";
+  const title = "\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E1A\u0E17\u0E04\u0E27\u0E32\u0E21 | HN FOOTBALL SCORE";
   const canonical = `${SITE_URL}/article?slug=${encodeURIComponent(slug)}`;
 
   return `<!doctype html>
@@ -204,9 +204,9 @@ function buildNotFoundPage(slug) {
 </head>
 <body>
   <main>
-    <h1>à¹à¸¡à¹à¸à¸à¸à¸à¸à¸§à¸²à¸¡</h1>
-    <p>à¸à¸à¸à¸§à¸²à¸¡à¸à¸µà¹à¸à¸¸à¸à¸à¸³à¸¥à¸±à¸à¸à¹à¸à¸«à¸²à¸­à¸²à¸à¸à¸¹à¸à¸¢à¹à¸²à¸¢à¸«à¸£à¸·à¸­à¸¥à¸à¸­à¸­à¸à¹à¸¥à¹à¸§</p>
-    <p><a href="${SITE_URL}/">à¸à¸¥à¸±à¸à¸«à¸à¹à¸² HN FOOTBALL SCORE</a></p>
+    <h1>\u0E44\u0E21\u0E48\u0E1E\u0E1A\u0E1A\u0E17\u0E04\u0E27\u0E32\u0E21</h1>
+    <p>\u0E1A\u0E17\u0E04\u0E27\u0E32\u0E21\u0E17\u0E35\u0E48\u0E04\u0E38\u0E13\u0E01\u0E33\u0E25\u0E31\u0E07\u0E04\u0E49\u0E19\u0E2B\u0E32\u0E2D\u0E32\u0E08\u0E16\u0E39\u0E01\u0E22\u0E49\u0E32\u0E22\u0E2B\u0E23\u0E37\u0E2D\u0E25\u0E1A\u0E2D\u0E2D\u0E01\u0E41\u0E25\u0E49\u0E27</p>
+    <p><a href="${SITE_URL}/">\u0E01\u0E25\u0E31\u0E1A\u0E2B\u0E19\u0E49\u0E32 HN FOOTBALL SCORE</a></p>
   </main>
 </body>
 </html>`;
@@ -331,7 +331,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
       {
         "@type": "ListItem",
         position: 1,
-        name: "à¸«à¸à¹à¸²à¹à¸£à¸",
+        name: "\u0E2B\u0E19\u0E49\u0E32\u0E41\u0E23\u0E01",
         item: `${SITE_URL}/`
       },
       {
@@ -407,16 +407,16 @@ function buildArticlePage(article, slug, relatedArticles = []) {
 <body>
 
   <header class="article-header">
-    <a href="/" aria-label="HN FOOTBALL SCORE">â½ <strong>HN <span>FOOTBALL SCORE</span></strong></a>
+    <a href="/" aria-label="HN FOOTBALL SCORE">\u26BD <strong>HN <span>FOOTBALL SCORE</span></strong></a>
   </header>
 
   <main class="article-shell">
 
     <nav class="breadcrumbs" aria-label="breadcrumb">
-      <a href="/">à¸«à¸à¹à¸²à¹à¸£à¸</a>
-      <span> âº </span>
+      <a href="/">\u0E2B\u0E19\u0E49\u0E32\u0E41\u0E23\u0E01</a>
+      <span> \u203A </span>
       <a href="${escapeHtml(section.url)}">${safeSectionName}</a>
-      <span> âº </span>
+      <span> \u203A </span>
       <span>${safeHeadline}</span>
     </nav>
 
@@ -435,18 +435,18 @@ function buildArticlePage(article, slug, relatedArticles = []) {
         }
 
         <div class="meta article-meta">
-          <span>à¹à¸à¸¢ ${safeAuthor}</span>
+          <span>\u0E42\u0E14\u0E22 ${safeAuthor}</span>
 
           ${
             displayPublished
-              ? `<span>à¹à¸à¸¢à¹à¸à¸£à¹ ${escapeHtml(displayPublished)}</span>`
+              ? `<span>\u0E40\u0E1C\u0E22\u0E41\u0E1E\u0E23\u0E48 ${escapeHtml(displayPublished)}</span>`
               : ""
           }
 
           ${
             displayModified &&
             displayModified !== displayPublished
-              ? `<span>à¸­à¸±à¸à¹à¸à¸ ${escapeHtml(displayModified)}</span>`
+              ? `<span>\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15 ${escapeHtml(displayModified)}</span>`
               : ""
           }
         </div>
@@ -472,17 +472,17 @@ function buildArticlePage(article, slug, relatedArticles = []) {
       </div>
 
     <section class="related article-navigation">
-      <h2>à¸­à¹à¸²à¸à¹à¸à¸´à¹à¸¡à¹à¸à¸´à¸¡</h2>
+      <h2>\u0E2D\u0E48\u0E32\u0E19\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21</h2>
 
       ${relatedLinks ? `<div class="related-grid">${relatedLinks}\n      </div>` : ""}
 
       <div class="related-grid related-home-links">
-        <a href="${escapeHtml(section.url)}"><strong>à¸à¸¹${safeSectionName}à¸à¸±à¹à¸à¸«à¸¡à¸</strong><span>à¸à¸¥à¸±à¸à¹à¸à¸¢à¸±à¸à¸«à¸à¹à¸²à¸£à¸§à¸¡à¸à¸à¸à¸§à¸²à¸¡</span></a>
-        <a href="/"><strong>HN FOOTBALL SCORE</strong><span>à¸à¸¥à¸±à¸à¸«à¸à¹à¸²à¸«à¸¥à¸±à¸</span></a>
+        <a href="${escapeHtml(section.url)}"><strong>\u0E14\u0E39${safeSectionName}\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14</strong><span>\u0E01\u0E25\u0E31\u0E1A\u0E44\u0E1B\u0E22\u0E31\u0E07\u0E2B\u0E19\u0E49\u0E32\u0E23\u0E27\u0E21\u0E1A\u0E17\u0E04\u0E27\u0E32\u0E21</span></a>
+        <a href="/"><strong>HN FOOTBALL SCORE</strong><span>\u0E01\u0E25\u0E31\u0E1A\u0E2B\u0E19\u0E49\u0E32\u0E2B\u0E25\u0E31\u0E01</span></a>
       </div>
     </section>
 
-      <div class="brand-foot">HN FOOTBALL SCORE â¢ www.fb55vip.com</div>
+      <div class="brand-foot">HN FOOTBALL SCORE \u2022 www.fb55vip.com</div>
       </div>
     </article>
 
