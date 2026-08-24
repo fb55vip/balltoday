@@ -1,9 +1,8 @@
 /* HN mobile layout patch — scoped away from the calculator */
-#analysis{order:1!important}
-#news{order:2!important}
-#knowledge{order:3!important}
-#hn-footballclub{order:4!important}
-#ballstep{order:5!important}
+#analysis{order:-40!important}
+#news{order:-30!important}
+#knowledge{order:-20!important}
+#hn-footballclub{order:-10!important}
 .hero-buttons{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important}
 .hero-buttons .button{min-width:0!important;width:100%!important;padding:11px 5px!important;font-size:clamp(9px,1.7vw,13px)!important;white-space:normal!important;line-height:1.25!important}
 #analysis .analysis-list,#news .news-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
