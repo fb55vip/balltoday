@@ -1,6 +1,14 @@
 "use strict";
 /* V18: only Analysis + News. Does not touch popup/live/hero/calculator/footer/menu. */
 (function(){
+  /* Load the responsive layout patch from the existing script entrypoint. */
+  if(!document.querySelector('link[data-hn-layout-patch]')){
+    const link=document.createElement("link");
+    link.rel="stylesheet";
+    link.href="/assets/css/mobile-layout-patch.css?v=20260824-v4";
+    link.dataset.hnLayoutPatch="1";
+    document.head.appendChild(link);
+  }
   const ANALYSIS="#analysisList",NEWS="#newsList";
   function interactive(t){return !!t.closest("a,input,select,textarea,label")}
   function slugFrom(card){
