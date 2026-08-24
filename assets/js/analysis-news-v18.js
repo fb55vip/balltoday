@@ -5,7 +5,7 @@
   if(!document.querySelector('link[data-hn-layout-patch]')){
     const link=document.createElement("link");
     link.rel="stylesheet";
-    link.href="/assets/css/mobile-layout-patch.css?v=20260824-v5";
+    link.href="/assets/css/mobile-layout-patch.css?v=20260825-final-v6";
     link.dataset.hnLayoutPatch="1";
     document.head.appendChild(link);
   }
