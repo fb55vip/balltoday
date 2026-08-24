@@ -2944,7 +2944,7 @@ async function loadPublishedArticles() {
 
   try {
     const response = await fetch(
-      `${CONTENT_API}/api/articles?type=analysis&limit=12`,
+      `${CONTENT_API}/api/articles?type=analysis&limit=6`,
       {
         method: "GET",
         headers: {
@@ -3335,7 +3335,7 @@ async function loadPublishedNews() {
 
   try {
     const response = await fetch(
-      `${CONTENT_API}/api/articles?type=news&limit=8`,
+      `${CONTENT_API}/api/articles?type=news&limit=6`,
       { headers:{Accept:"application/json"}, cache:"no-store" }
     );
     const data = await response.json().catch(()=>({}));
