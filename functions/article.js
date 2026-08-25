@@ -80,7 +80,7 @@ function getArticleType(article) {
 
   if (
     type.includes("news") ||
-    type.includes("à¸à¹à¸²à¸§")
+    type.includes("\u0e02\u0e48\u0e32\u0e27")
   ) {
     return "NewsArticle";
   }
@@ -96,9 +96,9 @@ function getSection(article) {
     ""
   ).toLowerCase();
 
-  if (type.includes("news") || type.includes("à¸à¹à¸²à¸§")) {
+  if (type.includes("news") || type.includes("\u0e02\u0e48\u0e32\u0e27")) {
     return {
-      name: "à¸à¹à¸²à¸§à¸à¸¸à¸à¸à¸­à¸¥",
+      name: "\u0e02\u0e48\u0e32\u0e27\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25",
       url: `${SITE_URL}/news`
     };
   }
@@ -106,16 +106,16 @@ function getSection(article) {
   if (
     type.includes("knowledge") ||
     type.includes("evergreen") ||
-    type.includes("à¸à¸§à¸²à¸¡à¸£à¸¹à¹")
+    type.includes("\u0e04\u0e27\u0e32\u0e21\u0e23\u0e39\u0e49")
   ) {
     return {
-      name: "à¸à¸§à¸²à¸¡à¸£à¸¹à¹à¸à¸¸à¸à¸à¸­à¸¥",
+      name: "\u0e04\u0e27\u0e32\u0e21\u0e23\u0e39\u0e49\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25",
       url: `${SITE_URL}/knowledge`
     };
   }
 
   return {
-    name: "à¸à¸à¸§à¸´à¹à¸à¸£à¸²à¸°à¸«à¹",
+    name: "\u0e1a\u0e17\u0e27\u0e34\u0e40\u0e04\u0e23\u0e32\u0e30\u0e2b\u0e4c",
     url: `${SITE_URL}/analysis`
   };
 }
@@ -124,8 +124,8 @@ function getContentType(article) {
   const type = String(
     article.content_type || article.type || article.category || ""
   ).toLowerCase();
-  if (type.includes("news") || type.includes("à¸à¹à¸²à¸§")) return "news";
-  if (type.includes("knowledge") || type.includes("evergreen") || type.includes("à¸à¸§à¸²à¸¡à¸£à¸¹à¹")) return "evergreen";
+  if (type.includes("news") || type.includes("\u0e02\u0e48\u0e32\u0e27")) return "news";
+  if (type.includes("knowledge") || type.includes("evergreen") || type.includes("\u0e04\u0e27\u0e32\u0e21\u0e23\u0e39\u0e49")) return "evergreen";
   return "analysis";
 }
 
@@ -191,11 +191,11 @@ async function fetchRelatedArticles(article, slug) {
 
 async function fetchSocialLinks(){try{const response=await fetch(`${CONTENT_API}/api/social-links`,{headers:{Accept:"application/json"}});if(!response.ok)return[];const data=await response.json();return Array.isArray(data?.links)?data.links:[]}catch{return[]}}
 
-const SOCIAL_MARKS={facebook:"f",line:"L",instagram:"â",tiktok:"âª",youtube:"â¶",x:"X",other:"â"};
+const SOCIAL_MARKS={facebook:"f",line:"L",instagram:"\u25ce",tiktok:"\u266a",youtube:"\u25b6",x:"X",other:"\u2197"};
 function socialIcon(platform){const key=Object.prototype.hasOwnProperty.call(SOCIAL_MARKS,platform)?platform:"other";return `<span class="social-icon social-icon--${key}" aria-hidden="true">${SOCIAL_MARKS[key]}</span>`}
 
 function buildNotFoundPage(slug) {
-  const title = "à¹à¸¡à¹à¸à¸à¸à¸à¸à¸§à¸²à¸¡ | HN FOOTBALL SCORE";
+  const title = "\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21 | HN FOOTBALL SCORE";
   const canonical = `${SITE_URL}/article?slug=${encodeURIComponent(slug)}`;
 
   return `<!doctype html>
@@ -209,9 +209,9 @@ function buildNotFoundPage(slug) {
 </head>
 <body>
   <main>
-    <h1>à¹à¸¡à¹à¸à¸à¸à¸à¸à¸§à¸²à¸¡</h1>
-    <p>à¸à¸à¸à¸§à¸²à¸¡à¸à¸µà¹à¸à¸¸à¸à¸à¸³à¸¥à¸±à¸à¸à¹à¸à¸«à¸²à¸­à¸²à¸à¸à¸¹à¸à¸¢à¹à¸²à¸¢à¸«à¸£à¸·à¸­à¸¥à¸à¸­à¸­à¸à¹à¸¥à¹à¸§</p>
-    <p><a href="${SITE_URL}/">à¸à¸¥à¸±à¸à¸«à¸à¹à¸² HN FOOTBALL SCORE</a></p>
+    <h1>\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21</h1>
+    <p>\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21\u0e17\u0e35\u0e48\u0e04\u0e38\u0e13\u0e01\u0e33\u0e25\u0e31\u0e07\u0e04\u0e49\u0e19\u0e2b\u0e32\u0e2d\u0e32\u0e08\u0e16\u0e39\u0e01\u0e22\u0e49\u0e32\u0e22\u0e2b\u0e23\u0e37\u0e2d\u0e25\u0e1a\u0e2d\u0e2d\u0e01\u0e41\u0e25\u0e49\u0e27</p>
+    <p><a href="${SITE_URL}/">\u0e01\u0e25\u0e31\u0e1a\u0e2b\u0e19\u0e49\u0e32 HN FOOTBALL SCORE</a></p>
   </main>
 </body>
 </html>`;
@@ -340,7 +340,7 @@ function buildArticlePage(article, slug, relatedArticles = [], socialLinks = [])
       {
         "@type": "ListItem",
         position: 1,
-        name: "à¸«à¸à¹à¸²à¹à¸£à¸",
+        name: "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01",
         item: `${SITE_URL}/`
       },
       {
@@ -418,7 +418,7 @@ function buildArticlePage(article, slug, relatedArticles = [], socialLinks = [])
 
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/article-v18.css">
-  <link rel="stylesheet" href="/assets/css/article-social.css?v=20260825-2">
+  <link rel="stylesheet" href="/assets/css/article-social.css?v=20260825-3">
 </head>
 
 <body>
@@ -432,10 +432,10 @@ function buildArticlePage(article, slug, relatedArticles = [], socialLinks = [])
   <main>
 
     <nav aria-label="breadcrumb">
-      <a href="/">à¸«à¸à¹à¸²à¹à¸£à¸</a>
-      <span> âº </span>
+      <a href="/">\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e23\u0e01</a>
+      <span> \u203a </span>
       <a href="${escapeHtml(section.url)}">${safeSectionName}</a>
-      <span> âº </span>
+      <span> \u203a </span>
       <span>${safeHeadline}</span>
     </nav>
 
@@ -453,18 +453,18 @@ function buildArticlePage(article, slug, relatedArticles = [], socialLinks = [])
         }
 
         <div class="article-meta">
-          <span>à¹à¸à¸¢ ${safeAuthorUrl ? `<a href="${safeAuthorUrl}" target="_blank" rel="me noopener noreferrer">${safeAuthor}</a>` : safeAuthor}</span>
+          <span>\u0e42\u0e14\u0e22 ${safeAuthorUrl ? `<a href="${safeAuthorUrl}" target="_blank" rel="me noopener noreferrer">${safeAuthor}</a>` : safeAuthor}</span>
 
           ${
             displayPublished
-              ? `<span>à¹à¸à¸¢à¹à¸à¸£à¹ ${escapeHtml(displayPublished)}</span>`
+              ? `<span>\u0e40\u0e1c\u0e22\u0e41\u0e1e\u0e23\u0e48 ${escapeHtml(displayPublished)}</span>`
               : ""
           }
 
           ${
             displayModified &&
             displayModified !== displayPublished
-              ? `<span>à¸­à¸±à¸à¹à¸à¸ ${escapeHtml(displayModified)}</span>`
+              ? `<span>\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15 ${escapeHtml(displayModified)}</span>`
               : ""
           }
         </div>
@@ -491,44 +491,44 @@ function buildArticlePage(article, slug, relatedArticles = [], socialLinks = [])
 
       <section class="author-profile-card">
         ${safeAuthorAvatar?`<img src="${safeAuthorAvatar}" alt="${safeAuthor}" width="88" height="88" loading="lazy">`:""}
-        <div><p>à¸à¸¹à¹à¹à¸à¸µà¸¢à¸</p><h2>${safeAuthorUrl?`<a href="${safeAuthorUrl}">${safeAuthor}</a>`:safeAuthor}</h2>${safeAuthorBio?`<p>${safeAuthorBio}</p>`:""}</div>
+        <div><p>\u0e1c\u0e39\u0e49\u0e40\u0e02\u0e35\u0e22\u0e19</p><h2>${safeAuthorUrl?`<a href="${safeAuthorUrl}">${safeAuthor}</a>`:safeAuthor}</h2>${safeAuthorBio?`<p>${safeAuthorBio}</p>`:""}</div>
       </section>
 
-      <section class="article-share" aria-label="à¹à¸à¸£à¹à¸à¸à¸à¸§à¸²à¸¡">
-        <strong>à¹à¸à¸£à¹à¸à¸à¸à¸§à¸²à¸¡</strong>
+      <section class="article-share" aria-label="\u0e41\u0e0a\u0e23\u0e4c\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21">
+        <strong>\u0e41\u0e0a\u0e23\u0e4c\u0e1a\u0e17\u0e04\u0e27\u0e32\u0e21</strong>
         <a href="${escapeHtml(facebookShare)}" target="_blank" rel="noopener">${socialIcon("facebook")}<span>Facebook</span></a>
         <a href="${escapeHtml(lineShare)}" target="_blank" rel="noopener">${socialIcon("line")}<span>LINE</span></a>
         <a href="${escapeHtml(xShare)}" target="_blank" rel="noopener">${socialIcon("x")}<span>X</span></a>
-        <button type="button" data-copy-url="${escapeHtml(canonical)}">à¸à¸±à¸à¸¥à¸­à¸à¸¥à¸´à¸à¸à¹</button>
+        <button type="button" data-copy-url="${escapeHtml(canonical)}">\u0e04\u0e31\u0e14\u0e25\u0e2d\u0e01\u0e25\u0e34\u0e07\u0e01\u0e4c</button>
       </section>
 
     </article>
 
     <section class="article-navigation">
-      <h2>à¸­à¹à¸²à¸à¹à¸à¸´à¹à¸¡à¹à¸à¸´à¸¡</h2>
+      <h2>\u0e2d\u0e48\u0e32\u0e19\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e40\u0e15\u0e34\u0e21</h2>
 
       ${relatedLinks ? `<ul>${relatedLinks}\n      </ul>` : ""}
 
       <p>
         <a href="${escapeHtml(section.url)}">
-          à¸à¸¹${safeSectionName}à¸à¸±à¹à¸à¸«à¸¡à¸
+          \u0e14\u0e39${safeSectionName}\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14
         </a>
       </p>
 
       <p>
         <a href="/">
-          à¸à¸¥à¸±à¸à¸«à¸à¹à¸² HN FOOTBALL SCORE
+          \u0e01\u0e25\u0e31\u0e1a\u0e2b\u0e19\u0e49\u0e32 HN FOOTBALL SCORE
         </a>
       </p>
     </section>
 
-    ${articleSocialLinks?`<footer class="site-social-footer"><strong>à¸à¸´à¸à¸à¸²à¸¡ HN FOOTBALL SCORE</strong><div>${articleSocialLinks}</div></footer>`:""}
+    ${articleSocialLinks?`<footer class="site-social-footer"><strong>\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21 HN FOOTBALL SCORE</strong><div>${articleSocialLinks}</div></footer>`:""}
 
   </main>
 
   <script src="/assets/js/config.js"></script>
   <script src="/assets/js/article-v18.js"></script>
-  <script src="/assets/js/article-social.js?v=20260825-2"></script>
+  <script src="/assets/js/article-social.js?v=20260825-3"></script>
 
 </body>
 </html>`;
