@@ -75,7 +75,7 @@ $("#profileForm")?.addEventListener("submit",async event=>{
 function renderUsers(users=[]){
   const list=$("#usersList");if(!list)return;
   if(!users.length){list.innerHTML='<div class="empty">ยังไม่มีผู้ใช้งาน</div>';return}
-  list.innerHTML=users.map(user=>`<article class="user-card"><div><h3>${esc(user.display_name||user.username)} <span class="role-pill ${user.role}">${user.role==="owner"?"ผู้ดูแลหลัก":"ผู้เขียน"}</span></h3><p>ชื่อผู้ใช้: ${esc(user.username)} • ${user.active?"ใช้งานอยู่":"ปิดใช้งาน"}</p>${user.wikimedia_url?`<p>Wikimedia: <a class="author-link" href="${esc(user.wikimedia_url)}" target="_blank" rel="noopener">${esc(user.wikimedia_username||user.wikimedia_url)}</a></p>`:""}</div><div class="user-actions"><button class="ghost" type="button" data-user-edit="${user.id}">แก้ข้อมูล</button><button class="ghost ${user.active?"danger":""}" type="button" data-user-toggle="${user.id}" data-active="${user.active?0:1}">${user.active?"ปิดบัญชี":"เปิดบัญชี"}</button></div></article>`).join("");
+  list.innerHTML=users.map(user=>{const isCurrent=Number(user.id)===Number(signedInUser?.id);return `<article class="user-card"><div><h3>${esc(user.display_name||user.username)} <span class="role-pill ${user.role}">${user.role==="owner"?"ผู้ดูแลหลัก":"ผู้เขียน"}</span></h3><p>ชื่อผู้ใช้: ${esc(user.username)} • ${user.active?"ใช้งานอยู่":"ปิดใช้งาน"}</p>${user.wikimedia_url?`<p>Wikimedia: <a class="author-link" href="${esc(user.wikimedia_url)}" target="_blank" rel="noopener">${esc(user.wikimedia_username||user.wikimedia_url)}</a></p>`:""}</div><div class="user-actions"><button class="ghost" type="button" data-user-edit="${user.id}">แก้ข้อมูล</button>${isCurrent?"":`<button class="ghost ${user.active?"danger":""}" type="button" data-user-toggle="${user.id}" data-active="${user.active?0:1}">${user.active?"ปิดบัญชี":"เปิดบัญชี"}</button><button class="ghost danger" type="button" data-user-delete="${user.id}">ลบบัญชี</button>`}</div></article>`}).join("");
 }
 
 async function loadUsers(){
@@ -95,8 +95,15 @@ $("#userCreateForm")?.addEventListener("submit",async event=>{
 $("#usersList")?.addEventListener("click",async event=>{
   const toggle=event.target.closest("[data-user-toggle]");
   const edit=event.target.closest("[data-user-edit]");
+  const remove=event.target.closest("[data-user-delete]");
   try{
     if(toggle){await accountApi(`/api/admin/users/${toggle.dataset.userToggle}`,{method:"PUT",body:JSON.stringify({active:toggle.dataset.active==="1"})});await loadUsers()}
+    if(remove){
+      if(!confirm("ต้องการลบบัญชีนี้ถาวรหรือไม่? บทความเดิมจะยังคงอยู่"))return;
+      if(!confirm("ยืนยันอีกครั้ง: ลบบัญชีนี้ถาวร"))return;
+      await accountApi(`/api/admin/users/${remove.dataset.userDelete}`,{method:"DELETE"});
+      accountMessage("usersMessage","ลบบัญชีเรียบร้อย โดยบทความเดิมยังคงอยู่",true);await loadUsers();
+    }
     if(edit){
       const displayName=prompt("ชื่อที่แสดงใหม่ (กดยกเลิกหากไม่แก้)");if(displayName===null)return;
       const password=prompt("รหัสผ่านใหม่อย่างน้อย 8 ตัว (เว้นว่างหากไม่เปลี่ยน)")||"";
@@ -107,6 +114,18 @@ $("#usersList")?.addEventListener("click",async event=>{
 });
 
 document.addEventListener("click",event=>{
+  const passwordToggle=event.target.closest("[data-password-target]");
+  if(passwordToggle){
+    const input=document.getElementById(passwordToggle.dataset.passwordTarget);
+    if(input){
+      const showing=input.type==="text";
+      input.type=showing?"password":"text";
+      passwordToggle.textContent=showing?"👁 ดู":"🙈 ซ่อน";
+      passwordToggle.setAttribute("aria-label",showing?"แสดงรหัสผ่าน":"ซ่อนรหัสผ่าน");
+      passwordToggle.setAttribute("aria-pressed",String(!showing));
+    }
+    return;
+  }
   const tab=event.target.closest('[data-admin-tab="profile"]');if(tab)loadCurrentUser();
   const users=event.target.closest('[data-admin-tab="users"]');if(users)loadUsers();
 });
