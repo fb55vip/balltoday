@@ -1,0 +1,2 @@
+"use strict";
+document.addEventListener("click",async event=>{const button=event.target.closest("[data-copy-url]");if(!button)return;try{await navigator.clipboard.writeText(button.dataset.copyUrl);const before=button.textContent;button.textContent="คัดลอกแล้ว";setTimeout(()=>button.textContent=before,1500)}catch{button.textContent="กรุณาคัดลอกจากแถบที่อยู่"}});
