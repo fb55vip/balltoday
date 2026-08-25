@@ -1,0 +1,11 @@
+.current-user-badge{min-width:140px;padding:8px 12px;border:1px solid var(--border);border-radius:12px;background:#0b1320;color:#dbe5f2;font-size:13px;line-height:1.35}
+.current-user-badge strong{display:block;color:#fff}.current-user-badge span{color:var(--muted)}
+.upload-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;margin:8px 0}
+.upload-row input[type=file]{min-width:0;padding:10px;background:#080d15;border:1px dashed #445064;border-radius:12px;color:#dbe5f2}
+.account-panel{max-width:980px;margin:0 auto;padding:22px}.account-panel form{display:grid;gap:14px;max-width:760px}
+.user-create-form{grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}.user-create-form button{min-height:46px}
+.users-list{display:grid;gap:12px;margin-top:20px}.user-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:16px;border:1px solid var(--border);border-radius:14px;background:#09101a}
+.user-card h3{margin:0 0 5px}.user-card p{margin:3px 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere}.user-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.role-pill{display:inline-flex;padding:4px 9px;border-radius:999px;background:#28101a;color:#ff8da0;font-size:12px;font-weight:800}.role-pill.editor{background:#10243a;color:#8fc8ff}
+.author-link{color:var(--red);text-decoration:underline;text-underline-offset:3px}
+@media(max-width:720px){.current-user-badge{width:100%}.top-actions{flex-wrap:wrap}.upload-row,.user-create-form{grid-template-columns:1fr}.user-card{grid-template-columns:1fr}.user-actions{justify-content:flex-start}.account-panel{padding:16px}}
