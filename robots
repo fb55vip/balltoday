@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /api/admin/
+
+Sitemap: https://www.fb55vip.com/sitemap.xml
+Sitemap: https://www.fb55vip.com/news-sitemap.xml
+Sitemap: https://www.fb55vip.com/image-sitemap.xml
