@@ -1,0 +1,29 @@
+const SITE_URL = "https://www.fb55vip.com";
+const CONTENT_API = "https://balltoday-content-api.noppdsoma.workers.dev";
+
+function xml(value = "") {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&apos;");
+}
+
+function validDate(value) {
+  const date = new Date(value || "");
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export async function onRequestGet() {
+  try {
+    const response = await fetch(`${CONTENT_API}/api/sitemap`, { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`News sitemap API ${response.status}`);
+    const data = await response.json();
+    const cutoff = Date.now() - (2 * 24 * 60 * 60 * 1000);
+    const articles = (Array.isArray(data?.articles) ? data.articles : [])
+      .filter((article) => article?.slug && article?.title && article.content_type === "news")
+      .map((article) => ({ ...article, publicationDate: validDate(article.published_at || article.created_at) }))
+      .filter((article) => article.publicationDate && article.publicationDate.getTime() >= cutoff);
+
+    const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${articles.map((article) => `  <url>\n    <loc>${xml(`${SITE_URL}/article?slug=${encodeURIComponent(article.slug)}`)}</loc>\n    <news:news>\n      <news:publication><news:name>HN FOOTBALL SCORE</news:name><news:language>th</news:language></news:publication>\n      <news:publication_date>${xml(article.publicationDate.toISOString())}</news:publication_date>\n      <news:title>${xml(article.title)}</news:title>\n    </news:news>\n  </url>`).join("\n")}\n</urlset>`;
+    return new Response(body, { headers: { "Content-Type": "application/xml; charset=UTF-8", "Cache-Control": "public, max-age=0, s-maxage=300" } });
+  } catch (error) {
+    return new Response("News sitemap temporarily unavailable", { status: 503, headers: { "Content-Type": "text/plain; charset=UTF-8" } });
+  }
+}
