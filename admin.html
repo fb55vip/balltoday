@@ -8,7 +8,7 @@
   <title>HN FOOTBALL SCORE ADMIN | ระบบจัดการเนื้อหา</title>
   <link rel="stylesheet" href="/assets/css/admin.css?v=20260809-v14">
   <link rel="stylesheet" href="/assets/css/admin-seo-v18.css?v=20260823-seo-guard-100">
-  <link rel="stylesheet" href="/assets/css/admin-users-upload.css?v=20260825-1">
+  <link rel="stylesheet" href="/assets/css/admin-users-upload.css?v=20260825-2">
   <link rel="stylesheet" href="/assets/css/admin-pro.css?v=20260825-2">
 </head>
 <body>
@@ -20,7 +20,7 @@
         <h1>เข้าสู่ระบบแอดมิน</h1>
         <p class="muted">จัดการบทวิเคราะห์ ข่าวฟุตบอล และ Popup ทีเด็ดวันนี้</p>
         <label>ชื่อผู้ใช้<input id="username" autocomplete="username" required></label>
-        <label>รหัสผ่าน<input id="password" type="password" autocomplete="current-password" required></label>
+        <label>รหัสผ่าน<span class="password-control"><input id="password" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" data-password-target="password" aria-label="แสดงรหัสผ่าน" aria-pressed="false">👁 ดู</button></span></label>
         <button id="loginButton" class="primary" type="submit">เข้าสู่ระบบ</button>
         <div id="loginMessage" class="message" aria-live="polite"></div>
       </form>
@@ -227,7 +227,7 @@
             <label>ลิงก์หน้า Wikimedia (ไม่บังคับ)<input id="profileWikimediaUrl" type="url" placeholder="https://commons.wikimedia.org/wiki/User:..."></label>
             <div class="two-col"><label>Facebook<input id="profileFacebookUrl" type="url" placeholder="https://facebook.com/..."></label><label>TikTok<input id="profileTiktokUrl" type="url" placeholder="https://tiktok.com/@..."></label></div>
             <div class="two-col"><label>YouTube<input id="profileYoutubeUrl" type="url" placeholder="https://youtube.com/@..."></label><label>X<input id="profileXUrl" type="url" placeholder="https://x.com/..."></label></div>
-            <label>รหัสผ่านใหม่ (เว้นว่างไว้หากไม่เปลี่ยน)<input id="profilePassword" type="password" minlength="8" autocomplete="new-password"></label>
+            <label>รหัสผ่านใหม่ (เว้นว่างไว้หากไม่เปลี่ยน)<span class="password-control"><input id="profilePassword" type="password" minlength="8" autocomplete="new-password"><button class="password-toggle" type="button" data-password-target="profilePassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false">👁 ดู</button></span></label>
             <button id="saveProfileButton" class="primary" type="submit">บันทึกโปรไฟล์</button>
           </form>
           <div id="profileMessage" class="message" aria-live="polite"></div>
@@ -240,7 +240,7 @@
           <form id="userCreateForm" class="user-create-form">
             <label>ชื่อผู้ใช้สำหรับล็อกอิน<input id="newUsername" maxlength="60" required autocomplete="off"></label>
             <label>ชื่อที่แสดง<input id="newDisplayName" maxlength="100" required></label>
-            <label>รหัสผ่านเริ่มต้น<input id="newPassword" type="password" minlength="8" required autocomplete="new-password"></label>
+            <label>รหัสผ่านเริ่มต้น<span class="password-control"><input id="newPassword" type="password" minlength="8" required autocomplete="new-password"><button class="password-toggle" type="button" data-password-target="newPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false">👁 ดู</button></span></label>
             <label>สิทธิ์<select id="newRole"><option value="editor">ผู้เขียน</option><option value="owner">ผู้ดูแลหลัก</option></select></label>
             <button id="createUserButton" class="primary" type="submit">สร้างบัญชี</button>
           </form>
@@ -308,7 +308,7 @@
   </dialog>
 
   <script src="/assets/js/admin-v18.js?v=20260823-seo-guard-100" defer></script>
-  <script src="/assets/js/admin-users-upload.js?v=20260825-1" defer></script>
+  <script src="/assets/js/admin-users-upload.js?v=20260825-3" defer></script>
   <script src="/assets/js/admin-pro.js?v=20260825-2" defer></script>
 </body>
 </html>
