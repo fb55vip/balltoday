@@ -8,6 +8,8 @@
   <title>HN FOOTBALL SCORE ADMIN | ระบบจัดการเนื้อหา</title>
   <link rel="stylesheet" href="/assets/css/admin.css?v=20260809-v14">
   <link rel="stylesheet" href="/assets/css/admin-seo-v18.css?v=20260823-seo-guard-100">
+  <link rel="stylesheet" href="/assets/css/admin-users-upload.css?v=20260825-1">
+  <link rel="stylesheet" href="/assets/css/admin-pro.css?v=20260825-2">
 </head>
 <body>
   <main class="admin-shell">
@@ -31,6 +33,7 @@
           <h1>HN FOOTBALL SCORE ADMIN</h1>
         </div>
         <div class="top-actions">
+          <div id="currentUserBadge" class="current-user-badge" aria-live="polite"></div>
           <a class="ghost link-button" href="/" target="_blank" rel="noopener">ดูเว็บไซต์</a>
           <button id="logoutButton" class="ghost" type="button">ออกจากระบบ</button>
         </div>
@@ -41,6 +44,10 @@
         <button class="admin-tab" type="button" data-admin-tab="analysis">📝 บทวิเคราะห์</button>
         <button class="admin-tab" type="button" data-admin-tab="news">📰 ข่าวฟุตบอล</button>
         <button class="admin-tab" type="button" data-admin-tab="evergreen">📚 ความรู้ฟุตบอล</button>
+        <button class="admin-tab" type="button" data-admin-tab="profile">👤 โปรไฟล์ผู้เขียน</button>
+        <button id="usersTabButton" class="admin-tab" type="button" data-admin-tab="users" hidden>👥 ผู้ใช้งาน</button>
+        <button id="socialTabButton" class="admin-tab" type="button" data-admin-tab="social" hidden>🔗 Social Media</button>
+        <button id="auditTabButton" class="admin-tab" type="button" data-admin-tab="audit" hidden>🧾 ประวัติการทำงาน</button>
         <button class="admin-tab" type="button" data-admin-tab="popup">🖼️ Popup ทีเด็ดวันนี้</button>
       </nav>
 
@@ -91,7 +98,14 @@
               </div>
 
               <div class="image-section">
-                <label>ลิงก์รูปหน้าปก<input id="imageUrl" type="url" placeholder="https://..."></label>
+                <label>รูปหน้าปก
+                  <span class="upload-row">
+                    <input id="coverFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+                    <button id="uploadCoverButton" class="ghost" type="button">อัปโหลดรูป</button>
+                  </span>
+                  <input id="imageUrl" type="url" placeholder="ลิงก์รูปจะใส่อัตโนมัติหลังอัปโหลด">
+                </label>
+                <div id="coverUploadMessage" class="message" aria-live="polite"></div>
                 <img id="coverPreview" class="cover-preview" alt="ตัวอย่างรูปหน้าปก" hidden>
               </div>
 
@@ -149,6 +163,19 @@
                 <button id="previewButton" class="ghost" type="button">👀 ดูตัวอย่าง</button>
                 <button id="saveButton" class="primary" type="submit">บันทึกบทวิเคราะห์</button>
               </div>
+
+              <details class="share-pack" open>
+                <summary>📣 ชุดแชร์ Social Media</summary>
+                <label>ข้อความสำหรับแชร์<textarea id="shareCaption" rows="4" placeholder="ระบบจะสร้างจากหัวข้อและคำเกริ่น"></textarea></label>
+                <label>ลิงก์บทความพร้อม UTM<input id="shareUrl" readonly></label>
+                <div class="share-actions">
+                  <button id="copyShareCaption" class="ghost" type="button">คัดลอกข้อความ</button>
+                  <button id="copyShareUrl" class="ghost" type="button">คัดลอกลิงก์</button>
+                  <button id="openFacebookShare" class="ghost" type="button">เปิด Facebook</button>
+                  <button id="openLineShare" class="ghost" type="button">เปิด LINE</button>
+                </div>
+                <div id="shareMessage" class="message" aria-live="polite"></div>
+              </details>
             </form>
             <div id="editorMessage" class="message" aria-live="polite"></div>
           </section>
@@ -187,6 +214,70 @@
         <div id="evergreenAdminMount"></div>
       </section>
 
+      <section data-admin-panel="profile" hidden>
+        <section class="panel account-panel">
+          <div class="panel-head"><div><p class="eyebrow">WRITER PROFILE</p><h2>โปรไฟล์ผู้เขียน</h2></div></div>
+          <p class="muted">ชื่อและลิงก์นี้จะติดกับบทความที่คุณเผยแพร่โดยอัตโนมัติ</p>
+          <form id="profileForm">
+            <label>ชื่อผู้ใช้สำหรับล็อกอิน<input id="profileUsername" maxlength="60" required></label>
+            <label>ชื่อที่แสดงในบทความ<input id="profileDisplayName" maxlength="100" required></label>
+            <label>ประวัติผู้เขียน<textarea id="profileBio" rows="4" maxlength="500" placeholder="ประสบการณ์และหัวข้อที่เขียน"></textarea></label>
+            <div class="image-section"><label>รูปโปรไฟล์<span class="upload-row"><input id="profileAvatarFile" type="file" accept="image/jpeg,image/png,image/webp"><button id="uploadProfileAvatar" class="ghost" type="button">อัปโหลดรูป</button></span><input id="profileAvatarUrl" type="url" placeholder="ลิงก์จะใส่อัตโนมัติ"></label><img id="profileAvatarPreview" class="profile-avatar-preview" alt="รูปโปรไฟล์" hidden></div>
+            <label>ชื่อผู้ใช้ Wikimedia (ไม่บังคับ)<input id="profileWikimediaUsername" maxlength="100" placeholder="เช่น ExampleEditor"></label>
+            <label>ลิงก์หน้า Wikimedia (ไม่บังคับ)<input id="profileWikimediaUrl" type="url" placeholder="https://commons.wikimedia.org/wiki/User:..."></label>
+            <div class="two-col"><label>Facebook<input id="profileFacebookUrl" type="url" placeholder="https://facebook.com/..."></label><label>TikTok<input id="profileTiktokUrl" type="url" placeholder="https://tiktok.com/@..."></label></div>
+            <div class="two-col"><label>YouTube<input id="profileYoutubeUrl" type="url" placeholder="https://youtube.com/@..."></label><label>X<input id="profileXUrl" type="url" placeholder="https://x.com/..."></label></div>
+            <label>รหัสผ่านใหม่ (เว้นว่างไว้หากไม่เปลี่ยน)<input id="profilePassword" type="password" minlength="8" autocomplete="new-password"></label>
+            <button id="saveProfileButton" class="primary" type="submit">บันทึกโปรไฟล์</button>
+          </form>
+          <div id="profileMessage" class="message" aria-live="polite"></div>
+        </section>
+      </section>
+
+      <section data-admin-panel="users" hidden>
+        <section class="panel account-panel">
+          <div class="panel-head"><div><p class="eyebrow">OWNER ONLY</p><h2>จัดการผู้ใช้งาน</h2></div><button id="refreshUsers" class="ghost" type="button">รีเฟรช</button></div>
+          <form id="userCreateForm" class="user-create-form">
+            <label>ชื่อผู้ใช้สำหรับล็อกอิน<input id="newUsername" maxlength="60" required autocomplete="off"></label>
+            <label>ชื่อที่แสดง<input id="newDisplayName" maxlength="100" required></label>
+            <label>รหัสผ่านเริ่มต้น<input id="newPassword" type="password" minlength="8" required autocomplete="new-password"></label>
+            <label>สิทธิ์<select id="newRole"><option value="editor">ผู้เขียน</option><option value="owner">ผู้ดูแลหลัก</option></select></label>
+            <button id="createUserButton" class="primary" type="submit">สร้างบัญชี</button>
+          </form>
+          <div id="usersMessage" class="message" aria-live="polite"></div>
+          <div id="usersList" class="users-list"></div>
+        </section>
+      </section>
+
+      <section data-admin-panel="social" hidden>
+        <section class="panel account-panel social-panel">
+          <div class="panel-head"><div><p class="eyebrow">SITE SOCIAL SETTINGS</p><h2>Social Media ของเว็บไซต์</h2></div><button id="refreshSocialLinks" class="ghost" type="button">รีเฟรช</button></div>
+          <p class="muted">เพิ่ม แก้ไข เปิด–ปิด และเรียงลิงก์ได้จากหน้านี้ โดยไม่ต้องแก้โค้ดอีก</p>
+          <form id="socialLinkForm" class="social-link-form">
+            <input id="socialLinkId" type="hidden">
+            <label>แพลตฟอร์ม<select id="socialPlatform"><option value="facebook">Facebook</option><option value="line">LINE OA</option><option value="instagram">Instagram</option><option value="tiktok">TikTok</option><option value="youtube">YouTube</option><option value="x">X</option><option value="other">อื่น ๆ</option></select></label>
+            <label>ชื่อที่แสดง<input id="socialLabel" maxlength="80" required placeholder="เช่น HN FOOTBALL SCORE"></label>
+            <label class="span-2">URL<input id="socialUrl" type="url" required placeholder="https://..."></label>
+            <label>ลำดับ<input id="socialSortOrder" type="number" min="0" max="999" value="0"></label>
+            <label class="check"><input id="socialActive" type="checkbox" checked> เปิดใช้งาน</label>
+            <label class="check"><input id="socialShowFooter" type="checkbox" checked> แสดง Footer</label>
+            <label class="check"><input id="socialShowArticle" type="checkbox" checked> แสดงหน้าบทความ</label>
+            <div class="form-actions span-2"><button id="resetSocialLink" class="ghost" type="button">ล้างฟอร์ม</button><button id="saveSocialLink" class="primary" type="submit">บันทึกลิงก์</button></div>
+          </form>
+          <div id="socialMessage" class="message" aria-live="polite"></div>
+          <div id="socialLinksList" class="social-links-list"></div>
+        </section>
+      </section>
+
+      <section data-admin-panel="audit" hidden>
+        <section class="panel account-panel">
+          <div class="panel-head"><div><p class="eyebrow">SECURITY & ACTIVITY</p><h2>ประวัติการทำงาน</h2></div><button id="refreshAudit" class="ghost" type="button">รีเฟรช</button></div>
+          <p class="muted">ตรวจว่าใครสร้าง แก้ไข หรือลบข้อมูล และทำเมื่อใด</p>
+          <div id="auditMessage" class="message" aria-live="polite"></div>
+          <div id="auditList" class="audit-list"></div>
+        </section>
+      </section>
+
       <section class="panel popup-panel" data-admin-panel="popup" hidden>
         <div class="panel-head"><div><p class="eyebrow">HOMEPAGE POPUP</p><h2>Popup ทีเด็ดวันนี้</h2></div><button id="refreshPopup" class="ghost" type="button">รีเฟรช</button></div>
         <p class="muted">ตั้งค่ารูปที่เด้งอัตโนมัติเมื่อผู้ชมเข้าเว็บไซต์ เปิด/ปิด กำหนดลิงก์ และช่วงเวลาแสดงได้</p>
@@ -217,5 +308,7 @@
   </dialog>
 
   <script src="/assets/js/admin-v18.js?v=20260823-seo-guard-100" defer></script>
+  <script src="/assets/js/admin-users-upload.js?v=20260825-1" defer></script>
+  <script src="/assets/js/admin-pro.js?v=20260825-2" defer></script>
 </body>
 </html>
