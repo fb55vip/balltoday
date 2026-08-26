@@ -18,7 +18,7 @@
         <a class="brand" href="/" aria-label="กลับหน้า HN FOOTBALL SCORE">⚽ <strong>HN <span>FOOTBALL SCORE</span></strong></a>
         <p class="eyebrow">SECURE CONTENT MANAGEMENT</p>
         <h1>เข้าสู่ระบบแอดมิน</h1>
-        <p class="muted">จัดการบทวิเคราะห์ ข่าวฟุตบอล และ Popup ทีเด็ดวันนี้</p>
+        <p class="muted">จัดการบทวิเคราะห์ ข่าวฟุตบอล และ Popup ข่าวเด่นวันนี้</p>
         <label>ชื่อผู้ใช้<input id="username" autocomplete="username" required></label>
         <label>รหัสผ่าน<span class="password-control"><input id="password" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" data-password-target="password" aria-label="แสดงรหัสผ่าน" aria-pressed="false">👁 ดู</button></span></label>
         <button id="loginButton" class="primary" type="submit">เข้าสู่ระบบ</button>
@@ -48,14 +48,14 @@
         <button id="usersTabButton" class="admin-tab" type="button" data-admin-tab="users" hidden>👥 ผู้ใช้งาน</button>
         <button id="socialTabButton" class="admin-tab" type="button" data-admin-tab="social" hidden>🔗 Social Media</button>
         <button id="auditTabButton" class="admin-tab" type="button" data-admin-tab="audit" hidden>🧾 ประวัติการทำงาน</button>
-        <button class="admin-tab" type="button" data-admin-tab="popup">🖼️ Popup ทีเด็ดวันนี้</button>
+        <button class="admin-tab" type="button" data-admin-tab="popup">🖼️ Popup ข่าวเด่นวันนี้</button>
       </nav>
 
       <section data-admin-panel="dashboard">
         <section class="dashboard-welcome panel">
           <p class="eyebrow">HN FOOTBALL SCORE ADMIN</p>
           <h2>Dashboard</h2>
-          <p class="muted">จัดการบทวิเคราะห์ ข่าวฟุตบอล และ Popup ทีเด็ดวันนี้ จากหลังบ้านเดียว</p>
+          <p class="muted">จัดการบทวิเคราะห์ ข่าวฟุตบอล และ Popup ข่าวเด่นวันนี้ จากหลังบ้านเดียว</p>
           <div class="dashboard-shortcuts">
             <button type="button" class="ghost" data-go-tab="analysis">📝 เพิ่มบทวิเคราะห์</button>
             <button type="button" class="ghost" data-go-tab="news">📰 เพิ่มข่าวฟุตบอล</button>
@@ -279,11 +279,11 @@
       </section>
 
       <section class="panel popup-panel" data-admin-panel="popup" hidden>
-        <div class="panel-head"><div><p class="eyebrow">HOMEPAGE POPUP</p><h2>Popup ทีเด็ดวันนี้</h2></div><button id="refreshPopup" class="ghost" type="button">รีเฟรช</button></div>
+        <div class="panel-head"><div><p class="eyebrow">HOMEPAGE POPUP</p><h2>Popup ข่าวเด่นวันนี้</h2></div><button id="refreshPopup" class="ghost" type="button">รีเฟรช</button></div>
         <p class="muted">ตั้งค่ารูปที่เด้งอัตโนมัติเมื่อผู้ชมเข้าเว็บไซต์ เปิด/ปิด กำหนดลิงก์ และช่วงเวลาแสดงได้</p>
         <form id="popupForm">
           <label class="check"><input id="popupEnabled" type="checkbox"> เปิดใช้งาน Popup</label>
-          <label>ชื่อรายการ<input id="popupTitle" maxlength="160" placeholder="เช่น ทีเด็ดวันนี้"></label>
+          <label>ชื่อรายการ<input id="popupTitle" maxlength="160" placeholder="เช่น ข่าวเด่นวันนี้"></label>
           <div class="image-section"><label>URL รูป Popup<input id="popupImageUrl" type="url" placeholder="https://..."></label><img id="popupImagePreview" class="cover-preview popup-preview" alt="ตัวอย่าง Popup" hidden></div>
           <label>ลิงก์เมื่อกดรูป<input id="popupLinkUrl" type="url" placeholder="https://www.fb55vip.com/..."></label>
           <div class="two-col"><label>เริ่มแสดง<input id="popupStartAt" type="datetime-local"></label><label>สิ้นสุดการแสดง<input id="popupEndAt" type="datetime-local"></label></div>
@@ -308,7 +308,7 @@
   </dialog>
 
   <script src="/assets/js/admin-v18.js?v=20260823-seo-guard-100" defer></script>
-  <script src="/assets/js/admin-users-upload.js?v=20260825-3" defer></script>
+  <script src="/assets/js/admin-users-upload.js?v=20260825-4" defer></script>
   <script src="/assets/js/admin-pro.js?v=20260825-2" defer></script>
 </body>
 </html>
