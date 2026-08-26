@@ -1,12 +1,12 @@
-const CACHE_NAME = "hn-football-score-v24-20260825-knowledge-card-final";
+const CACHE_NAME = "hn-football-score-v25-20260825-complete";
 const STATIC_ASSETS = [
-  "/assets/css/app.css?v=20260824-mobile-size-fix",
+  "/assets/css/app.css?v=20260825-complete-v20",
   "/assets/css/analysis-news-v18.css?v=20260825-final-4x2-v7",
-  "/assets/css/mobile-layout-patch.css?v=20260825-final-v7",
+  "/assets/css/mobile-layout-patch.css?v=20260825-complete-v20",
   "/assets/css/article-v18.css?v=20260825-final-v4",
   "/assets/css/admin.css?v=20260806-v10",
   "/assets/js/config.js?v=20260806-v10",
-  "/assets/js/app.js?v=20260809-v15",
+  "/assets/js/app.js?v=20260825-complete-v20",
   "/assets/js/analysis-news-v18.js?v=20260825-final-v21",
   "/assets/js/admin.js?v=20260806-v10",
   "/manifest.webmanifest",
