@@ -189,6 +189,36 @@ async function fetchRelatedArticles(article, slug) {
   }
 }
 
+async function fetchSocialLinks() {
+  try {
+    const response = await fetch(`${CONTENT_API}/api/social-links`, {
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return Array.isArray(data?.links) ? data.links : [];
+  } catch {
+    return [];
+  }
+}
+
+const SOCIAL_MARKS = {
+  facebook: "f",
+  line: "L",
+  instagram: "◎",
+  tiktok: "♪",
+  youtube: "▶",
+  x: "X",
+  other: "↗"
+};
+
+function socialIcon(platform) {
+  const key = Object.prototype.hasOwnProperty.call(SOCIAL_MARKS, platform)
+    ? platform
+    : "other";
+  return `<span class="social-icon social-icon--${key}" aria-hidden="true">${SOCIAL_MARKS[key]}</span>`;
+}
+
 function buildNotFoundPage(slug) {
   const title = "ไม่พบบทความ | HN FOOTBALL SCORE";
   const canonical = `${SITE_URL}/article?slug=${encodeURIComponent(slug)}`;
@@ -212,7 +242,7 @@ function buildNotFoundPage(slug) {
 </html>`;
 }
 
-function buildArticlePage(article, slug, relatedArticles = []) {
+function buildArticlePage(article, slug, relatedArticles = [], socialLinks = []) {
   const section = getSection(article);
   const schemaType = getArticleType(article);
 
@@ -276,6 +306,13 @@ function buildArticlePage(article, slug, relatedArticles = []) {
     article.author_name ||
     article.author ||
     "HN FOOTBALL SCORE";
+  const authorUrl = safeUrl(
+    article.author_profile_url || article.author_url,
+    `${SITE_URL}/author.html`
+  );
+  const authorSameAs = Array.isArray(article.author_same_as)
+    ? article.author_same_as.map((value) => safeUrl(value, "")).filter(Boolean)
+    : [];
 
   const datePublished =
     article.published_at ||
@@ -305,7 +342,8 @@ function buildArticlePage(article, slug, relatedArticles = []) {
     author: {
       "@type": author === SITE_NAME ? "Organization" : "Person",
       name: author,
-      url: `${SITE_URL}/author.html`
+      url: authorUrl || `${SITE_URL}/author.html`,
+      sameAs: authorSameAs.length ? authorSameAs : undefined
     },
     publisher: {
       "@type": "Organization",
@@ -314,7 +352,10 @@ function buildArticlePage(article, slug, relatedArticles = []) {
       logo: {
         "@type": "ImageObject",
         url: `${SITE_URL}/assets/og-image.jpg`
-      }
+      },
+      sameAs: socialLinks
+        .map((item) => safeUrl(item.url, ""))
+        .filter(Boolean)
     }
   };
 
@@ -352,11 +393,27 @@ function buildArticlePage(article, slug, relatedArticles = []) {
   const safeHeadline = escapeHtml(headline);
   const safeIntro = escapeHtml(intro);
   const safeAuthor = escapeHtml(author);
+  const safeAuthorUrl = escapeHtml(authorUrl);
+  const safeAuthorBio = escapeHtml(article.author_bio || "");
+  const safeAuthorAvatar = escapeHtml(
+    safeUrl(article.author_avatar, "")
+  );
   const safeSectionName = escapeHtml(section.name);
   const relatedLinks = relatedArticles.map((item) => `
         <li>
           <a href="/article?slug=${encodeURIComponent(item.slug)}">${escapeHtml(item.title || item.headline || item.slug)}</a>
         </li>`).join("");
+  const articleSocialLinks = socialLinks
+    .filter((item) => item.show_article)
+    .map((item) => `
+        <a href="${escapeHtml(safeUrl(item.url, "#"))}" target="_blank" rel="noopener noreferrer">
+          ${socialIcon(item.platform)}
+          <span>${escapeHtml(item.label || item.platform)}</span>
+        </a>`)
+    .join("");
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${canonical}&utm_source=facebook&utm_medium=social`)}`;
+  const lineShare = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(`${canonical}&utm_source=line&utm_medium=social`)}`;
+  const xShare = `https://x.com/intent/post?text=${encodeURIComponent(headline)}&url=${encodeURIComponent(`${canonical}&utm_source=x&utm_medium=social`)}`;
 
   return `<!doctype html>
 <html lang="th">
@@ -402,6 +459,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
 
   <link rel="stylesheet" href="/assets/css/app.css">
   <link rel="stylesheet" href="/assets/css/article-v18.css?v=20260826-ssr-v3">
+  <link rel="stylesheet" href="/assets/css/article-social.css?v=20260826-final">
 </head>
 
 <body>
@@ -436,7 +494,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
         }
 
         <div class="meta">
-          <span>โดย ${safeAuthor}</span>
+          <span>โดย ${safeAuthorUrl ? `<a href="${safeAuthorUrl}" rel="author">${safeAuthor}</a>` : safeAuthor}</span>
 
           ${
             displayPublished
@@ -471,6 +529,23 @@ function buildArticlePage(article, slug, relatedArticles = []) {
 
       <div class="body">
         <div class="content">${body}</div>
+
+        <section class="author-profile-card" aria-label="ข้อมูลผู้เขียน">
+          ${safeAuthorAvatar ? `<img src="${safeAuthorAvatar}" alt="${safeAuthor}" width="88" height="88" loading="lazy">` : ""}
+          <div>
+            <p class="author-label">ผู้เขียน</p>
+            <h2>${safeAuthorUrl ? `<a href="${safeAuthorUrl}" rel="author">${safeAuthor}</a>` : safeAuthor}</h2>
+            ${safeAuthorBio ? `<p>${safeAuthorBio}</p>` : ""}
+          </div>
+        </section>
+
+        <section class="article-share" aria-label="แชร์บทความ">
+          <strong>แชร์บทความ</strong>
+          <a href="${escapeHtml(facebookShare)}" target="_blank" rel="noopener">${socialIcon("facebook")}<span>Facebook</span></a>
+          <a href="${escapeHtml(lineShare)}" target="_blank" rel="noopener">${socialIcon("line")}<span>LINE</span></a>
+          <a href="${escapeHtml(xShare)}" target="_blank" rel="noopener">${socialIcon("x")}<span>X</span></a>
+          <button type="button" data-copy-url="${escapeHtml(canonical)}">คัดลอกลิงก์</button>
+        </section>
       </div>
 
     </article>
@@ -493,11 +568,17 @@ function buildArticlePage(article, slug, relatedArticles = []) {
       </p>
     </section>
 
+    ${articleSocialLinks ? `
+      <footer class="site-social-footer">
+        <strong>ติดตาม HN FOOTBALL SCORE</strong>
+        <div>${articleSocialLinks}</div>
+      </footer>` : ""}
+
   </main>
 
   <script src="/assets/js/config.js"></script>
   <script src="/assets/js/article-v18.js?v=20260826-cover-v2"></script>
-  <script src="/assets/js/article-social.js?v=20260825-3"></script>
+  <script src="/assets/js/article-social.js?v=20260826-final"></script>
 
 </body>
 </html>`;
@@ -533,8 +614,11 @@ export async function onRequest(context) {
     });
   }
 
-  const relatedArticles = await fetchRelatedArticles(article, slug);
-  const html = buildArticlePage(article, slug, relatedArticles);
+  const [relatedArticles, socialLinks] = await Promise.all([
+    fetchRelatedArticles(article, slug),
+    fetchSocialLinks()
+  ]);
+  const html = buildArticlePage(article, slug, relatedArticles, socialLinks);
 
   return new Response(html, {
     status: 200,
