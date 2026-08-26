@@ -7,7 +7,7 @@ function xml(value = "") {
 
 function safeImageUrl(value) {
   try {
-    const url = new URL(value);
+    const url = new URL(value, CONTENT_API);
     return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
   } catch (_) {
     return "";
@@ -20,7 +20,7 @@ export async function onRequestGet() {
     if (!response.ok) throw new Error(`Image sitemap API ${response.status}`);
     const data = await response.json();
     const articles = (Array.isArray(data?.articles) ? data.articles : [])
-      .map((article) => ({ ...article, image: safeImageUrl(article.cover_image) }))
+      .map((article) => ({ ...article, image: safeImageUrl(article.cover_image || article.image_url) }))
       .filter((article) => article?.slug && article.image);
 
     const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${articles.map((article) => `  <url>\n    <loc>${xml(`${SITE_URL}/article?slug=${encodeURIComponent(article.slug)}`)}</loc>\n    <image:image>\n      <image:loc>${xml(article.image)}</image:loc>\n      ${article.title ? `<image:title>${xml(article.title)}</image:title>` : ""}\n    </image:image>\n  </url>`).join("\n")}\n</urlset>`;
