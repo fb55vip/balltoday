@@ -8,6 +8,7 @@ function date(v){if(!v)return"";const d=new Date(v);return Number.isNaN(d)?v:d.t
 function canonicalUrl(value,slug){try{const u=new URL(value||`${SITE}/article?slug=${encodeURIComponent(slug)}`,SITE);if(u.hostname==="fb55vip.com")u.hostname="www.fb55vip.com";if(u.origin===SITE)return u.href}catch{}return `${SITE}/article?slug=${encodeURIComponent(slug)}`}
 (async()=>{
   const box=document.getElementById("articleView");
+  if(!box)return;
   const slug=new URLSearchParams(location.search).get("slug")||"";
   if(!slug){box.innerHTML='<div class="error">ไม่พบบทความ</div>';return}
   try{
