@@ -255,10 +255,10 @@ function buildArticlePage(article, slug, relatedArticles = []) {
 
   const image =
     safeUrl(
-      article.og_image ||
       article.cover_image ||
+      article.image_url ||
       article.image ||
-      article.image_url,
+      article.og_image,
       `${SITE_URL}/assets/og-image.jpg`
     );
 
@@ -401,20 +401,20 @@ function buildArticlePage(article, slug, relatedArticles = []) {
   <script type="application/ld+json">${escapeJsonForHtml(breadcrumbSchema)}</script>
 
   <link rel="stylesheet" href="/assets/css/app.css">
-  <link rel="stylesheet" href="/assets/css/article-v18.css">
+  <link rel="stylesheet" href="/assets/css/article-v18.css?v=20260826-ssr-v3">
 </head>
 
 <body>
 
-  <header>
+  <header class="article-header">
     <a href="/" aria-label="HN FOOTBALL SCORE">
       HN FOOTBALL SCORE
     </a>
   </header>
 
-  <main>
+  <main class="article-shell">
 
-    <nav aria-label="breadcrumb">
+    <nav class="breadcrumbs" aria-label="breadcrumb">
       <a href="/">หน้าแรก</a>
       <span> › </span>
       <a href="${escapeHtml(section.url)}">${safeSectionName}</a>
@@ -422,20 +422,20 @@ function buildArticlePage(article, slug, relatedArticles = []) {
       <span>${safeHeadline}</span>
     </nav>
 
-    <article>
+    <article class="article-card">
 
-      <header>
-        <p>${safeSectionName}</p>
+      <header class="body">
+        <p class="kicker">${safeSectionName}</p>
 
         <h1>${safeHeadline}</h1>
 
         ${
           safeIntro
-            ? `<p class="article-intro">${safeIntro}</p>`
+            ? `<p class="lead">${safeIntro}</p>`
             : ""
         }
 
-        <div class="article-meta">
+        <div class="meta">
           <span>โดย ${safeAuthor}</span>
 
           ${
@@ -458,6 +458,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
           ? `
             <figure class="article-cover">
               <img
+                class="cover"
                 src="${escapeHtml(image)}"
                 alt="${safeHeadline}"
                 loading="eager"
@@ -468,13 +469,13 @@ function buildArticlePage(article, slug, relatedArticles = []) {
           : ""
       }
 
-      <div class="article-content">
-        ${body}
+      <div class="body">
+        <div class="content">${body}</div>
       </div>
 
     </article>
 
-    <section class="article-navigation">
+    <section class="article-navigation related">
       <h2>อ่านเพิ่มเติม</h2>
 
       ${relatedLinks ? `<ul>${relatedLinks}\n      </ul>` : ""}
@@ -496,6 +497,7 @@ function buildArticlePage(article, slug, relatedArticles = []) {
 
   <script src="/assets/js/config.js"></script>
   <script src="/assets/js/article-v18.js?v=20260826-cover-v2"></script>
+  <script src="/assets/js/article-social.js?v=20260825-3"></script>
 
 </body>
 </html>`;
