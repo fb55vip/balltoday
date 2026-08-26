@@ -423,7 +423,7 @@ $("#articleForm").addEventListener("submit",async e=>{
   finally{b.disabled=false}
 });
 
-/* Popup ทีเด็ดวันนี้ — คง logic เดิม */
+/* Popup ข่าวเด่นวันนี้ */
 function popupFromForm(){return{enabled:$("#popupEnabled").checked,title:$("#popupTitle").value.trim(),image_url:$("#popupImageUrl").value.trim(),link_url:$("#popupLinkUrl").value.trim(),start_at:isoOrNull($("#popupStartAt").value),end_at:isoOrNull($("#popupEndAt").value),once_per_session:$("#popupOncePerSession").checked}}
 function updatePopupPreview(){const u=$("#popupImageUrl").value.trim(),img=$("#popupImagePreview");img.hidden=!u;if(u)img.src=u}
 async function loadPopup(){try{const d=await api("/api/admin/popup"),p=d.popup||{};$("#popupEnabled").checked=!!p.enabled;$("#popupTitle").value=p.title||"";$("#popupImageUrl").value=p.image_url||"";$("#popupLinkUrl").value=p.link_url||"";$("#popupStartAt").value=localInput(p.start_at);$("#popupEndAt").value=localInput(p.end_at);$("#popupOncePerSession").checked=p.once_per_session!==false;updatePopupPreview();setMessage($("#popupMessage"),"")}catch(e){setMessage($("#popupMessage"),e.message)}}
