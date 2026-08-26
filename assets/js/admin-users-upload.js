@@ -85,10 +85,14 @@ async function loadUsers(){
 
 $("#refreshUsers")?.addEventListener("click",loadUsers);
 $("#userCreateForm")?.addEventListener("submit",async event=>{
-  event.preventDefault();const button=$("#createUserButton");button.disabled=true;
+  event.preventDefault();
+  const form=event.currentTarget;
+  const button=$("#createUserButton");button.disabled=true;
   try{
     await accountApi("/api/admin/users",{method:"POST",body:JSON.stringify({username:$("#newUsername").value.trim(),display_name:$("#newDisplayName").value.trim(),password:$("#newPassword").value,role:$("#newRole").value})});
-    event.currentTarget.reset();accountMessage("usersMessage","สร้างบัญชีเรียบร้อย",true);await loadUsers();
+    form.reset();
+    await loadUsers();
+    accountMessage("usersMessage","สร้างบัญชีเรียบร้อย สามารถใช้ชื่อผู้ใช้และรหัสผ่านนี้เข้าสู่ระบบได้",true);
   }catch(error){accountMessage("usersMessage",error.message)}finally{button.disabled=false}
 });
 
