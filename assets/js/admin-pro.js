@@ -46,20 +46,26 @@ function renderAudit(items=[]){
 async function loadAudit(){if(!signedInUser||signedInUser.role!=="owner")return;try{const data=await accountApi("/api/admin/audit?limit=100");renderAudit(data.items||[]);proMessage("auditMessage","")}catch(error){proMessage("auditMessage",error.message)}}
 $("#refreshAudit")?.addEventListener("click",loadAudit);
 
-function updateSharePack(){
+function updateSharePack(forceCaption=false){
+  const caption=$("#shareCaption"),shareUrl=$("#shareUrl");
+  if(!caption||!shareUrl)return;
   const title=$("#title")?.value.trim()||"บทความใหม่",excerpt=$("#excerpt")?.value.trim(),slug=$("#slug")?.value.trim()||slugify(title),type=$("#contentType")?.value||"analysis";
   const source=type==="news"?"news":type==="evergreen"?"knowledge":"analysis";
-  const url=`${SITE_URL}/article?slug=${encodeURIComponent(slug)}&utm_source=social&utm_medium=share&utm_campaign=${encodeURIComponent(source)}`;
-  $("#shareUrl").value=url;
-  if(!$("#shareCaption").dataset.edited)$("#shareCaption").value=[title,excerpt,url,"#HNFOOTBALLSCORE"].filter(Boolean).join("\n\n");
+  const siteBase=typeof SITE_URL==="string"?SITE_URL:"https://www.fb55vip.com";
+  const url=`${siteBase}/article?slug=${encodeURIComponent(slug)}&utm_source=social&utm_medium=share&utm_campaign=${encodeURIComponent(source)}`;
+  shareUrl.value=url;
+  if(forceCaption||!caption.dataset.edited||!caption.value.trim())caption.value=[title,excerpt,url,"#HNFOOTBALLSCORE"].filter(Boolean).join("\n\n");
 }
-async function copyValue(selector,message){const value=$(selector)?.value||"";if(!value)return;try{await navigator.clipboard.writeText(value);proMessage("shareMessage",message,true)}catch{proMessage("shareMessage","คัดลอกไม่สำเร็จ กรุณาเลือกข้อความแล้วคัดลอกเอง")}}
+function resetSharePack(){const caption=$("#shareCaption");if(caption)delete caption.dataset.edited;setTimeout(()=>updateSharePack(true),0)}
+async function copyValue(selector,message){updateSharePack();const value=$(selector)?.value||"";if(!value)return;try{await navigator.clipboard.writeText(value);proMessage("shareMessage",message,true)}catch{proMessage("shareMessage","คัดลอกไม่สำเร็จ กรุณาเลือกข้อความแล้วคัดลอกเอง")}}
 $("#copyShareCaption")?.addEventListener("click",()=>copyValue("#shareCaption","คัดลอกข้อความแล้ว"));
 $("#copyShareUrl")?.addEventListener("click",()=>copyValue("#shareUrl","คัดลอกลิงก์แล้ว"));
-$("#openFacebookShare")?.addEventListener("click",()=>window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent($("#shareUrl").value)}`,"_blank","noopener"));
-$("#openLineShare")?.addEventListener("click",()=>window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent($("#shareUrl").value)}`,"_blank","noopener"));
+$("#openFacebookShare")?.addEventListener("click",()=>{updateSharePack();window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent($("#shareUrl").value)}`,"_blank","noopener")});
+$("#openLineShare")?.addEventListener("click",()=>{updateSharePack();window.open(`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent($("#shareUrl").value)}`,"_blank","noopener")});
 $("#shareCaption")?.addEventListener("input",event=>event.currentTarget.dataset.edited="1");
-["title","excerpt","slug","contentType"].forEach(id=>document.addEventListener("input",event=>{if(event.target?.id===id)updateSharePack()}));
+document.addEventListener("input",event=>{if(["title","excerpt","slug","contentType"].includes(event.target?.id))updateSharePack()});
+document.addEventListener("change",event=>{if(event.target?.id==="contentType")updateSharePack()});
+$("#articleForm")?.addEventListener("reset",resetSharePack);
 
 function renderSeoHealth(){
   const welcome=$(".dashboard-welcome");if(!welcome||$("#seoHealth"))return;
@@ -67,6 +73,13 @@ function renderSeoHealth(){
 }
 function refreshSeoHealth(){renderSeoHealth();const total=articles.length,images=articles.filter(a=>a.image_url||a.cover_image).length,meta=articles.filter(a=>a.seo_title&&a.meta_description&&a.canonical_url).length,authors=articles.filter(a=>a.author&&a.author_user_id).length;$("#healthArticles").textContent=total;$("#healthImages").textContent=`${images}/${total}`;$("#healthMeta").textContent=`${meta}/${total}`;$("#healthAuthors").textContent=`${authors}/${total}`}
 
-document.addEventListener("click",event=>{if(event.target.closest('[data-admin-tab="social"]'))loadSocialLinks();if(event.target.closest('[data-admin-tab="audit"]'))loadAudit();if(event.target.closest('[data-admin-tab="dashboard"]'))refreshSeoHealth()});
+document.addEventListener("click",event=>{
+  if(event.target.closest('[data-admin-tab="social"]'))loadSocialLinks();
+  if(event.target.closest('[data-admin-tab="audit"]'))loadAudit();
+  if(event.target.closest('[data-admin-tab="dashboard"]'))refreshSeoHealth();
+  if(event.target.closest('[data-edit], #resetButton, [data-admin-tab="analysis"], [data-admin-tab="news"], [data-admin-tab="evergreen"], #openNewsEditor, #openEvergreenEditor'))resetSharePack();
+});
 $("#refreshArticles")?.addEventListener("click",()=>setTimeout(refreshSeoHealth,500));
-setTimeout(()=>{updateSharePack();refreshSeoHealth()},700);
+document.addEventListener("DOMContentLoaded",()=>setTimeout(()=>updateSharePack(true),0),{once:true});
+window.addEventListener("load",()=>updateSharePack(),{once:true});
+setTimeout(()=>{updateSharePack(true);refreshSeoHealth()},700);
