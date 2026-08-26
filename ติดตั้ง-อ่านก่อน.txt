@@ -1,0 +1,64 @@
+ชุดแก้ HN FOOTBALL SCORE — Admin / SEO / Social / Cache
+วันที่ 26 สิงหาคม 2026
+
+ผลตรวจ ZIP ที่ส่งมา
+1. worker/index.js ยังเป็น version v19-seo และ status online
+2. PBKDF2 ยังเป็น 150000
+3. service-worker.js ยังเป็น Cache v24
+4. มีชื่อไฟล์ติดอักขระซ่อน 6 ไฟล์ ทำให้ URL ปกติหาไฟล์ไม่เจอ
+
+วิธีนำขึ้น GitHub
+- เปิดโฟลเดอร์ชุดนี้ แล้วอัปโหลดไฟล์ที่อยู่ด้านในตามตำแหน่งเดียวกัน
+- ไม่ต้องอัปโหลดโฟลเดอร์ HN-ADMIN-SEO-SOCIAL-FIX-20260826 ครอบเข้าไป
+- ไฟล์ชื่อเดียวกันให้ Replace/วางทับ
+- ไฟล์ชื่อปกติที่ไม่มีใน GitHub ให้ Create/Add file
+- ชุดนี้ไม่มี index.html, assets/js/app.js หรือ assets/css/app.css จึงไม่เปลี่ยนหน้าแรกและเครื่องมือเดิม
+
+ไฟล์สำคัญที่ต้องวางทับ
+- admin.html
+- service-worker.js
+- robots.txt
+- assets/js/admin.js
+- assets/js/admin-v18.js
+- assets/js/admin-users-upload.js
+- assets/js/admin-pro.js
+- assets/js/site-social-footer.js
+- assets/css/admin-users-upload.css
+- assets/css/article-social.css
+- functions/article.js
+- worker/index.js (สำเนาสำหรับเก็บใน GitHub)
+
+ไฟล์ที่ต้องสร้าง/อัปโหลดด้วยชื่อปกติ
+- assets/css/admin-pro.css
+- assets/css/author-profile.css
+- assets/js/article-social.js
+- functions/sitemap.xml.js
+- functions/news-sitemap.xml.js
+- functions/image-sitemap.xml.js
+- functions/author/[username].js
+
+Cloudflare Content API Worker
+1. เปิด Worker ชื่อ Content API
+2. เปิด Edit code
+3. ลบโค้ดเดิมในช่องแก้ไข แล้ววางเนื้อหาจาก worker/index.js ทั้งหมด
+4. กด Deploy
+
+Bindings ที่ต้องมี
+- D1 variable: DB
+- R2 variable: MEDIA
+- Secret: ADMIN_USERNAME
+- Secret: ADMIN_PASSWORD
+- Secret: SESSION_SECRET
+
+ตรวจหลัง Deploy
+เปิด https://balltoday-content-api.noppdsoma.workers.dev/api/health
+ต้องเห็น:
+"version":"v20-complete"
+"status":"ready"
+
+ถ้าขึ้น configuration-required ให้ดูค่า bindings ในผลลัพธ์ว่ารายการใดเป็น false
+
+หมายเหตุ
+- ระบบไม่สามารถแสดงรหัสผ่านเดิมของผู้ใช้จากฐานข้อมูลได้ เพราะเก็บเป็น Password Hash เพื่อความปลอดภัย
+- ผู้ดูแลหลักสามารถตั้งรหัสผ่านใหม่ให้ผู้ใช้ได้
+- ห้ามลบผู้ดูแลหลักคนสุดท้ายหรือบัญชีที่กำลังล็อกอินอยู่
